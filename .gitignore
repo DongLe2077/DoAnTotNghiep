@@ -1,0 +1,32 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+auth.json
+.npmrc
+*.pem
+*.key
+*.p12
+*.pfx
+.aws/
+.codex/
+
+# Dependencies, caches and generated files
+.cache/
+vendor/
+node_modules/
+*.log
+.phpunit.result.cache
+.phpunit.cache/
+coverage/
+*.sqlite
+*.sqlite-*
+*.db
+backups/
+dumps/
+
+# Editor and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

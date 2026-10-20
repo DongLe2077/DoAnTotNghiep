@@ -1,0 +1,3412 @@
+{
+    "database": "rental_management",
+    "server_version": "8.0.43",
+    "tables": [
+        {
+            "TABLE_NAME": "active_invoice_access",
+            "TABLE_TYPE": "VIEW",
+            "ENGINE": null,
+            "TABLE_COLLATION": null,
+            "TABLE_COMMENT": "VIEW",
+            "columns": [
+                {
+                    "COLUMN_NAME": "user_id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Tenant account receiving access",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "invoice_id",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Scope key prevents cross-group representative grants",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "representative_assignment_id",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Representative assignment used to justify access",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "granted_at",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": []
+        },
+        {
+            "TABLE_NAME": "app_notifications",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_unicode_ci",
+            "TABLE_COMMENT": "",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "user_id",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "type",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(40)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "invoice_id",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "maintenance_request_id",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "dedupe_key",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "char",
+                    "COLUMN_TYPE": "char(64)",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "data",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "json",
+                    "COLUMN_TYPE": "json",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "read_at",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "created_at",
+                    "ORDINAL_POSITION": 9,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "app_notifications_dedupe_key_unique",
+                    "COLUMN_NAME": "dedupe_key",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "app_notifications_invoice_id_foreign",
+                    "COLUMN_NAME": "invoice_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "invoices",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "app_notifications_maintenance_request_id_foreign",
+                    "COLUMN_NAME": "maintenance_request_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "maintenance_requests",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "app_notifications_user_id_foreign",
+                    "COLUMN_NAME": "user_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "users",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "cash_transaction_histories",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_unicode_ci",
+            "TABLE_COMMENT": "",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "cash_transaction_id",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "revision",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "action",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(20)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "before_data",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "json",
+                    "COLUMN_TYPE": "json",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "after_data",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "json",
+                    "COLUMN_TYPE": "json",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "performed_by",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "reason",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "text",
+                    "COLUMN_TYPE": "text",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "reverted_history_id",
+                    "ORDINAL_POSITION": 9,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "created_at",
+                    "ORDINAL_POSITION": 10,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "cash_history_revision_unique",
+                    "COLUMN_NAME": "cash_transaction_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "cash_history_revision_unique",
+                    "COLUMN_NAME": "revision",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "cash_transaction_histories_cash_transaction_id_foreign",
+                    "COLUMN_NAME": "cash_transaction_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "cash_transactions",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "cash_transaction_histories_performed_by_foreign",
+                    "COLUMN_NAME": "performed_by",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "users",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "cash_transaction_histories_reverted_history_id_foreign",
+                    "COLUMN_NAME": "reverted_history_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "cash_transaction_histories",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "cash_transactions",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_0900_ai_ci",
+            "TABLE_COMMENT": "Other income and expenses, excluding invoice payment receipts",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "transaction_type",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(20)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "other_income or expense; invoice receipts belong in payments",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "amount",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "decimal",
+                    "COLUMN_TYPE": "decimal(18,2)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 18,
+                    "NUMERIC_SCALE": 2
+                },
+                {
+                    "COLUMN_NAME": "occurred_at",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "description",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(255)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "recorded_by",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "recorded_at",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "revision",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": "0",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "deleted_at",
+                    "ORDINAL_POSITION": 9,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "timestamp",
+                    "COLUMN_TYPE": "timestamp",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "fk_cash_transactions_recorder",
+                    "COLUMN_NAME": "recorded_by",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "users",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "invoice_access_grants",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_0900_ai_ci",
+            "TABLE_COMMENT": "Explicit per-invoice tenant permissions with revocation history",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "invoice_id",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Scope key prevents cross-group representative grants",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "user_id",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Tenant account receiving access",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "representative_assignment_id",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Representative assignment used to justify access",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "granted_by",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "granted_at",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "revoked_at",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "grant_reason",
+                    "ORDINAL_POSITION": 9,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(255)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "active_invoice_id",
+                    "ORDINAL_POSITION": 10,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "STORED GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "fk_invoice_access_granter",
+                    "COLUMN_NAME": "granted_by",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "users",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_invoice_access_invoice",
+                    "COLUMN_NAME": "invoice_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "invoices",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_invoice_access_invoice",
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": "invoices",
+                    "REFERENCED_COLUMN_NAME": "occupancy_id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_invoice_access_representative",
+                    "COLUMN_NAME": "representative_assignment_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "representative_assignments",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_invoice_access_representative",
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": "representative_assignments",
+                    "REFERENCED_COLUMN_NAME": "occupancy_id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_invoice_access_user",
+                    "COLUMN_NAME": "user_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "users",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_invoice_access_active",
+                    "COLUMN_NAME": "active_invoice_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "invoice_balances",
+            "TABLE_TYPE": "VIEW",
+            "ENGINE": null,
+            "TABLE_COLLATION": null,
+            "TABLE_COMMENT": "VIEW",
+            "columns": [
+                {
+                    "COLUMN_NAME": "invoice_id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": "0",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "invoice_number",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(50)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "billing_month",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "date",
+                    "COLUMN_TYPE": "date",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "First calendar day of the billed month",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "issued_at",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "item_count",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": "0",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 19,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "total_amount",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": "0.00",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "decimal",
+                    "COLUMN_TYPE": "decimal(40,2)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 40,
+                    "NUMERIC_SCALE": 2
+                },
+                {
+                    "COLUMN_NAME": "paid_amount",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": "0.00",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "decimal",
+                    "COLUMN_TYPE": "decimal(40,2)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 40,
+                    "NUMERIC_SCALE": 2
+                },
+                {
+                    "COLUMN_NAME": "outstanding_amount",
+                    "ORDINAL_POSITION": 9,
+                    "COLUMN_DEFAULT": "0.00",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "decimal",
+                    "COLUMN_TYPE": "decimal(41,2)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 41,
+                    "NUMERIC_SCALE": 2
+                },
+                {
+                    "COLUMN_NAME": "payment_status",
+                    "ORDINAL_POSITION": 10,
+                    "COLUMN_DEFAULT": "",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(14)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": []
+        },
+        {
+            "TABLE_NAME": "invoice_items",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_0900_ai_ci",
+            "TABLE_COMMENT": "Immutable invoice lines after publication; rent always quantity one",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "invoice_id",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Scope key for composite foreign keys",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "item_type",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(20)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "rent or service",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "description",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(255)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Description snapshot at issue time",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "unit",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(30)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Unit snapshot at issue time",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "quantity",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "decimal",
+                    "COLUMN_TYPE": "decimal(15,3)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 15,
+                    "NUMERIC_SCALE": 3
+                },
+                {
+                    "COLUMN_NAME": "unit_price",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "decimal",
+                    "COLUMN_TYPE": "decimal(18,4)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Rent: common monthly charge once per group-month, zero for already billed transfers; service: price snapshot",
+                    "NUMERIC_PRECISION": 18,
+                    "NUMERIC_SCALE": 4
+                },
+                {
+                    "COLUMN_NAME": "line_total",
+                    "ORDINAL_POSITION": 9,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "decimal",
+                    "COLUMN_TYPE": "decimal(18,2)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "STORED GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 18,
+                    "NUMERIC_SCALE": 2
+                },
+                {
+                    "COLUMN_NAME": "occupancy_service_id",
+                    "ORDINAL_POSITION": 10,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "meter_reading_id",
+                    "ORDINAL_POSITION": 11,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "charge_period_start",
+                    "ORDINAL_POSITION": 12,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Service source interval; mandatory for service items",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "charge_period_end",
+                    "ORDINAL_POSITION": 13,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "rent_invoice_id",
+                    "ORDINAL_POSITION": 14,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "STORED GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "fk_invoice_items_invoice",
+                    "COLUMN_NAME": "invoice_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "invoices",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_invoice_items_invoice",
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": "invoices",
+                    "REFERENCED_COLUMN_NAME": "occupancy_id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_invoice_items_reading",
+                    "COLUMN_NAME": "meter_reading_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "meter_readings",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_invoice_items_reading",
+                    "COLUMN_NAME": "occupancy_service_id",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": "meter_readings",
+                    "REFERENCED_COLUMN_NAME": "occupancy_service_id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_invoice_items_service",
+                    "COLUMN_NAME": "occupancy_service_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "occupancy_services",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_invoice_items_service",
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": "occupancy_services",
+                    "REFERENCED_COLUMN_NAME": "occupancy_id"
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_invoice_items_reading",
+                    "COLUMN_NAME": "meter_reading_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_invoice_items_rent",
+                    "COLUMN_NAME": "rent_invoice_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_invoice_items_source",
+                    "COLUMN_NAME": "occupancy_service_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_invoice_items_source",
+                    "COLUMN_NAME": "charge_period_start",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_invoice_items_source",
+                    "COLUMN_NAME": "charge_period_end",
+                    "ORDINAL_POSITION": 3,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "invoices",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_0900_ai_ci",
+            "TABLE_COMMENT": "Issued invoices only; preview is not persisted",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "invoice_number",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(50)",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "billing_month",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "date",
+                    "COLUMN_TYPE": "date",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "First calendar day of the billed month",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "representative_assignment_id",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Historical representative at issue time",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "issued_by",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "issued_at",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "fk_invoices_issuer",
+                    "COLUMN_NAME": "issued_by",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "users",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_invoices_occupancy",
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "occupancies",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_invoices_representative",
+                    "COLUMN_NAME": "representative_assignment_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "representative_assignments",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_invoices_representative",
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": "representative_assignments",
+                    "REFERENCED_COLUMN_NAME": "occupancy_id"
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_invoices_month",
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_invoices_month",
+                    "COLUMN_NAME": "billing_month",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_invoices_number",
+                    "COLUMN_NAME": "invoice_number",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_invoices_scope",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_invoices_scope",
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "maintenance_photos",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_unicode_ci",
+            "TABLE_COMMENT": "",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "maintenance_request_id",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "uploaded_by",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "path",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(200)",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "sha256",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "char",
+                    "COLUMN_TYPE": "char(64)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "mime_type",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(50)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "byte_size",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "int",
+                    "COLUMN_TYPE": "int unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 10,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "created_at",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "maintenance_photo_hash_unique",
+                    "COLUMN_NAME": "maintenance_request_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "maintenance_photo_hash_unique",
+                    "COLUMN_NAME": "sha256",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "maintenance_photos_maintenance_request_id_foreign",
+                    "COLUMN_NAME": "maintenance_request_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "maintenance_requests",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "maintenance_photos_path_unique",
+                    "COLUMN_NAME": "path",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "maintenance_photos_uploaded_by_foreign",
+                    "COLUMN_NAME": "uploaded_by",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "users",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "maintenance_requests",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_0900_ai_ci",
+            "TABLE_COMMENT": "Representative reports and owner processing results",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "submitted_by",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "representative_assignment_id",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "title",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(150)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "description",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "text",
+                    "COLUMN_TYPE": "text",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "status",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": "submitted",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(20)",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "resolution",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "text",
+                    "COLUMN_TYPE": "text",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Progress note while processing; final resolution when resolved",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "submitted_at",
+                    "ORDINAL_POSITION": 9,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "updated_at",
+                    "ORDINAL_POSITION": 10,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "revision",
+                    "ORDINAL_POSITION": 11,
+                    "COLUMN_DEFAULT": "0",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "fk_maintenance_requests_occupancy",
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "occupancies",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_maintenance_requests_representative",
+                    "COLUMN_NAME": "representative_assignment_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "representative_assignments",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_maintenance_requests_representative",
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": "representative_assignments",
+                    "REFERENCED_COLUMN_NAME": "occupancy_id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_maintenance_requests_sender",
+                    "COLUMN_NAME": "submitted_by",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "users",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "meter_readings",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_0900_ai_ci",
+            "TABLE_COMMENT": "Metered consumption over a non-overlapping service interval",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "occupancy_service_id",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "period_start",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "period_end",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "previous_reading",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "decimal",
+                    "COLUMN_TYPE": "decimal(15,3)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 15,
+                    "NUMERIC_SCALE": 3
+                },
+                {
+                    "COLUMN_NAME": "current_reading",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "decimal",
+                    "COLUMN_TYPE": "decimal(15,3)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 15,
+                    "NUMERIC_SCALE": 3
+                },
+                {
+                    "COLUMN_NAME": "consumption",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "decimal",
+                    "COLUMN_TYPE": "decimal(15,3)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "STORED GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 15,
+                    "NUMERIC_SCALE": 3
+                },
+                {
+                    "COLUMN_NAME": "recorded_by",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "recorded_at",
+                    "ORDINAL_POSITION": 9,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "fk_meter_readings_recorder",
+                    "COLUMN_NAME": "recorded_by",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "users",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_meter_readings_service",
+                    "COLUMN_NAME": "occupancy_service_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "occupancy_services",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_meter_readings_period",
+                    "COLUMN_NAME": "occupancy_service_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_meter_readings_period",
+                    "COLUMN_NAME": "period_start",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_meter_readings_period",
+                    "COLUMN_NAME": "period_end",
+                    "ORDINAL_POSITION": 3,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_meter_readings_source",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_meter_readings_source",
+                    "COLUMN_NAME": "occupancy_service_id",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "occupancies",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_0900_ai_ci",
+            "TABLE_COMMENT": "Group residence episode; not a rental contract",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "One group occupying one room over a continuous period",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "rental_group_id",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "previous_occupancy_id",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "room_id",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "started_at",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "ended_at",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "NULL means the occupancy has not ended",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "monthly_rent",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "decimal",
+                    "COLUMN_TYPE": "decimal(18,2)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Snapshot of the common monthly rent; transfers must retain the rate",
+                    "NUMERIC_PRECISION": 18,
+                    "NUMERIC_SCALE": 2
+                },
+                {
+                    "COLUMN_NAME": "active_room_id",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "STORED GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "created_at",
+                    "ORDINAL_POSITION": 9,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "updated_at",
+                    "ORDINAL_POSITION": 10,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "active_rental_group_id",
+                    "ORDINAL_POSITION": 11,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "STORED GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "fk_occupancies_group",
+                    "COLUMN_NAME": "rental_group_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "rental_groups",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_occupancies_previous_group",
+                    "COLUMN_NAME": "previous_occupancy_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "occupancies",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_occupancies_previous_group",
+                    "COLUMN_NAME": "rental_group_id",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": "occupancies",
+                    "REFERENCED_COLUMN_NAME": "rental_group_id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_occupancies_room",
+                    "COLUMN_NAME": "room_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "rooms",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_occupancies_active_group",
+                    "COLUMN_NAME": "active_rental_group_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_occupancies_active_room",
+                    "COLUMN_NAME": "active_room_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_occupancies_group_scope",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_occupancies_group_scope",
+                    "COLUMN_NAME": "rental_group_id",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_occupancies_previous",
+                    "COLUMN_NAME": "previous_occupancy_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "occupancy_services",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_0900_ai_ci",
+            "TABLE_COMMENT": "Time-dependent service configuration and price snapshots",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "service_id",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "effective_from",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "effective_until",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "unit_price",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "decimal",
+                    "COLUMN_TYPE": "decimal(18,4)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Price for this effective period",
+                    "NUMERIC_PRECISION": 18,
+                    "NUMERIC_SCALE": 4
+                },
+                {
+                    "COLUMN_NAME": "billing_method",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(20)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Snapshot of service billing method",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "unit",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(30)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Snapshot of service unit",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "active_service_id",
+                    "ORDINAL_POSITION": 9,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "STORED GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "created_at",
+                    "ORDINAL_POSITION": 10,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "fk_occupancy_services_occupancy",
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "occupancies",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_occupancy_services_service",
+                    "COLUMN_NAME": "service_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "services",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_occupancy_services_active",
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_occupancy_services_active",
+                    "COLUMN_NAME": "active_service_id",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_occupancy_services_scope",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_occupancy_services_scope",
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "payments",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_0900_ai_ci",
+            "TABLE_COMMENT": "Confirmed receipts; overpayment checked with an invoice row lock",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "invoice_id",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "amount",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "decimal",
+                    "COLUMN_TYPE": "decimal(18,2)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 18,
+                    "NUMERIC_SCALE": 2
+                },
+                {
+                    "COLUMN_NAME": "paid_at",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "payment_method",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(20)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "cash or bank_transfer; manually confirmed",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "idempotency_key",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(64)",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Unique request token; compare payload when replayed",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "recorded_by",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "recorded_at",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "fk_payments_invoice",
+                    "COLUMN_NAME": "invoice_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "invoices",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_payments_recorder",
+                    "COLUMN_NAME": "recorded_by",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "users",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_payments_idempotency",
+                    "COLUMN_NAME": "idempotency_key",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "rental_groups",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_0900_ai_ci",
+            "TABLE_COMMENT": "Group identity across internal whole-group room transfers",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "group_code",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(40)",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Stable code retained when the whole group moves rooms",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "created_at",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_rental_groups_code",
+                    "COLUMN_NAME": "group_code",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "representative_assignments",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_0900_ai_ci",
+            "TABLE_COMMENT": "Historical representative assignments; account eligibility checked by service",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Scope key checked against tenant_stay_id",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "tenant_stay_id",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "started_at",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "ended_at",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "active_occupancy_id",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "STORED GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "created_at",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "fk_representatives_stay",
+                    "COLUMN_NAME": "tenant_stay_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "tenant_stays",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_representatives_stay",
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": "tenant_stays",
+                    "REFERENCED_COLUMN_NAME": "occupancy_id"
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_representatives_active",
+                    "COLUMN_NAME": "active_occupancy_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_representatives_scope",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_representatives_scope",
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "room_occupancy_summary",
+            "TABLE_TYPE": "VIEW",
+            "ENGINE": null,
+            "TABLE_COLLATION": null,
+            "TABLE_COMMENT": "VIEW",
+            "columns": [
+                {
+                    "COLUMN_NAME": "room_id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": "0",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Room identifier",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "room_number",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(30)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Unique room number or code",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "capacity",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "smallint",
+                    "COLUMN_TYPE": "smallint unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Maximum number of residents",
+                    "NUMERIC_PRECISION": 5,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "operational_status",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": "available",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(20)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "available or maintenance; occupancy is derived",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "resident_count",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": "0",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 19,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "occupancy_status",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": "",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(11)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": []
+        },
+        {
+            "TABLE_NAME": "rooms",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_0900_ai_ci",
+            "TABLE_COMMENT": "Physical rooms; vacant\/occupied is calculated",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "Room identifier",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "room_number",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(30)",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Unique room number or code",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "capacity",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "smallint",
+                    "COLUMN_TYPE": "smallint unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Maximum number of residents",
+                    "NUMERIC_PRECISION": 5,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "default_monthly_rent",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "decimal",
+                    "COLUMN_TYPE": "decimal(18,2)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Common monthly room rate; equality across rooms is enforced by application",
+                    "NUMERIC_PRECISION": 18,
+                    "NUMERIC_SCALE": 2
+                },
+                {
+                    "COLUMN_NAME": "operational_status",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": "available",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(20)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "available or maintenance; occupancy is derived",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "created_at",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "updated_at",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_rooms_number",
+                    "COLUMN_NAME": "room_number",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "services",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_0900_ai_ci",
+            "TABLE_COMMENT": "Service catalog and default prices",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "service_code",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(40)",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "name",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(100)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "unit",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(30)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "For example kwh, m3 or room_month",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "billing_method",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(20)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "metered or per_room",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "default_unit_price",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "decimal",
+                    "COLUMN_TYPE": "decimal(18,4)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 18,
+                    "NUMERIC_SCALE": 4
+                },
+                {
+                    "COLUMN_NAME": "is_active",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": "1",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "tinyint",
+                    "COLUMN_TYPE": "tinyint(1)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 3,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "created_at",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "updated_at",
+                    "ORDINAL_POSITION": 9,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_services_code",
+                    "COLUMN_NAME": "service_code",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "tenant_stays",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_0900_ai_ci",
+            "TABLE_COMMENT": "Individual residence history inside a group occupancy",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "tenant_id",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "moved_in_at",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "moved_out_at",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "active_tenant_id",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "STORED GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "created_at",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "updated_at",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "fk_tenant_stays_occupancy",
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "occupancies",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "fk_tenant_stays_tenant",
+                    "COLUMN_NAME": "tenant_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_tenant_stays_active",
+                    "COLUMN_NAME": "active_tenant_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_tenant_stays_scope",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_tenant_stays_scope",
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "tenants",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_0900_ai_ci",
+            "TABLE_COMMENT": "All residents, including members without an account",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "Tenant profile identifier",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "full_name",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(150)",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Resident full name",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "phone_number",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(20)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Phone stored as text to preserve leading zeros",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "identity_number",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(30)",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Optional identity document number",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "created_at",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "updated_at",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_tenants_identity",
+                    "COLUMN_NAME": "identity_number",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "users",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_0900_ai_ci",
+            "TABLE_COMMENT": "Owner and tenant representative accounts",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "Application user identifier",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "tenant_id",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Tenant profile; mandatory for a tenant user",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "username",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(80)",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Unique login name",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "password_hash",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(255)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Password hash; never plaintext",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "role",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(20)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "owner or tenant",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "is_active",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": "1",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "tinyint",
+                    "COLUMN_TYPE": "tinyint(1)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 3,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "remember_token",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(100)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "Optional Laravel persistent-login token",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "created_at",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "updated_at",
+                    "ORDINAL_POSITION": 9,
+                    "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "fk_users_tenant",
+                    "COLUMN_NAME": "tenant_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_users_tenant",
+                    "COLUMN_NAME": "tenant_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "uq_users_username",
+                    "COLUMN_NAME": "username",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        }
+    ]
+}
