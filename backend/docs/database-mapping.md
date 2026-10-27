@@ -1,8 +1,14 @@
 # Ánh xạ CSDL rental_management
 
-Ban đầu kiểm tra MySQL 8.0.43 ngày 18/10/2026 với 16 bảng InnoDB và 3 view. Ngày 20/10/2026 đã bổ sung 3 bảng nghiệp vụ, hiện có 19 model/70 quan hệ và 3 view; bảng `migrations` theo dõi nâng cấp. Các bảng nghiệp vụ dùng khóa chính `id` BIGINT UNSIGNED AUTO_INCREMENT. Bản chụp schema đã cập nhật cấu trúc hiện tại.
+Cập nhật 25/10/2026: **23 bảng nghiệp vụ/23 model, 81 quan hệ và 3 view**. Bảng `maintenance_request_histories` → `MaintenanceRequestHistory` giữ nhật ký cập nhật, FK đến yêu cầu và tài khoản thực hiện. [Quy tắc lịch sử sửa chữa](maintenance-history.md). Các số liệu theo ngày bên dưới mô tả các đợt trước.
+
+Cập nhật 24/10/2026: sau kiểm soát hóa đơn và thông báo chung, hiện có **22 bảng nghiệp vụ/22 model, 78 quan hệ và 3 view**. `announcements` → `Announcement` lưu nội dung/phạm vi gửi; `app_notifications.announcement_id` liên kết thông báo cá nhân và thời điểm đọc. [Chi tiết thông báo chung](announcements.md). Các số liệu theo ngày bên dưới mô tả lịch sử nâng cấp.
+
+Ban đầu kiểm tra MySQL 8.0.43 ngày 18/10/2026 với 16 bảng InnoDB và 3 view. Ngày 20/10/2026 đã bổ sung 4 bảng nghiệp vụ, hiện có 20 model/72 quan hệ và 3 view; bảng `migrations` theo dõi nâng cấp. Các bảng nghiệp vụ dùng khóa chính `id` BIGINT UNSIGNED AUTO_INCREMENT. Bản chụp schema đã cập nhật cấu trúc hiện tại.
 
 Phần bảng dưới đây mô tả 16 bảng gốc. Sau nâng cấp, `cash_transactions` thêm `revision` và `deleted_at`, `maintenance_requests` thêm `revision`; ba model/bảng mới là `CashTransactionHistory`/`cash_transaction_histories`, `MaintenancePhoto`/`maintenance_photos`, `AppNotification`/`app_notifications`. Chi tiết hành vi, migration và dữ liệu thêm tại [nhật ký/ảnh/thông báo](audit-photos-notifications.md).
+
+Bảng thứ tư bổ sung là `cash_creation_requests` → `CashCreationRequest`, lưu yêu cầu gốc và khóa chống trùng, liên kết `cash_transactions` và `users` bằng hai quan hệ belongsTo. Xem [chống gửi trùng thu chi](cash-idempotency.md).
 
 ## Model và thời gian
 

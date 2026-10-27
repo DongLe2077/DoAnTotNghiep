@@ -53,6 +53,8 @@ abstract class OwnerRequest extends FormRequest
             'unit_price' => 'Đơn giá áp dụng',
             'username' => 'Tên đăng nhập',
             'password' => 'Mật khẩu',
+            'reason' => 'Lý do',
+            'due_date' => 'Hạn thanh toán',
         ];
     }
 

@@ -15,7 +15,7 @@ class NotificationIndexRequest extends FormRequest
     public function rules(): array
     {
         return ['unread_only' => ['sometimes', 'boolean'],
-            'type' => ['sometimes', Rule::in(['invoice_reminder', 'maintenance_submitted', 'maintenance_updated'])],
+            'type' => ['sometimes', Rule::in(['invoice_reminder', 'invoice_updated', 'maintenance_submitted', 'maintenance_updated', 'owner_announcement'])],
             'page' => ['sometimes', 'integer', 'min:1'], 'per_page' => ['sometimes', 'integer', 'between:1,100']];
     }
 }

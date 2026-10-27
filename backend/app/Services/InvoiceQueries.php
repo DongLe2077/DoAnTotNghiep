@@ -11,7 +11,7 @@ class InvoiceQueries
     public function query(array $filters = [], ?int $tenantUserId = null, bool $detail = false): Builder
     {
         $query = Invoice::query()->select('invoices.*', 'balances.item_count', 'balances.total_amount',
-            'balances.paid_amount', 'balances.outstanding_amount', 'balances.payment_status')
+            'balances.paid_amount', 'balances.outstanding_amount', 'balances.payment_status', 'balances.original_amount', 'balances.adjustment_amount')
             ->join('invoice_balances as balances', 'balances.invoice_id', '=', 'invoices.id')
             ->with('occupancy.room', 'occupancy.rentalGroup');
 
@@ -35,10 +35,19 @@ class InvoiceQueries
         if (isset($filters['payment_status'])) {
             $query->where('balances.payment_status', $filters['payment_status']);
         }
+        if (isset($filters['due_status'])) {
+            $query->whereIn('balances.payment_status', ['unpaid', 'partially_paid'])->where('balances.outstanding_amount', '>', 0);
+            match ($filters['due_status']) {
+                'not_set' => $query->whereNull('invoices.due_date'),
+                'overdue' => $query->where('invoices.due_date', '<', now()->format('Y-m-d')),
+                default => $query->where('invoices.due_date', '>=', now()->format('Y-m-d')),
+            };
+        }
         if ($detail) {
             $query->with([
                 'items' => fn ($items) => $items->with('occupancyService.service', 'meterReading')->orderBy('id'),
                 'payments' => fn ($payments) => $payments->orderBy('paid_at')->orderBy('id'),
+                'changes' => fn ($changes) => $changes->with('performedBy')->orderBy('revision'),
             ]);
             if ($tenantUserId === null) {
                 $query->with(['accessGrants' => fn ($grants) => $grants->orderBy('granted_at')->orderBy('id')]);

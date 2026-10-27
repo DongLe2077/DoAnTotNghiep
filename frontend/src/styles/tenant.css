@@ -1,0 +1,19 @@
+.tenant-page { max-width: 1000px; }
+.tenant-page .ui-notice { margin-top: 20px; }
+.tenant-room-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; background: var(--color-primary-soft); }
+.tenant-room-hero h2 { font-size: 32px; margin: 18px 0 8px; }
+.tenant-room-hero p { margin: 8px 0; }
+.tenant-rent { display: grid; gap: 12px; }
+.tenant-rent > span { font-size: 14px; color: var(--color-text-secondary); }
+.tenant-rent > strong { font-size: 30px; color: var(--color-primary); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.tenant-rent > small { font-size: 13px; color: var(--color-text-secondary); line-height: 1.7; }
+.tenant-quick-links { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0; }
+.tenant-quick-links a { display: flex; flex: 1; min-width: 160px; align-items: center; justify-content: space-between; gap: 12px; padding: 18px; border-radius: 12px; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-primary); font-size: 14px; font-weight: 600; text-decoration: none; }
+.tenant-quick-links a:hover { background: var(--color-primary-soft); border-color: var(--color-primary); }
+.tenant-total { font-size: 24px; font-weight: 650; color: var(--color-primary); }
+.tenant-description { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; font-size: 14px; }
+.tenant-page textarea.ui-input { min-height: 150px; resize: vertical; }
+.tenant-form { max-width: 760px; }
+.tenant-form .form-grid > fieldset { display: grid; gap: 20px; }
+.tenant-primary-link { display: inline-flex; align-items: center; min-height: 44px; padding: 11px 18px; border-radius: 10px; color: white; background: var(--color-primary); font-size: 14px; font-weight: 600; text-decoration: none; }
+@media (max-width: 700px) { .tenant-room-hero { grid-template-columns: 1fr; gap: 20px; } .tenant-rent { border-top: 1px solid var(--color-border); padding-top: 20px; } .tenant-rent > strong { font-size: 27px; } .tenant-quick-links { flex-direction: column; } }

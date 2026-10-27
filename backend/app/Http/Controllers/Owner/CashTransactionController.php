@@ -29,8 +29,10 @@ class CashTransactionController extends Controller
 
     public function store(SaveCashTransactionRequest $request): JsonResponse
     {
-        return response()->json(['message' => 'Đã ghi nhận khoản thu chi.',
-            'data' => new CashTransactionResource($this->book->create($request->validated(), $request->user('web')->id))], 201);
+        $result = $this->book->record($request->validated(), $request->user('web')->id);
+
+        return response()->json(['message' => $result['replayed'] ? 'Yêu cầu đã được ghi nhận trước đó.' : 'Đã ghi nhận khoản thu chi.',
+            'replayed' => $result['replayed'], 'data' => new CashTransactionResource($result['transaction'])], $result['replayed'] ? 200 : 201);
     }
 
     public function show(CashTransaction $cashTransaction): CashTransactionResource

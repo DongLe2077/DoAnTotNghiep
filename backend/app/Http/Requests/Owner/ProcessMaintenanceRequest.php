@@ -15,6 +15,8 @@ class ProcessMaintenanceRequest extends OwnerRequest
             'occupancy_id' => ['prohibited'], 'submitted_by' => ['prohibited'],
             'representative_assignment_id' => ['prohibited'], 'title' => ['prohibited'],
             'description' => ['prohibited'], 'submitted_at' => ['prohibited'], 'updated_at' => ['prohibited'],
+            'performed_by' => ['prohibited'], 'actor_username' => ['prohibited'], 'actor_role' => ['prohibited'],
+            'created_at' => ['prohibited'], 'histories' => ['prohibited'],
         ];
     }
 

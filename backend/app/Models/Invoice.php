@@ -20,6 +20,9 @@ class Invoice extends Model
         'billing_month',
         'representative_assignment_id',
         'issued_by',
+        'due_date',
+        'revision',
+        'cancelled_at',
     ];
 
     protected function casts(): array
@@ -31,6 +34,9 @@ class Invoice extends Model
             'representative_assignment_id' => 'integer',
             'issued_by' => 'integer',
             'issued_at' => 'datetime',
+            'due_date' => 'date',
+            'revision' => 'integer',
+            'cancelled_at' => 'datetime',
         ];
     }
 
@@ -62,5 +68,10 @@ class Invoice extends Model
     public function accessGrants(): HasMany
     {
         return $this->hasMany(InvoiceAccessGrant::class, 'invoice_id', 'id');
+    }
+
+    public function changes(): HasMany
+    {
+        return $this->hasMany(InvoiceChange::class);
     }
 }

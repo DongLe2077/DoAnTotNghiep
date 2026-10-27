@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Owner;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\MaintenanceHistoryIndexRequest;
 use App\Http\Requests\Owner\MaintenanceIndexRequest;
 use App\Http\Requests\Owner\ProcessMaintenanceRequest;
 use App\Http\Resources\MaintenanceRequestResource;
@@ -30,9 +31,14 @@ class MaintenanceRequestController extends Controller
 
     public function update(ProcessMaintenanceRequest $request, MaintenanceRequest $maintenanceRequest): JsonResponse
     {
-        $report = $this->management->process($maintenanceRequest, $request->validated());
+        $report = $this->management->process($maintenanceRequest, $request->validated(), $request->user('web'));
 
         return response()->json(['message' => 'Đã cập nhật xử lý yêu cầu sửa chữa.',
             'data' => new MaintenanceRequestResource($this->management->query()->findOrFail($report->id))]);
+    }
+
+    public function history(MaintenanceHistoryIndexRequest $request, MaintenanceRequest $maintenanceRequest)
+    {
+        return $this->management->history($maintenanceRequest, $request->validated('per_page', 10));
     }
 }

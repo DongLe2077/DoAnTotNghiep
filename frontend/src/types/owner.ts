@@ -1,0 +1,10 @@
+import type { User } from './auth'
+export interface PageResult<T> { data: T[]; meta: { current_page: number; last_page: number; total: number } }
+export interface Room { id: number; room_number: string; capacity: number; resident_count: number; default_monthly_rent: string; operational_status: 'available' | 'maintenance'; occupancy_status: 'vacant' | 'occupied' | 'maintenance'; can_delete: boolean }
+export interface Service { id: number; service_code: string; name: string; unit: string; billing_method: 'metered' | 'per_room'; default_unit_price: string; is_active: boolean; can_delete: boolean }
+export interface Stay { id: number; occupancy_id: number; tenant_id: number; tenant?: { id: number; full_name: string; phone_number: string }; room?: { id: number; room_number: string }; moved_in_at: string; moved_out_at: string | null; is_active: boolean }
+export interface Tenant { id: number; full_name: string; phone_number: string; identity_number: string | null; account: User | null; current_stay: Stay | null; history_count: number; can_delete: boolean }
+export interface Group { id: number; group_code: string; history_count: number; can_delete: boolean }
+export interface ServicePeriod { id: number; service_id: number; service: { id: number; name: string }; unit_price: string; unit: string; billing_method: 'metered' | 'per_room'; effective_from: string; effective_until: string | null; is_active: boolean }
+export interface Representative { id: number; tenant_stay_id: number; tenant: { id: number; full_name: string }; started_at: string; ended_at: string | null; is_active: boolean }
+export interface Occupancy { id: number; room_id: number; rental_group_id: number; room: { id: number; room_number: string; capacity: number }; group: { id: number; group_code: string }; started_at: string; ended_at: string | null; monthly_rent: string; resident_count: number; is_active: boolean; previous_occupancy_id: number | null; next_occupancy_id: number | null; members?: Stay[]; representatives?: Representative[]; services?: ServicePeriod[] }

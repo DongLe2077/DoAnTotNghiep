@@ -6,6 +6,7 @@ use App\Models\CashTransaction;
 use App\Models\CashTransactionHistory;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\Concerns\CreatesCashBookSchema;
 use Tests\TestCase;
 
@@ -136,7 +137,7 @@ class CashTransactionHistoryTest extends TestCase
 
     private function createEntry(): array
     {
-        return $this->postJson('/api/owner/cash-transactions', ['transaction_type' => 'expense', 'amount' => '10.10',
+        return $this->postJson('/api/owner/cash-transactions', ['idempotency_key' => (string) Str::uuid(), 'transaction_type' => 'expense', 'amount' => '10.10',
             'occurred_at' => '2026-03-01 10:00:00', 'description' => 'Chi sửa chữa'])->assertCreated()->json('data');
     }
 }

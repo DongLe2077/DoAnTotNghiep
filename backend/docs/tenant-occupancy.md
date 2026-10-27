@@ -1,6 +1,6 @@
 # API người thuê và quá trình thuê
 
-Đã triển khai backend trên 16 bảng hiện có; không chạy migration hoặc thêm bảng. Tất cả API dưới đây thuộc `/api/owner`, yêu cầu tài khoản `owner` đang hoạt động. Giữ session cookie và gửi CSRF cho request ghi theo [hướng dẫn đăng nhập](authentication.md). Giao diện frontend chưa được xây.
+Đã triển khai backend trên các bảng nghiệp vụ hiện có và [giao diện CT2–CT3](../../frontend/docs/owner-management.md); không thêm bảng cho gói giao diện. Tất cả API dưới đây thuộc `/api/owner`, yêu cầu tài khoản `owner` đang hoạt động. Giữ session cookie và gửi CSRF cho request ghi theo [hướng dẫn đăng nhập](authentication.md).
 
 ## Hồ sơ và tài khoản
 

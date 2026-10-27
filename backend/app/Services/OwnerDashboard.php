@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
 class OwnerDashboard
@@ -40,7 +41,30 @@ class OwnerDashboard
                 'invoices' => $this->invoices->summary(['billing_month' => $month]),
                 'receivables' => $this->invoices->summary(),
                 'cash_flow' => $this->cash->summary(['month' => $month]),
+                'monthly_series' => $this->monthlySeries($month),
             ];
         });
+    }
+
+    private function monthlySeries(string $month): array
+    {
+        $end = CarbonImmutable::createFromFormat('!Y-m', $month, config('app.timezone'));
+        $start = $end->subMonths(5)->max(CarbonImmutable::create(1000, 1, 1, 0, 0, 0, config('app.timezone')));
+        $invoices = $this->invoices->monthlySeries($start->format('Y-m-d'), $end->endOfMonth()->format('Y-m-d'));
+        $cash = collect($this->cash->summary(['from' => $start->format('Y-m-d H:i:s'),
+            'until' => $end->endOfMonth()->format('Y-m-d H:i:s'), 'group_by' => 'month'])['periods'])->keyBy('period');
+        $series = [];
+        for ($date = $start; $date->lessThanOrEqualTo($end); $date = $date->addMonth()) {
+            $key = $date->format('Y-m');
+            $period = $cash->get($key);
+            $series[] = ['month' => $key, ...($invoices[$key] ?? [
+                'invoice_count' => 0, 'inconsistent_count' => 0, 'invoice_total' => '0.00',
+                'invoice_paid' => '0.00', 'invoice_outstanding' => '0.00',
+            ]), 'cash_income' => $period['total_income'] ?? '0.00',
+                'cash_expense' => $period['expense_total'] ?? '0.00',
+                'cash_net' => $period['net_cash_flow'] ?? '0.00'];
+        }
+
+        return $series;
     }
 }

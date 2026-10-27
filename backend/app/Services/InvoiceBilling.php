@@ -37,6 +37,7 @@ class InvoiceBilling
                     'invoice_number' => 'HD-'.str_replace('-', '', $data['billing_month']).'-'.$locked->id,
                     'occupancy_id' => $locked->id, 'billing_month' => $data['billing_month'].'-01',
                     'representative_assignment_id' => $preview['representative_assignment_id'], 'issued_by' => $actorId,
+                    'due_date' => $data['due_date'] ?? null,
                 ]);
                 foreach ($preview['items'] as $line) {
                     InvoiceItem::create(['invoice_id' => $invoice->id, 'occupancy_id' => $locked->id] + array_intersect_key($line, array_flip([

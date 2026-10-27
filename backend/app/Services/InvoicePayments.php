@@ -48,6 +48,7 @@ class InvoicePayments
                 if ($existing !== null) {
                     return $this->replay($existing, $locked, $values, $actorId);
                 }
+                abort_if($locked->cancelled_at !== null, 409, 'Hóa đơn đã hủy, không thể ghi nhận thu tiền.');
                 if (CarbonImmutable::parse($values['paid_at'], config('app.timezone'))->lessThan($locked->issued_at)) {
                     throw ValidationException::withMessages(['paid_at' => 'Thời điểm thu tiền phải từ lúc phát hành hóa đơn trở đi.']);
                 }
@@ -60,6 +61,10 @@ class InvoicePayments
                     abort_if($item->line_total === null || BigDecimal::of($item->line_total)->isNegative(), 409, 'Hóa đơn có dòng tính tiền không hợp lệ.');
                     $total = $total->plus($item->line_total);
                 }
+                foreach ($locked->changes()->where('action', 'adjustment')->orderBy('revision')->lockForUpdate()->get() as $change) {
+                    $total = $total->plus($change->amount);
+                }
+                abort_if($total->isNegative(), 409, 'Tổng sau điều chỉnh không hợp lệ.');
                 $paid = BigDecimal::zero()->toScale(2);
                 foreach ($locked->payments()->orderBy('id')->lockForUpdate()->get() as $payment) {
                     abort_unless(BigDecimal::of($payment->amount)->isPositive(), 409, 'Lịch sử thu tiền không hợp lệ, cần kiểm tra dữ liệu.');

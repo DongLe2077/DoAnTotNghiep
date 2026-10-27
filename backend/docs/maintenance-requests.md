@@ -81,7 +81,7 @@ Kết quả khi hoàn tất bắt buộc không rỗng, tối đa 8.000 ký tự
 
 Cập nhật thành công trả 200 với token mới. Token sai định dạng/thiếu trả 422; token đã cũ hoặc thuộc yêu cầu khác trả 409 và cần đọc lại. Việc kiểm tra thực hiện dưới khóa bản ghi trong transaction để tránh ghi đè khi nhiều phiên cùng xử lý.
 
-Chủ trọ không được sửa người gửi, đợt thuê, đại diện gốc, tiêu đề/mô tả gốc hoặc các mốc thời gian. Không có API xóa yêu cầu hoặc sửa lại yêu cầu đã hoàn tất. Bảng hiện lưu trạng thái, nội dung xử lý gần nhất và thời điểm cập nhật; chưa có nhật ký riêng của từng lần đổi trạng thái.
+Chủ trọ không được sửa người gửi, đợt thuê, đại diện gốc, tiêu đề/mô tả gốc hoặc các mốc thời gian. Không có API xóa yêu cầu hoặc sửa lại yêu cầu đã hoàn tất. Bảng chính lưu trạng thái/nội dung gần nhất; từ 25/10/2026 đã có [nhật ký từng lần cập nhật](maintenance-history.md), gồm trạng thái/ghi chú trước sau, tài khoản thực hiện và thời điểm. Dữ liệu cũ có mốc trạng thái hiện có, không dựng lại quá khứ.
 
 ## Lọc và phân trang
 
@@ -106,7 +106,7 @@ Các mốc thời gian theo `Asia/Ho_Chi_Minh`. Có thể chỉ gửi một mố
 - [Quá trình thuê](tenant-occupancy.md) chặn chuyển/trả phòng lùi trước thời điểm đã gửi yêu cầu để giữ đúng lịch sử. Thời gian xử lý về sau không đổi thời gian gửi gốc.
 - Gửi báo hỏng hoặc hoàn tất không tự đặt/bỏ trạng thái bảo trì phòng. Chủ trọ dùng [quản lý phòng](rooms-services.md) khi cần thay đổi trạng thái vận hành.
 - Không tự tạo hóa đơn hoặc chi phí từ trạng thái sửa chữa. Khoản chi thực tế ghi riêng qua [quản lý thu chi](cash-book.md), có thể ghi mã yêu cầu trong mô tả để đối chiếu.
-- Đã có [ảnh riêng tư và thông báo trong ứng dụng](audit-photos-notifications.md). Chưa có phân công thợ, thông báo email/SMS/Zalo hoặc màn hình frontend.
+- Đã có [ảnh riêng tư và thông báo trong ứng dụng](audit-photos-notifications.md), giao diện chủ trọ xem ảnh/cập nhật/hoàn tất, cùng [giao diện người thuê gửi báo hỏng/ảnh và theo dõi](../../frontend/docs/tenant-self-test.md). Tạo yêu cầu trước rồi tải ảnh; ảnh lỗi thử lại riêng, không tạo lại nội dung báo hỏng. Chưa có phân công thợ hoặc thông báo email/SMS/Zalo.
 
 ## Kiểm thử
 

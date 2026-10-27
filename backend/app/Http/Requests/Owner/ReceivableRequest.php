@@ -14,6 +14,7 @@ class ReceivableRequest extends OwnerRequest
             'occupancy_id' => ['sometimes', 'integer', 'min:1'],
             'rental_group_id' => ['sometimes', 'integer', 'min:1'],
             'group_by' => ['sometimes', Rule::in(['room', 'rental_group'])],
+            'due_status' => ['sometimes', Rule::in(['overdue', 'upcoming', 'not_set'])],
             'page' => ['sometimes', 'integer', 'min:1'],
             'per_page' => ['sometimes', 'integer', 'between:1,100'],
         ];

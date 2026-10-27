@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Http\Resources\MaintenanceHistoryResource;
 use App\Models\MaintenanceRequest;
+use App\Models\MaintenanceRequestHistory;
 use App\Models\Occupancy;
 use App\Models\RentalGroup;
 use App\Models\RepresentativeAssignment;
@@ -97,16 +99,20 @@ class MaintenanceManagement
                 'title' => $data['title'], 'description' => $data['description'],
                 'status' => 'submitted', 'resolution' => null,
             ]);
+            $report->refresh();
+            $this->recordHistory($report, 'submitted', null, null, $account, $report->submitted_at);
             $this->notifications->maintenanceSubmitted($report);
 
             return ['request' => $report->refresh(), 'replayed' => false];
         }, 3);
     }
 
-    public function process(MaintenanceRequest $report, array $data): MaintenanceRequest
+    public function process(MaintenanceRequest $report, array $data, User $actor): MaintenanceRequest
     {
-        return DB::transaction(function () use ($report, $data) {
+        return DB::transaction(function () use ($report, $data, $actor) {
             $this->lockContext(Occupancy::query()->findOrFail($report->occupancy_id));
+            $account = User::query()->lockForUpdate()->findOrFail($actor->id);
+            abort_unless($account->is_active && $account->hasRole(User::ROLE_OWNER), 403, 'Tài khoản không còn quyền cập nhật sửa chữa.');
             $locked = MaintenanceRequest::query()->lockForUpdate()->findOrFail($report->id);
             abort_unless(hash_equals(self::version($locked), $data['version_token']), 409, 'Yêu cầu đã thay đổi. Hãy tải lại trước khi cập nhật xử lý.');
             abort_if($locked->status === 'resolved', 409, 'Yêu cầu đã hoàn tất; kết quả được giữ nguyên. Sự cố mới cần gửi yêu cầu mới.');
@@ -115,16 +121,41 @@ class MaintenanceManagement
             if (array_key_exists('resolution', $data)) {
                 $values['resolution'] = $data['resolution'];
             }
+            $beforeStatus = $locked->status;
+            $beforeResolution = $locked->resolution;
             $locked->fill($values);
             if (! $locked->isDirty()) {
                 return $locked;
             }
+            if (! $locked->histories()->exists()) {
+                // Covers imported rows without inventing who made their earlier updates.
+                MaintenanceRequestHistory::create(['maintenance_request_id' => $locked->id, 'revision' => $locked->revision,
+                    'action' => 'baseline', 'after_status' => $beforeStatus, 'after_resolution' => $beforeResolution,
+                    'created_at' => now()->startOfSecond()]);
+            }
             $locked->revision++;
             $locked->save();
+            $this->recordHistory($locked, 'updated', $beforeStatus, $beforeResolution, $account, now()->startOfSecond());
             $this->notifications->maintenanceUpdated($locked);
 
             return $locked->refresh();
         }, 3);
+    }
+
+    public function history(MaintenanceRequest $report, int $perPage = 10)
+    {
+        $baseline = $report->histories()->where('action', 'baseline')->toBase()->value('created_at');
+
+        return MaintenanceHistoryResource::collection($report->histories()->orderByDesc('id')->paginate($perPage)->withQueryString())
+            ->additional(['history_context' => ['baseline_recorded_at' => $baseline]]);
+    }
+
+    private function recordHistory(MaintenanceRequest $report, string $action, ?string $beforeStatus, ?string $beforeResolution, User $actor, $at): void
+    {
+        MaintenanceRequestHistory::create(['maintenance_request_id' => $report->id, 'revision' => $report->revision,
+            'action' => $action, 'before_status' => $beforeStatus, 'after_status' => $report->status,
+            'before_resolution' => $beforeResolution, 'after_resolution' => $report->resolution,
+            'performed_by' => $actor->id, 'actor_username' => $actor->username, 'actor_role' => $actor->role, 'created_at' => $at]);
     }
 
     public static function version(MaintenanceRequest $report): string

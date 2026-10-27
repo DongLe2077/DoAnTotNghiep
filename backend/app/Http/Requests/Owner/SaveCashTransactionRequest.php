@@ -14,12 +14,15 @@ class SaveCashTransactionRequest extends OwnerRequest
             'occurred_at' => ['required', 'date_format:Y-m-d H:i:s', 'before_or_equal:now', 'after_or_equal:1000-01-01 00:00:00'],
             'description' => ['required', 'string', 'max:255'],
         ];
-        if (! $this->isMethod('POST')) {
+        if ($this->isMethod('POST')) {
+            $fields['idempotency_key'] = ['required', 'string', 'regex:/^[A-Za-z0-9][A-Za-z0-9._:-]{7,63}$/D'];
+        } else {
             foreach ($fields as &$rules) {
                 array_unshift($rules, 'sometimes');
             }
             unset($rules);
             $fields['version_token'] = ['required', 'string', 'regex:/^[a-f0-9]{64}$/D'];
+            $fields['idempotency_key'] = ['prohibited'];
         }
 
         return $fields + [
@@ -35,6 +38,7 @@ class SaveCashTransactionRequest extends OwnerRequest
         return parent::attributes() + [
             'transaction_type' => 'Loại khoản thu chi', 'amount' => 'Số tiền', 'occurred_at' => 'Thời điểm phát sinh',
             'description' => 'Nội dung thu chi', 'version_token' => 'Phiên bản khoản thu chi',
+            'idempotency_key' => 'Mã yêu cầu thu chi',
         ];
     }
 

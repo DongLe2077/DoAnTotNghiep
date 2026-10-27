@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Owner;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Owner\ChangeInvoiceRequest;
 use App\Http\Requests\Owner\GrantInvoiceAccessRequest;
 use App\Http\Requests\Owner\InvoiceIndexRequest;
 use App\Http\Resources\InvoiceResource;
 use App\Models\Invoice;
 use App\Services\InvoiceAccessManager;
+use App\Services\InvoiceControls;
 use App\Services\InvoiceQueries;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -27,6 +29,13 @@ class InvoiceController extends Controller
     public function show(Invoice $invoice): InvoiceResource
     {
         return $this->resource($invoice);
+    }
+
+    public function change(ChangeInvoiceRequest $request, Invoice $invoice, InvoiceControls $controls): JsonResponse
+    {
+        $result = $controls->change($invoice, $request->validated(), $request->user('web')->id);
+
+        return response()->json(['replayed' => $result['replayed'], 'data' => $this->resource($result['invoice'])]);
     }
 
     public function access(GrantInvoiceAccessRequest $request, Invoice $invoice): JsonResponse

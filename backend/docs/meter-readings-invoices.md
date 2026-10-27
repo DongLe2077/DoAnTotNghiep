@@ -1,6 +1,6 @@
 # Chỉ số điện nước và hóa đơn
 
-Đã triển khai API backend trên các bảng và view hiện có. Chủ trọ ghi chỉ số theo từng đợt thuê, xem trước tiền phòng/dịch vụ rồi phát hành hóa đơn tháng. Người thuê chỉ xem hóa đơn được cấp quyền riêng. Frontend chưa được xây dựng.
+Đã triển khai API backend và giao diện chủ trọ/người thuê trên các bảng và view hiện có. Chủ trọ ghi chỉ số theo từng đợt thuê, xem trước tiền phòng/dịch vụ rồi phát hành hóa đơn tháng. Người thuê chỉ xem hóa đơn được cấp quyền riêng. Xem [hướng dẫn tự kiểm tra](../../frontend/docs/owner-self-test.md).
 
 ## Chuẩn bị và thứ tự thao tác
 

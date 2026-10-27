@@ -1,6 +1,6 @@
 # Quản lý phòng và dịch vụ
 
-Đã triển khai API backend. Các đường dẫn dưới đây yêu cầu phiên đăng nhập của chủ trọ `owner`, tài khoản còn hoạt động. Người thuê bị chặn với HTTP 403; request ghi dữ liệu cần CSRF như hướng dẫn [đăng nhập](authentication.md). Frontend riêng chưa được xây ở bước này.
+Đã triển khai API backend và [giao diện CT1](../../frontend/docs/owner-management.md). Các đường dẫn dưới đây yêu cầu phiên đăng nhập của chủ trọ `owner`, tài khoản còn hoạt động. Người thuê bị chặn với HTTP 403; request ghi dữ liệu cần CSRF như hướng dẫn [đăng nhập](authentication.md).
 
 ## Phòng
 

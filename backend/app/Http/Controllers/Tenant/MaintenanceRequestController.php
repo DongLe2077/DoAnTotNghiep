@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\MaintenanceHistoryIndexRequest;
 use App\Http\Requests\Tenant\MaintenanceIndexRequest;
 use App\Http\Requests\Tenant\StoreMaintenanceRequest;
 use App\Http\Resources\MaintenanceRequestResource;
+use App\Models\MaintenanceRequest;
 use App\Services\MaintenanceManagement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -34,6 +36,13 @@ class MaintenanceRequestController extends Controller
     public function show(Request $request, string $maintenanceRequest): MaintenanceRequestResource
     {
         return new MaintenanceRequestResource($this->management->query(authorId: $request->user('web')->id)->findOrFail($maintenanceRequest));
+    }
+
+    public function history(MaintenanceHistoryIndexRequest $request, string $maintenanceRequest)
+    {
+        $report = MaintenanceRequest::query()->where('submitted_by', $request->user('web')->id)->findOrFail($maintenanceRequest);
+
+        return $this->management->history($report, $request->validated('per_page', 10));
     }
 
     public function store(StoreMaintenanceRequest $request, string $occupancy): JsonResponse

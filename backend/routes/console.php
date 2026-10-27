@@ -4,7 +4,7 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('rental:remind-invoices')->dailyAt('08:00')->timezone(config('app.timezone'))->withoutOverlapping();
+Schedule::command('rental:remind-invoices --overdue')->dailyAt('08:00')->timezone(config('app.timezone'))->withoutOverlapping();
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());

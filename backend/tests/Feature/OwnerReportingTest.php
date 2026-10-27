@@ -195,6 +195,69 @@ class OwnerReportingTest extends TestCase
         }
     }
 
+    public function test_monthly_charts_fill_empty_months_and_handle_year_boundaries(): void
+    {
+        $response = $this->getJson('/api/owner/dashboard?month=2026-03')->assertOk()->assertJsonCount(6, 'data.monthly_series');
+        $this->assertSame(['2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03'], array_column($response->json('data.monthly_series'), 'month'));
+        foreach ($response->json('data.monthly_series') as $point) {
+            $this->assertSame(0, $point['invoice_count']);
+            foreach (['invoice_total', 'invoice_paid', 'invoice_outstanding', 'cash_income', 'cash_expense', 'cash_net'] as $key) {
+                $this->assertSame('0.00', $point[$key]);
+            }
+        }
+        $this->getJson('/api/owner/dashboard?month=1000-01')->assertOk()->assertJsonCount(1, 'data.monthly_series')
+            ->assertJsonPath('data.monthly_series.0.month', '1000-01');
+        $this->getJson('/api/owner/dashboard?month=9999-12')->assertOk()->assertJsonCount(6, 'data.monthly_series')
+            ->assertJsonPath('data.monthly_series.5.month', '9999-12');
+    }
+
+    public function test_monthly_charts_keep_billing_period_and_cash_date_distinct_and_exclude_bad_or_deleted_money(): void
+    {
+        $old = $this->invoice('100.10', '2026-01-01');
+        $this->pay($old, '25.05', '2026-03-01 10:00:00');
+        $this->invoice('200.20', '2026-03-01');
+        $bad = $this->invoice('10.00', '2026-02-01');
+        $this->pay($bad, '11.00', '2026-02-01 10:00:00');
+        $this->invoice('55.00', '2025-09-01');
+        $this->invoice('77.00', '2026-04-01');
+        CashTransaction::create(['transaction_type' => 'other_income', 'amount' => '5.00', 'occurred_at' => '2026-01-02', 'description' => 'Thu khác', 'recorded_by' => $this->owner->id]);
+        CashTransaction::create(['transaction_type' => 'expense', 'amount' => '40.00', 'occurred_at' => '2026-03-02', 'description' => 'Chi', 'recorded_by' => $this->owner->id]);
+        $deleted = CashTransaction::create(['transaction_type' => 'expense', 'amount' => '900.00', 'occurred_at' => '2026-03-02', 'description' => 'Đã xóa', 'recorded_by' => $this->owner->id]);
+        $deleted->delete();
+        $response = $this->getJson('/api/owner/dashboard?month=2026-03')->assertOk();
+        $series = collect($response->json('data.monthly_series'))->keyBy('month');
+        $this->assertSame('100.10', $series['2026-01']['invoice_total']);
+        $this->assertSame('25.05', $series['2026-01']['invoice_paid']);
+        $this->assertSame('75.05', $series['2026-01']['invoice_outstanding']);
+        $this->assertSame('5.00', $series['2026-01']['cash_income']);
+        $this->assertSame(1, $series['2026-02']['inconsistent_count']);
+        $this->assertSame('0.00', $series['2026-02']['invoice_total']);
+        $this->assertSame('11.00', $series['2026-02']['cash_income']);
+        $this->assertSame('200.20', $series['2026-03']['invoice_total']);
+        $this->assertSame('0.00', $series['2026-03']['invoice_paid']);
+        $this->assertSame('25.05', $series['2026-03']['cash_income']);
+        $this->assertSame('40.00', $series['2026-03']['cash_expense']);
+        $this->assertSame('-14.95', $series['2026-03']['cash_net']);
+        $this->assertFalse($series->has('2025-09'));
+        $this->assertFalse($series->has('2026-04'));
+        $this->assertSame($response->json('data.invoices.total_amount'), $series['2026-03']['invoice_total']);
+        $this->assertSame($response->json('data.cash_flow.total_income'), $series['2026-03']['cash_income']);
+    }
+
+    public function test_monthly_chart_totals_do_not_multiply_lines_or_payments_and_retain_cents(): void
+    {
+        $invoice = $this->invoice('123456789012.34', '2026-03-01');
+        InvoiceItem::create(['invoice_id' => $invoice->id, 'occupancy_id' => $invoice->occupancy_id,
+            'item_type' => 'service', 'description' => 'Dịch vụ', 'unit' => 'phòng', 'quantity' => '1', 'unit_price' => '0.01']);
+        $this->pay($invoice, '10.10');
+        $this->pay($invoice, '20.20');
+        $this->getJson('/api/owner/dashboard?month=2026-03')->assertOk()
+            ->assertJsonPath('data.monthly_series.5.invoice_count', 1)
+            ->assertJsonPath('data.monthly_series.5.invoice_total', '123456789012.35')
+            ->assertJsonPath('data.monthly_series.5.invoice_paid', '30.30')
+            ->assertJsonPath('data.monthly_series.5.cash_income', '30.30');
+    }
+
     private function room(): Room
     {
         return Room::create(['room_number' => 'R-'.(Room::count() + 1), 'capacity' => 2,

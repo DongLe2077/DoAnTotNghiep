@@ -38,7 +38,7 @@ Thay thời điểm bằng thực tế. Dùng `other_income` cho thu khác. `amo
 
 `occurred_at` đúng `Y-m-d H:i:s` theo `Asia/Ho_Chi_Minh`, không ở tương lai. `description` bắt buộc, tối đa 255 ký tự. Người/thời điểm ghi nhận lấy từ phiên đăng nhập/máy chủ. Không gửi `recorded_by`, `recorded_at`, `invoice_id` hoặc `payment_id` để ghi đè/liên kết tiền hóa đơn.
 
-POST thành công trả 201 với `data`: `id`, `transaction_type`, `amount`, `occurred_at`, `description`, `recorded_by`, `recorded_at`, `version_token`. Mỗi POST hợp lệ tạo một khoản mới; bảng hiện có không lưu mã chống gửi trùng cho khoản thu chi. Giao diện gọi API cần tránh gửi POST lặp khi người dùng đang chờ phản hồi và tra cứu lại trước khi tạo lại khoản chưa rõ kết quả.
+POST cần `idempotency_key` và trả 201 khi tạo mới, 200 khi nhận lại yêu cầu đã xử lý, kèm `replayed`. `data` gồm ID, nội dung, tiền, người/thời gian tạo, trạng thái xóa, revision và token hiện tại. Cùng mã/người tạo/dữ liệu gốc chỉ tạo một khoản và một nhật ký; dùng lại mã với dữ liệu khác trả 409. Xem [chống gửi trùng thu chi](cash-idempotency.md) để tích hợp retry khi mất mạng.
 
 Thu tiền hóa đơn dùng [API thu tiền hóa đơn](invoice-payments.md), có mã chống gửi trùng riêng; không nhập lại lần thu đó như một khoản `other_income`.
 

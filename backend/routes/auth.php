@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MaintenancePhotoController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RoleAccessController;
+use App\Http\Controllers\Tenant\AnnouncementController;
 use App\Http\Controllers\Tenant\InvoiceController;
 use App\Http\Controllers\Tenant\MaintenanceRequestController;
 use App\Http\Controllers\Tenant\ProfileController;
@@ -33,6 +34,7 @@ Route::prefix('api')->name('api.')->group(function () {
             });
 
             Route::prefix('tenant')->name('tenant.')->middleware('role:'.User::ROLE_TENANT)->group(function () {
+                Route::get('announcements/{announcement}', AnnouncementController::class)->name('announcements.show');
                 Route::get('access', RoleAccessController::class)->name('access');
                 Route::get('profile', [ProfileController::class, 'show'])->name('profile');
                 Route::get('current-stay', [ProfileController::class, 'currentStay'])->name('current-stay');
@@ -41,6 +43,7 @@ Route::prefix('api')->name('api.')->group(function () {
                 Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
                 Route::get('maintenance-requests/eligible-occupancies', [MaintenanceRequestController::class, 'eligibleOccupancies'])->name('maintenance-requests.eligible-occupancies');
                 Route::get('maintenance-requests', [MaintenanceRequestController::class, 'index'])->name('maintenance-requests.index');
+                Route::get('maintenance-requests/{maintenanceRequest}/history', [MaintenanceRequestController::class, 'history'])->name('maintenance-requests.history');
                 Route::post('maintenance-requests/{maintenanceRequest}/photos', [MaintenancePhotoController::class, 'store'])->name('maintenance-requests.photos.store');
                 Route::get('maintenance-requests/{maintenanceRequest}/photos/{photo}', [MaintenancePhotoController::class, 'show'])->name('maintenance-requests.photos.show');
                 Route::get('maintenance-requests/{maintenanceRequest}', [MaintenanceRequestController::class, 'show'])->name('maintenance-requests.show');

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Validator;
 
 class RemindInvoices extends Command
 {
-    protected $signature = 'rental:remind-invoices {--billing-month= : Chỉ nhắc tháng YYYY-MM} {--dry-run : Chỉ đếm hóa đơn ứng viên, không tạo thông báo}';
+    protected $signature = 'rental:remind-invoices {--billing-month= : Chỉ nhắc tháng YYYY-MM} {--overdue : Chỉ nhắc hóa đơn quá hạn} {--dry-run : Chỉ đếm hóa đơn ứng viên, không tạo thông báo}';
 
     protected $description = 'Create private in-app reminders for outstanding invoices, at most once per recipient/invoice/day';
 
@@ -20,6 +20,9 @@ class RemindInvoices extends Command
             $this->error('Tháng cần có định dạng YYYY-MM.');
 
             return self::FAILURE;
+        }
+        if ($this->option('overdue')) {
+            $filters['due_status'] = 'overdue';
         }
         $this->line(json_encode($notifications->remindOutstanding($filters, (bool) $this->option('dry-run')), JSON_THROW_ON_ERROR));
 

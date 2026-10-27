@@ -54,4 +54,9 @@ class MaintenanceRequest extends Model
     {
         return $this->hasMany(MaintenancePhoto::class)->orderBy('id');
     }
+
+    public function histories(): HasMany
+    {
+        return $this->hasMany(MaintenanceRequestHistory::class);
+    }
 }

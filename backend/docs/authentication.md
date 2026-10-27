@@ -6,13 +6,13 @@
 | --- | --- |
 | Backend | PHP 8.2.12, Laravel 12.70.0 |
 | CSDL | MySQL 8.0.43, database `rental_management` |
-| Truy cập dữ liệu | Eloquent ORM, 19 model và 70 quan hệ sau nâng cấp nhật ký/ảnh/thông báo |
+| Truy cập dữ liệu | Eloquent ORM, 20 model và 72 quan hệ sau nâng cấp nhật ký/ảnh/thông báo/chống trùng thu chi |
 | Xác thực | Laravel Auth, guard `web`, session cookie HttpOnly |
 | Session và giới hạn đăng nhập | Session/cache lưu file, không thêm bảng CSDL |
-| Frontend riêng | Thư mục `D:\KLTN\frontend` đang trống, chưa khởi tạo framework |
+| Frontend riêng | Vue 3 + TypeScript + Vite, Vue Router, Pinia, Axios; có đăng nhập/đăng xuất/đổi mật khẩu và bố cục riêng hai vai trò |
 | Trang `/` hiện tại | Blade mặc định của Laravel; scaffold có khai báo Vite/Tailwind, chưa có ứng dụng React/Vue |
 
-Luồng dùng cookie session của Laravel, phù hợp giao diện trình duyệt thuộc cùng website. Không cấp bearer token. Khi phát triển frontend riêng, dùng cùng hostname với backend, ví dụ `localhost:5173` và `localhost:8000`, hoặc `127.0.0.1:5173` và `127.0.0.1:8000`.
+Luồng dùng cookie session của Laravel, phù hợp giao diện trình duyệt thuộc cùng website. Không cấp bearer token. Frontend tại `http://127.0.0.1:5173` gọi `/api` qua Vite proxy đến backend `http://127.0.0.1:8000`, giữ nguyên tiền tố API. [Hướng dẫn frontend](../../frontend/README.md). Không trộn `localhost` và `127.0.0.1` trong cùng phiên.
 
 ## API
 

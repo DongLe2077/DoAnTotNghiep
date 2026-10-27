@@ -296,6 +296,7 @@ class CashBookManagementTest extends TestCase
     private function createEntry(array $changes = [])
     {
         return $this->postJson('/api/owner/cash-transactions', array_merge([
+            'idempotency_key' => (string) Str::uuid(),
             'transaction_type' => 'expense', 'amount' => '50000', 'occurred_at' => '2026-03-01 10:00:00', 'description' => 'Chi sửa chữa',
         ], $changes));
     }

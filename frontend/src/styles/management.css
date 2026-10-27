@@ -1,0 +1,62 @@
+.management-page { max-width: 1180px; margin: 0 auto; }
+.management-page h1 { margin: 8px 0; font-size: 30px; font-weight: 650; letter-spacing: -.6px; }
+.management-page h2 { margin: 0 0 16px; font-size: 20px; }
+.management-page h3 { margin: 0; font-size: 17px; }
+.management-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+.management-header p, .help-text { color: var(--color-text-secondary); font-size: 14px; margin: 8px 0; }
+.eyebrow { color: var(--color-primary); font-size: 13px; font-weight: 600; }
+.button-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.management-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: 16px; padding: 20px; background: white; border: 1px solid var(--color-border); border-radius: 14px; margin-bottom: 24px; }
+.management-toolbar > label { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; font-size: 13px; flex: 1; min-width: min(180px, 100%); }
+.management-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.record-card { padding: 24px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); overflow-wrap: anywhere; }
+.record-card > header { display: flex; align-items: start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.record-card > footer { display: flex; flex-wrap: wrap; gap: 8px; border-top: 1px solid var(--color-border); padding-top: 16px; margin-top: 20px; }
+.record-facts { display: grid; gap: 12px; margin: 16px 0; }
+.record-facts > div { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; font-size: 14px; }
+.record-facts dt { color: var(--color-text-secondary); }
+.record-facts dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
+.owner-pagination { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin: 24px 0; font-size: 13px; color: var(--color-text-secondary); }
+.form-grid { display: grid; gap: 20px; }
+.form-grid > label, .select-field { display: grid; gap: 8px; font-size: 14px; }
+.form-grid fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.form-grid fieldset:disabled { opacity: .7; }
+.form-grid legend { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+.form-error { margin: 0 0 16px; padding: 14px 16px; border-radius: 10px; background: var(--color-danger-soft); color: var(--color-danger); font-size: 14px; }
+.field-error { color: var(--color-danger); font-size: 13px; margin: 6px 0 0; }
+.detail-sections { display: grid; gap: 24px; }
+.detail-items { list-style: none; margin: 0; padding: 0; }
+.detail-items > li { padding: 18px 0; border-bottom: 1px solid var(--color-border); }
+.detail-items > li:last-child { border: 0; }
+.detail-items .button-row { margin-top: 12px; }
+.record-link { color: var(--color-primary); font-size: 14px; font-weight: 600; }
+.back-link { display: inline-flex; min-height: 44px; align-items: center; color: var(--color-primary); font-size: 14px; }
+.remote-picker { min-width: 0; padding: 16px !important; border: 1px solid var(--color-border) !important; border-radius: 12px; }
+.remote-picker legend { padding: 0 4px; }
+.picker-search { display: flex; gap: 8px; }
+.picker-search input { min-width: 0; }
+.picker-options { display: grid; gap: 4px; max-height: 220px; overflow-y: auto; margin-top: 12px; }
+.picker-options label { display: flex; gap: 12px; align-items: center; min-height: 44px; padding: 8px; font-size: 14px; border-radius: 8px; cursor: pointer; }
+.picker-options label:has(input:checked) { background: var(--color-primary-soft); }
+.picker-options input { width: 18px; height: 18px; accent-color: var(--color-primary); flex-shrink: 0; }
+.picker-selected { font-size: 13px; color: var(--color-primary); margin-bottom: 8px; }
+.review-box { padding: 20px; background: var(--color-primary-soft); border-radius: 12px; margin: 16px 0; }
+.review-box h3 { font-size: 17px; margin: 0 0 12px; }
+.review-box p { font-size: 14px; }
+.management-page .ui-notice { margin-bottom: 20px; }
+.dashboard-section { margin-top: 28px; margin-bottom: 28px; }
+.dashboard-section-heading { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+.dashboard-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin: 20px 0; }
+.stat-card { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 24px; border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface); text-decoration: none; color: var(--color-text); overflow-wrap: anywhere; }
+a.stat-card:hover { border-color: var(--color-primary); background: var(--color-primary-soft); }
+.stat-card > span:first-child { font-size: 14px; color: var(--color-text-secondary); }
+.stat-card strong { font-size: 30px; line-height: 1.35; font-variant-numeric: tabular-nums; letter-spacing: -.6px; }
+.stat-card .stat-money { font-size: 24px; }
+.stat-card small { font-size: 13px; color: var(--color-text-secondary); line-height: 1.7; }
+.task-card { background: var(--color-primary-soft); }
+.task-link { font-size: 13px; color: var(--color-primary); font-weight: 600; margin-top: auto; }
+.dashboard-debt { margin: 20px 0; font-size: 28px; font-weight: 600; color: var(--color-primary); overflow-wrap: anywhere; }
+@media (max-width: 1000px) { .dashboard-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .dashboard-stats { grid-template-columns: 1fr; } .stat-card { padding: 20px; } .stat-card .stat-money { font-size: 23px; } }
+@media (min-width: 1100px) { .detail-sections { grid-template-columns: 1fr 1fr; align-items: start; } .detail-sections > .wide { grid-column: 1 / -1; } }
+@media (max-width: 700px) { .management-header { align-items: stretch; flex-direction: column; gap: 16px; } .management-header h1 { font-size: 26px; } .management-grid { grid-template-columns: 1fr; } .record-card { padding: 20px; } .management-toolbar { padding: 16px; } .owner-pagination { align-items: start; flex-direction: column; } }

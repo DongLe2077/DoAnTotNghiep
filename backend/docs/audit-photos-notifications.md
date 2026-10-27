@@ -11,7 +11,7 @@
 - `app_notifications`: hộp thông báo cá nhân và khóa chống thông báo trùng.
 - `cash_transactions` thêm `revision` (mặc định 0 cho dữ liệu cũ), `deleted_at` để xóa có thể khôi phục; `maintenance_requests` thêm `revision`.
 
-Hiện có 19 bảng nghiệp vụ/19 model/70 quan hệ, 3 view cũ, cộng bảng hạ tầng `migrations`. Bản chụp schema đã cập nhật; `rental:verify-database` kiểm tra 19 bảng nghiệp vụ, không coi bảng migration là model nghiệp vụ.
+Đợt nhật ký/ảnh/thông báo đưa CSDL lên 19 bảng nghiệp vụ. Sau khi thêm [chống gửi trùng thu chi](cash-idempotency.md), hiện có 20 bảng nghiệp vụ/20 model/72 quan hệ, 3 view cũ, cộng bảng hạ tầng `migrations`. Bản chụp schema đã cập nhật; `rental:verify-database` không coi bảng migration là model nghiệp vụ.
 
 Trên máy khác đã có 16 bảng gốc, chạy `php artisan migrate`, sau đó `php artisan rental:verify-database`. Không dùng `migrate:fresh`, `refresh`, `reset`, `db:wipe` hoặc rollback migration trên dữ liệu đang sử dụng. Migration này bổ sung schema, không tạo lại 16 bảng gốc.
 
@@ -41,7 +41,7 @@ Chỉ hoàn tác sự kiện mới nhất của đúng khoản và đúng phiên
 
 Nhật ký có `action` (`created`, `updated`, `deleted`, `reverted`), `revision`, `before`, `after`, `performed_by`, `actor`, `reason`, `reverted_history_id`, `created_at`. Người tạo/thời gian tạo gốc luôn giữ nguyên; người sửa/hoàn tác lưu riêng. Thay đổi và ghi nhật ký nằm trong cùng transaction: lỗi nhật ký thì thay đổi tài chính cũng được hoàn tác. Lưu phiên bản tăng dần nên token cũ vẫn bị chặn khi nội dung quay về giá trị cũ trong cùng giây. Sửa không đổi nội dung không tạo thêm phiên bản.
 
-Nhật ký bắt đầu từ lúc nâng cấp; bản ghi cũ có thể sửa/xóa và hoàn tác từ lần thay đổi đầu tiên sau nâng cấp. Không thể phục hồi những khoản đã bị xóa thật trước khi có nhật ký. Không có API sửa/xóa nhật ký; cơ chế này theo dõi thao tác qua ứng dụng, không thay thế kiểm soát truy cập trực tiếp CSDL. Không chỉnh sửa biên nhận thanh toán hóa đơn qua chức năng này. POST tạo thu chi vẫn chưa có mã chống gửi trùng.
+Nhật ký bắt đầu từ lúc nâng cấp; bản ghi cũ có thể sửa/xóa và hoàn tác từ lần thay đổi đầu tiên sau nâng cấp. Không thể phục hồi những khoản đã bị xóa thật trước khi có nhật ký. Không có API sửa/xóa nhật ký; cơ chế này theo dõi thao tác qua ứng dụng, không thay thế kiểm soát truy cập trực tiếp CSDL. Không chỉnh sửa biên nhận thanh toán hóa đơn qua chức năng này. POST thu chi đã có [mã chống gửi trùng](cash-idempotency.md), giữ ổn định cả sau sửa/xóa/hoàn tác.
 
 ## Ảnh báo hỏng
 
@@ -62,6 +62,8 @@ Tải lại cùng nội dung ảnh vào cùng yêu cầu trả ảnh đã có, k
 Người gửi vẫn có thể bổ sung ảnh cho yêu cầu đang mở sau khi rời phòng, vì quyền dựa vào người gửi gốc; người đại diện mới không được xem hoặc thêm ảnh yêu cầu của người khác. Yêu cầu hoàn tất giữ ảnh xem được nhưng không nhận thêm. Không có API sửa/xóa ảnh bằng chứng. Tải ảnh mới làm đổi phiên bản yêu cầu; chủ trọ cần tải lại token trước khi xử lý.
 
 ## Thông báo trong ứng dụng
+
+Ngày 24/10/2026 bổ sung `owner_announcement`: chủ trọ gửi toàn bộ/theo phòng, người nhận được chốt lúc gửi, dùng chung hộp thư và API đánh dấu đọc. Người mới vào ở không nhận lịch sử; người đã nhận giữ quyền đọc sau chuyển/trả phòng. [Quy tắc và API thông báo chung](announcements.md).
 
 - `maintenance_submitted`: báo hỏng mới gửi cho các chủ trọ đang hoạt động. Yêu cầu trùng đang mở không tạo thông báo mới.
 - `maintenance_updated`: tiến độ, ghi chú và hoàn tất gửi đúng người báo hỏng gốc, kể cả đã trả phòng. Thao tác không đổi nội dung không tạo thông báo.

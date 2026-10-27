@@ -23,5 +23,6 @@ trait CreatesCashBookSchema
             $table->index(['occurred_at', 'transaction_type']);
         });
         (require database_path('migrations/2026_10_20_000001_add_cash_transaction_history.php'))->up();
+        (require database_path('migrations/2026_10_20_000004_create_cash_creation_requests.php'))->up();
     }
 }

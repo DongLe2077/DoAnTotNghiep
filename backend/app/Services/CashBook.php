@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\CashCreationRequest;
 use App\Models\CashTransaction;
 use App\Models\CashTransactionHistory;
 use Brick\Math\BigDecimal;
@@ -9,7 +10,9 @@ use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class CashBook
 {
@@ -42,6 +45,56 @@ class CashBook
 
             return $entry;
         }, 3);
+    }
+
+    /** @return array{transaction: CashTransaction, replayed: bool} */
+    public function record(array $data, int $actorId): array
+    {
+        $key = $data['idempotency_key'] ?? null;
+        if (! is_string($key) || ! preg_match('/^[A-Za-z0-9][A-Za-z0-9._:-]{7,63}$/D', $key)) {
+            throw ValidationException::withMessages(['idempotency_key' => 'Mã yêu cầu thu chi không hợp lệ.']);
+        }
+        $values = $this->values($data);
+        $original = [
+            'transaction_type' => $values['transaction_type'], 'amount' => $values['amount'],
+            'occurred_at' => $values['occurred_at'], 'description' => $values['description'],
+            'reason' => $data['reason'] ?? null,
+        ];
+        $fingerprint = hash('sha256', json_encode(['recorded_by' => $actorId, 'data' => $original], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
+        try {
+            return DB::transaction(function () use ($key, $original, $fingerprint, $actorId) {
+                $existing = CashCreationRequest::query()->where('idempotency_key', $key)->lockForUpdate()->first();
+                if ($existing !== null) {
+                    return $this->replayCreation($existing, $fingerprint, $actorId);
+                }
+                $entry = $this->create($original, $actorId);
+                CashCreationRequest::create([
+                    'idempotency_key' => $key, 'cash_transaction_id' => $entry->id, 'recorded_by' => $actorId,
+                    'request_data' => $original, 'request_fingerprint' => $fingerprint,
+                ]);
+
+                return ['transaction' => $entry, 'replayed' => false];
+            }, 3);
+        } catch (UniqueConstraintViolationException) {
+            // Reconcile after rollback: a concurrent creator may have won this key.
+            // Both its financial row and its creation audit remain one atomic unit.
+            return DB::transaction(function () use ($key, $fingerprint, $actorId) {
+                $existing = CashCreationRequest::query()->where('idempotency_key', $key)->lockForUpdate()->first();
+                abort_if($existing === null, 409, 'Yêu cầu thu chi bị trùng. Hãy tải lại lịch sử thu chi.');
+
+                return $this->replayCreation($existing, $fingerprint, $actorId);
+            }, 3);
+        }
+    }
+
+    private function replayCreation(CashCreationRequest $existing, string $fingerprint, int $actorId): array
+    {
+        abort_unless($existing->recorded_by === $actorId && hash_equals($existing->request_fingerprint, $fingerprint),
+            409, 'Mã yêu cầu đã dùng cho khoản thu chi có thông tin khác. Giữ nguyên thông tin khi gửi lại; chỉ dùng mã mới cho khoản mới.');
+        // Replay identifies the original entry but returns its current state, including deletion.
+        $entry = CashTransaction::withTrashed()->lockForUpdate()->findOrFail($existing->cash_transaction_id);
+
+        return ['transaction' => $entry, 'replayed' => true];
     }
 
     public function update(CashTransaction $transaction, array $data, int $actorId): CashTransaction

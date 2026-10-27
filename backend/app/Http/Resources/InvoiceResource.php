@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\User;
+use App\Services\InvoiceControls;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Illuminate\Http\Request;
@@ -28,6 +29,21 @@ class InvoiceResource extends JsonResource
             'paid_amount' => $this->money($this->paid_amount),
             'outstanding_amount' => $this->money($this->outstanding_amount),
             'payment_status' => $this->payment_status,
+            'original_amount' => $this->money($this->original_amount),
+            'adjustment_amount' => $this->money($this->adjustment_amount),
+            'due_date' => $this->due_date?->format('Y-m-d'),
+            'due_status' => InvoiceControls::dueStatus($this->resource),
+            'overdue_days' => InvoiceControls::dueStatus($this->resource) === 'overdue' ? (int) $this->due_date->startOfDay()->diffInDays(now()->startOfDay()) : 0,
+            'cancelled_at' => $this->cancelled_at?->format('Y-m-d H:i:s'),
+            'revision' => $this->revision,
+            'version_token' => $this->when($isOwner, fn () => InvoiceControls::version($this->resource)),
+            'changes' => $this->whenLoaded('changes', fn () => $this->changes->map(fn ($change) => [
+                'id' => $change->id, 'revision' => $change->revision, 'action' => $change->action,
+                'amount' => $change->amount, 'reason' => $change->reason,
+                'before' => $change->before_data, 'after' => $change->after_data,
+                'performed_by' => $isOwner ? $change->performedBy?->username : null,
+                'created_at' => $change->created_at->format('Y-m-d H:i:s'),
+            ])),
             'items' => $this->whenLoaded('items', fn () => $this->items->map(fn ($item) => [
                 'id' => $item->id,
                 'item_type' => $item->item_type,

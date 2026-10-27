@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRoute } from 'vue-router'
+import UiButton from '@/components/ui/UiButton.vue'
+import UiBadge from '@/components/ui/UiBadge.vue'
+import UiPageState from '@/components/ui/UiPageState.vue'
+import OwnerPager from '@/components/owner/OwnerPager.vue'
+import RemotePicker from '@/components/owner/RemotePicker.vue'
+import { useOwnerList } from '@/composables/useOwnerApi'
+import { formatMoney } from '@/lib/format'
+import { formatDateTime } from '@/lib/notifications'
+import type { Occupancy } from '@/types/owner'
+const route = useRoute(), status = ref(''), rooms = ref<number[]>(Number(route.query.room_id) > 0 ? [Number(route.query.room_id)] : []), tenants = ref<number[]>([]), filterOpen = ref(false)
+const { items, loading, loadError, page, lastPage, total, load } = useOwnerList<Occupancy>('/occupancies', rooms.value[0] ? { room_id: rooms.value[0] } : {})
+function filter() { void load(1, { ...(status.value ? { status: status.value } : {}), ...(rooms.value[0] ? { room_id: rooms.value[0] } : {}), ...(tenants.value[0] ? { tenant_id: tenants.value[0] } : {}) }); filterOpen.value = false }
+void load()
+</script>
+<template><section class="management-page"><header class="management-header"><div><span class="eyebrow">Không gian chủ trọ</span><h1>Quá trình thuê</h1><p>Theo dõi từng đợt nhận phòng, thành viên và lịch sử chuyển/trả phòng.</p></div><div class="button-row"><RouterLink class="record-link" to="/owner/groups">Nhóm thuê</RouterLink><RouterLink class="record-link" to="/owner/stays/new">+ Nhận phòng</RouterLink></div></header><form class="management-toolbar" @submit.prevent="filter"><label>Trạng thái đợt thuê<select v-model="status" class="ui-select"><option value="">Tất cả</option><option value="active">Đang thuê</option><option value="ended">Đã kết thúc</option></select></label><UiButton variant="secondary" @click="filterOpen = !filterOpen">Chọn phòng / người thuê{{ rooms.length || tenants.length ? ' · Có lựa chọn' : '' }}</UiButton><UiButton type="submit" variant="secondary" :loading="loading">Lọc danh sách</UiButton><div v-if="filterOpen" class="form-grid" style="width:100%"><RemotePicker v-model="rooms" label="Phòng" path="/rooms" label-key="room_number" /><RemotePicker v-model="tenants" label="Người thuê" path="/tenants" label-key="full_name" /></div></form><UiPageState v-if="loading" kind="loading" /><UiPageState v-else-if="loadError" kind="error" :description="loadError"><UiButton @click="load()">Thử lại</UiButton></UiPageState><UiPageState v-else-if="!items.length" title="Chưa có đợt thuê phù hợp" description="Bạn có thể đổi bộ lọc hoặc bắt đầu nhận phòng." /><div v-else class="management-grid"><article v-for="stay in items" :key="stay.id" class="record-card"><header><div><h2>Phòng {{ stay.room.room_number }}</h2><span class="help-text">Nhóm {{ stay.group.group_code }}</span></div><UiBadge :tone="stay.is_active ? 'success' : 'neutral'">{{ stay.is_active ? 'Đang thuê' : 'Đã kết thúc' }}</UiBadge></header><dl class="record-facts"><div><dt>Nhận phòng</dt><dd>{{ formatDateTime(stay.started_at) }}</dd></div><div><dt>Giá chốt / tháng</dt><dd>{{ formatMoney(stay.monthly_rent) }}</dd></div><div><dt>{{ stay.is_active ? 'Người đang ở' : 'Kết thúc' }}</dt><dd>{{ stay.is_active ? `${stay.resident_count} người` : formatDateTime(stay.ended_at) }}</dd></div></dl><footer><RouterLink class="record-link" :to="`/owner/stays/${stay.id}`">Xem đợt thuê phòng {{ stay.room.room_number }}</RouterLink></footer></article></div><OwnerPager v-if="!loadError && total > 0" :page="page" :last-page="lastPage" :total="total" :loading="loading" @change="load($event)" /></section></template>

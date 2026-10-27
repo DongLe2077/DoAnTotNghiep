@@ -96,5 +96,7 @@ trait CreatesTenancySchema
         DB::statement("CREATE VIEW active_invoice_access AS SELECT g.user_id, g.invoice_id, g.occupancy_id, g.representative_assignment_id, g.granted_at FROM invoice_access_grants g JOIN users u ON u.id = g.user_id WHERE g.revoked_at IS NULL AND u.role = 'tenant' AND u.is_active = 1");
         (require database_path('migrations/2026_10_20_000002_create_maintenance_photos.php'))->up();
         (require database_path('migrations/2026_10_20_000003_create_app_notifications.php'))->up();
+        (require database_path('migrations/2026_10_24_000001_create_announcements.php'))->up();
+        (require database_path('migrations/2026_10_25_000001_create_maintenance_request_histories.php'))->up();
     }
 }

@@ -46,5 +46,6 @@ FROM invoices i
 LEFT JOIN (SELECT invoice_id, COUNT(*) AS line_count, ROUND(SUM(line_total), 2) AS total_amount FROM invoice_items GROUP BY invoice_id) li ON li.invoice_id = i.id
 LEFT JOIN (SELECT invoice_id, ROUND(SUM(amount), 2) AS paid_amount FROM payments GROUP BY invoice_id) p ON p.invoice_id = i.id
 SQL);
+        (require database_path('migrations/2026_10_23_000001_add_invoice_controls.php'))->up();
     }
 }

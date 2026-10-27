@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\MaintenancePhotoController;
+use App\Http\Controllers\Owner\AnnouncementController;
 use App\Http\Controllers\Owner\BillingRepresentativeController;
 use App\Http\Controllers\Owner\CashFlowController;
 use App\Http\Controllers\Owner\CashTransactionController;
@@ -21,6 +22,11 @@ use Illuminate\Support\Facades\Route;
 
 // Included inside the authenticated, active owner route group.
 Route::get('dashboard', DashboardController::class)->name('dashboard');
+Route::get('announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+Route::post('announcements/preview', [AnnouncementController::class, 'preview'])->name('announcements.preview');
+Route::post('announcements', [AnnouncementController::class, 'store'])->middleware('throttle:20,1')->name('announcements.store');
+Route::get('announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
+Route::get('announcements/{announcement}/recipients', [AnnouncementController::class, 'recipients'])->name('announcements.recipients');
 Route::get('receivables/summary', [ReceivableController::class, 'summary'])->name('receivables.summary');
 Route::get('receivables/groups', [ReceivableController::class, 'groups'])->name('receivables.groups');
 Route::get('receivables', [ReceivableController::class, 'index'])->name('receivables.index');
@@ -51,6 +57,7 @@ Route::post('occupancies/{occupancy}/invoices/preview', [InvoiceIssueController:
 Route::post('occupancies/{occupancy}/invoices', [InvoiceIssueController::class, 'store'])->name('invoices.store');
 Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
 Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
+Route::post('invoices/{invoice}/changes', [InvoiceController::class, 'change'])->name('invoices.changes');
 Route::post('invoices/{invoice}/reminder', InvoiceReminderController::class)->middleware('throttle:10,1')->name('invoices.reminder');
 Route::put('invoices/{invoice}/access', [InvoiceController::class, 'access'])->name('invoices.access');
 Route::delete('invoices/{invoice}/access', [InvoiceController::class, 'revokeAccess'])->name('invoices.access.revoke');
@@ -63,5 +70,6 @@ Route::post('cash-transactions/{cashTransaction}/revert', [CashTransactionContro
 Route::apiResource('cash-transactions', CashTransactionController::class)->parameters(['cash-transactions' => 'cashTransaction']);
 Route::get('cash-flow/summary', [CashFlowController::class, 'summary'])->name('cash-flow.summary');
 Route::get('cash-flow', [CashFlowController::class, 'index'])->name('cash-flow.index');
+Route::get('maintenance-requests/{maintenanceRequest}/history', [MaintenanceRequestController::class, 'history'])->name('maintenance-requests.history');
 Route::apiResource('maintenance-requests', MaintenanceRequestController::class)->parameters(['maintenance-requests' => 'maintenanceRequest'])->only(['index', 'show', 'update']);
 Route::get('maintenance-requests/{maintenanceRequest}/photos/{photo}', [MaintenancePhotoController::class, 'show'])->name('maintenance-requests.photos.show');
