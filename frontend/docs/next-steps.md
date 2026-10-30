@@ -1,8 +1,22 @@
-# Kế hoạch hoàn thiện, nâng cấp và tài khoản tự kiểm tra — 25/10/2026
+# Kế hoạch hoàn thiện, nâng cấp và tài khoản tự kiểm tra — cập nhật 30/10/2026
 
-Đề xuất dựa trên chức năng và tài liệu hiện có. Đây là kế hoạch cho các đợt tiếp theo; chưa triển khai các chức năng mới trong lần lập kế hoạch này. Mục tiêu là hoàn thiện nghiệp vụ đang dùng, thêm chứng từ/báo cáo và chuẩn bị đưa lên hosting.
+**Đã tiến hành mục 1–2 của kế hoạch mới:** bản trình riêng, dữ liệu nhiều tình huống, lưu mốc/khôi phục và hoàn thiện phản hồi giao diện. [Mở bản trình và tự thử](presentation-guide.md). Các bước còn lại là tập trình trực tiếp, ghi góp ý và chọn Excel/ảnh đồng hồ/nghiệp vụ tiếp theo.
 
-**Ưu tiên mới theo yêu cầu giảng viên, chốt ngày 25/10/2026:** chuẩn bị sản phẩm để giảng viên xem trong tuần đầu hoặc đầu tuần 2 tháng 11; sau đánh giá mới quyết định chức năng thêm, rồi mới làm Word. Mốc nội bộ đề xuất: sẵn sàng 31/10, dự phòng 01/11. [Kế hoạch chi tiết theo ngày và kịch bản trình sản phẩm](../../docs/initial-report-plan-2026-11.md). Các phần PDF/Excel và mở rộng dưới đây thuộc kế hoạch sau đánh giá.
+**Kế hoạch tiếp theo mới nhất:** [chốt bản trình, nâng giao diện/hiệu ứng, Excel, ảnh đồng hồ và hợp đồng/cọc](../../docs/next-upgrade-plan-2026-10-30.md). Thứ tự mặc định: chốt bản trình → một đợt giao diện nhỏ → Excel → ảnh đồng hồ → chọn nghiệp vụ lớn theo góp ý giảng viên. Phần dưới giữ các mốc và hướng dẫn tự thử trước đó.
+
+[Kết quả nghiệm thu thông tin nhà trọ, PDF và nhập nhiều phòng ngày 30/10](property-pdf-bulk-acceptance.md).
+
+Kế hoạch bắt đầu ngày 25/10/2026; các mốc lịch sử và lựa chọn bổ sung được giữ để theo dõi. Trạng thái hiện tại bên dưới phân biệt phần đã triển khai với các đề xuất còn lại.
+
+**Trạng thái ngày 30/10/2026:** đã có thông tin nhà trọ, PDF hóa đơn/phiếu thu và [nhập chỉ số nhiều phòng](bulk-meters-self-test.md). Hồ sơ có phiên bản chống ghi đè; PDF tiếng Việt giữ đúng trạng thái/tiền và quyền hai vai trò, thông tin ngân hàng chỉ hiện trên hóa đơn chưa thu/thu một phần. Bảng chỉ số xác nhận tối đa 100 dòng theo khoảng giá, từng dòng có giao dịch/kết quả và mã gửi lại riêng; chặn bỏ qua khoảng giá trước. [Tự thử thông tin nhà trọ/PDF](property-pdf-self-test.md).
+
+Kiểm tra đã chạy: backend **399 ca/4.145 assertions**, frontend **131 ca**, build đạt; Chrome cuối **14/14** (4,1 phút), PDF sau chỉnh font cuối **10/10** (97 assertions). MySQL **28 bảng/100 quan hệ/3 view**, kiểm tra đồng thời riêng **53 bước/6 tình huống** đạt và CSDL tạm đã dọn. Năm PDF giả/31 trang đã được kiểm tra hình ảnh, không thấy chữ tràn trang hoặc ký tự thay thế. Excel, ảnh đồng hồ, hợp đồng/cọc/quyết toán, hoàn tiền thực tế và hosting vẫn chưa triển khai.
+
+**Ưu tiên mới theo yêu cầu giảng viên, chốt ngày 25/10/2026:** chuẩn bị sản phẩm để giảng viên xem trong tuần đầu hoặc đầu tuần 2 tháng 11; sau đánh giá mới quyết định chức năng thêm, rồi mới làm Word. Mốc nội bộ đề xuất: sẵn sàng 31/10, dự phòng 01/11. [Kế hoạch chi tiết theo ngày và kịch bản trình sản phẩm](../../docs/initial-report-plan-2026-11.md). Tại thời điểm lập kế hoạch, PDF/Excel được đề xuất sau đánh giá; người dùng đã chọn bổ sung PDF và nhập chỉ số nhiều phòng, nay đã hoàn thành như trạng thái ở trên. Excel và các phần còn lại tiếp tục được chọn riêng.
+
+**Kế hoạch nâng cấp chi tiết ngày 27/10/2026:** [phạm vi, thứ tự và tiêu chí nghiệm thu từng chức năng](../../docs/feature-upgrade-plan-2026-10-27.md). Gói đề xuất đầu tiên là PDF hóa đơn/phiếu thu → Excel báo cáo → liên kết chi phí sửa chữa. Sửa sai phiếu thu, hợp đồng/cọc/quyết toán và thao tác điện nước là các đợt riêng; cần chọn phạm vi trước khi triển khai. Trạng thái các chức năng chưa thay đổi trong lần lập kế hoạch này.
+
+**Cập nhật sau lựa chọn của người dùng ngày 27/10:** đã triển khai [chi phí sửa chữa](repair-expenses-self-test.md) và [sửa sai phiếu thu](payment-corrections-self-test.md). Liên kết dùng chính khoản chi gốc; hủy/thay thế phiếu ghi nhầm giữ phiếu gốc và cập nhật công nợ/sổ tiền. Hoàn tiền thực tế vẫn chưa triển khai.
 
 ## Chạy và đăng nhập
 
@@ -29,14 +43,15 @@ Bản chạy thử dùng Laravel thật, SQLite riêng, ảnh và phiên riêng.
 | Ưu tiên | Việc làm | Đầu ra / tiêu chí hoàn thành |
 | --- | --- | --- |
 | 1 — Cần chốt | Nghiệm thu hai vai trò và sửa điểm khó dùng | Thử đầy đủ trên MySQL, Chrome/Edge và điện thoại thật; không còn lỗi nghiêm trọng về tiền, quyền xem hoặc mất dữ liệu |
-| 2 — Cân nhắc sau giảng viên đánh giá | Xuất PDF hóa đơn và phiếu thu | Tải/in được tiếng Việt, đúng quyền; số tiền, các lần thu, điều chỉnh, hạn và trạng thái khớp giao diện |
+| 2 — Đã bổ sung 30/10 | Thông tin nhà trọ và PDF hóa đơn/phiếu thu | Hồ sơ có phiên bản; tải/in tiếng Việt đúng quyền, tiền và trạng thái hủy/thay thế |
 | 3 — Cân nhắc sau giảng viên đánh giá | Xuất Excel hóa đơn, công nợ và sổ thu chi | Chủ trọ xuất đúng bộ lọc; tổng khớp giao diện, phân biệt tiền đã thu với khoản còn nợ |
 | 4 — Bắt buộc trước chạy trực tuyến | Hosting, lưu ảnh bền vững, sao lưu/khôi phục và tài liệu bàn giao | Cài mới được; ảnh giữ qua cập nhật; khôi phục thử cả CSDL và ảnh; HTTPS/cookie, lịch nhắc và theo dõi lỗi hoạt động |
-| 5 — Nâng cấp hữu ích | Liên kết chi phí sửa chữa | Lịch sử từng lần xử lý đã có ngày 25/10/2026; còn phần liên kết khoản chi với yêu cầu, không cộng tiền hai lần |
-| 6 — Nên có trước dùng tiền thật thường xuyên | Sửa sai lần thu tiền hóa đơn có kiểm soát | Có lý do và bản ghi đối chiếu, giữ phiếu gốc; số dư hóa đơn và sổ tiền khớp sau xử lý; chốt quy tắc trước khi code |
+| 5 — Đã bổ sung 27/10 | Liên kết chi phí sửa chữa | Gắn/gỡ khoản chi gốc, nhật ký và tổng theo khoản còn hiệu lực; không cộng tiền hai lần |
+| 6 — Đã bổ sung 27/10 | Sửa sai lần thu tiền hóa đơn có kiểm soát | Hủy/thay thế có lý do, giữ phiếu gốc; số dư/sổ tiền cập nhật. Hoàn tiền thực tế chưa triển khai |
 | 7 — Tùy phạm vi đề tài | Hợp đồng, tiền cọc và quyết toán trả phòng | Quản lý kỳ hạn/gia hạn, thu/khấu trừ/hoàn cọc và bàn giao; hai vai trò xem đúng quyền |
-| 8 — Có thêm sẽ thuận tiện | QR chuyển khoản và ảnh đồng hồ điện/nước | QR đúng tài khoản/số tiền/nội dung; ảnh gắn đúng kỳ chỉ số và có quyền xem; QR không tự xác nhận đã nhận tiền |
-| 9 — Không bắt buộc | Chat, phân công thợ, email/SMS, thông báo tức thời, đối soát ngân hàng | Chỉ mở rộng sau khi chốt các phần trên và nhu cầu sử dụng |
+| 8 — Đã bổ sung 30/10 | Nhập chỉ số nhiều phòng | Tối đa 100 dòng/lượt, đúng khoảng giá/thứ tự; từng dòng chống trùng và có kết quả riêng |
+| 9 — Có thêm sẽ thuận tiện | QR chuyển khoản và ảnh đồng hồ điện/nước | QR đúng tài khoản/số tiền/nội dung; ảnh gắn đúng kỳ chỉ số và có quyền xem; QR không tự xác nhận đã nhận tiền |
+| 10 — Không bắt buộc | Chat, phân công thợ, email/SMS, thông báo tức thời, đối soát ngân hàng | Chỉ mở rộng sau khi chốt các phần trên và nhu cầu sử dụng |
 
 Quên mật khẩu tiếp tục để sau theo quyết định của người dùng. Hiện có đổi mật khẩu khi biết mật khẩu cũ và chủ trọ đặt lại tài khoản người thuê. Hạn đóng, công nợ quá hạn, điều chỉnh/hủy/khôi phục và nhật ký hóa đơn đã có. Thông báo chung toàn bộ/theo phòng, xem trước người nhận và theo dõi đã đọc cũng đã hoàn thành; [tự kiểm tra](announcements-self-test.md).
 
@@ -52,9 +67,9 @@ Ngày 25/10/2026 đã nghiệm thu cục bộ hai vai trò và sửa các điể
 
 Đầu ra: danh sách lỗi/điểm khó dùng và kết quả đối chiếu; lỗi nghiêm trọng được xử lý, các hạn chế còn lại được ghi rõ. Các con số kiểm thử trong README là của những đợt đã chạy, không thay thế nghiệm thu thiết bị/môi trường mới.
 
-## Đợt 2: chứng từ và báo cáo, sau khi được chọn trong phạm vi bổ sung
+## Đợt 2: chứng từ đã có và báo cáo còn đề xuất
 
-Nếu chọn cả hai sau buổi đánh giá: **PDF trước, Excel sau.** Backend tạo tệp từ dữ liệu đã được kiểm tra quyền; frontend bổ sung nút tải/in trong màn hình đang có.
+**Thông tin nhà trọ và PDF đã hoàn thành ngày 30/10.** Backend tạo PDF từ dữ liệu được kiểm tra quyền; giao diện hiện có nút tải trong hóa đơn/phiếu thu của hai vai trò. **Excel chưa triển khai**, tiếp tục là phần đề xuất khi chọn phạm vi bổ sung.
 
 - PDF hóa đơn: phòng/nhóm/kỳ, các dòng tiền gốc, điều chỉnh, hạn thanh toán, đã thu/còn nợ và trạng thái hủy. Phiếu thu PDF gắn đúng một lần nhận tiền và mã phiếu. Hiển thị rõ thời điểm xuất; đối chiếu dữ liệu hiện tại với lịch sử. Đây là chứng từ quản lý nội bộ của ứng dụng.
 - Người thuê chỉ tải hóa đơn và phiếu thu thuộc hóa đơn đang có quyền xem; chủ trọ tải theo quyền quản lý. Tệp không để ở đường dẫn công khai bỏ qua đăng nhập.
@@ -77,9 +92,9 @@ Có thể chuẩn bị song song đợt 1–2, phải hoàn thành trước khi 
 
 ## Đợt 4: bổ sung nghiệp vụ có giá trị
 
-**Lịch sử sửa chữa:** đã hoàn thành ngày 25/10/2026: người thực hiện, thời điểm, trạng thái/ghi chú trước sau, quyền xem hai vai trò, phân trang và mốc dữ liệu cũ. [Tự kiểm tra](maintenance-history-self-test.md). Phần liên kết chi phí với sổ thu chi để tránh ghi nhận hai lần vẫn là nâng cấp riêng chưa thực hiện.
+**Lịch sử sửa chữa:** đã hoàn thành ngày 25/10/2026: người thực hiện, thời điểm, trạng thái/ghi chú trước sau, quyền xem hai vai trò, phân trang và mốc dữ liệu cũ. [Tự kiểm tra](maintenance-history-self-test.md). Phần [liên kết chi phí với sổ thu chi](repair-expenses-self-test.md) đã bổ sung ngày 27/10, dùng chính khoản chi gốc và giữ nhật ký gắn/gỡ.
 
-**Sửa sai lần thu tiền hóa đơn:** hiện phiếu thu đã xác nhận không sửa/xóa/hoàn tiền qua API. Đây là nâng cấp riêng với điều chỉnh hóa đơn và hoàn tác thu khác/chi phí đã có. Trước khi làm phải chốt ai được xử lý, lý do, trường hợp hủy nhầm hay hoàn tiền thực tế, quy tắc ngày ghi nhận và giới hạn số tiền. Giữ phiếu gốc, thêm bản ghi đối chiếu; kiểm tra số dư, sổ tiền, báo cáo và chống gửi trùng sau thao tác.
+**Sửa sai lần thu tiền hóa đơn:** đã bổ sung ngày 27/10 bằng hủy hiệu lực hoặc thay bằng phiếu đúng; không sửa/xóa trực tiếp phiếu gốc, có lý do/lịch sử, chống gửi trùng và tính lại số dư/sổ tiền. [Tự kiểm tra](payment-corrections-self-test.md). Hoàn tiền thực tế là nghiệp vụ riêng cần chốt quy tắc trước khi làm.
 
 **Hợp đồng/cọc/quyết toán:** chỉ triển khai nếu thuộc phạm vi đề tài hoặc có nhu cầu thực tế. Cần chốt quan hệ với nhóm/đợt thuê, quy tắc gia hạn, các lần thu/khấu trừ/hoàn cọc, tiền điện nước cuối kỳ và các khoản còn nợ. Không tự gộp cọc vào tiền thuê hoặc tự xóa công nợ khi trả phòng.
 
@@ -87,6 +102,6 @@ Các mục này làm từng phần từ quy tắc → CSDL/API → màn hình ch
 
 ## Phạm vi nên chốt cho đợt tới
 
-Nghiệm thu cục bộ/sửa giao diện và lịch sử sửa chữa đã thực hiện. Ưu tiên hiện tại: **bản sản phẩm để trình → giảng viên đánh giá → chốt bổ sung → hoàn thiện → Word**. PDF/Excel, liên kết chi phí và các nghiệp vụ khác được xem xét sau đánh giá. Hosting chỉ trở thành việc trước buổi xem nếu cần giảng viên truy cập từ xa; bản chạy tại máy vẫn là phương án chuẩn bị chính.
+Nghiệm thu cục bộ/sửa giao diện, lịch sử/chi phí sửa chữa, sửa sai phiếu thu, thông tin nhà trọ/PDF và nhập chỉ số nhiều phòng đã thực hiện. Tiếp tục chốt bản trình, tự thử, ghi góp ý giảng viên rồi chọn các bổ sung còn lại trước khi làm Word. Excel vẫn là ứng viên sau đánh giá; hosting cần khi được chọn để truy cập từ xa.
 
 QR chuyển khoản, ảnh đồng hồ, chat và thông báo ngoài ứng dụng là phần mở rộng. Quên mật khẩu vẫn hoãn theo yêu cầu trước đó; chưa cần đổi công nghệ hoặc làm thêm biểu đồ để hoàn thành các mục trên.

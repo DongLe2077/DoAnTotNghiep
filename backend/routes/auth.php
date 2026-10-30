@@ -7,6 +7,7 @@ use App\Http\Controllers\RoleAccessController;
 use App\Http\Controllers\Tenant\AnnouncementController;
 use App\Http\Controllers\Tenant\InvoiceController;
 use App\Http\Controllers\Tenant\MaintenanceRequestController;
+use App\Http\Controllers\Tenant\PdfDocumentController;
 use App\Http\Controllers\Tenant\ProfileController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +41,8 @@ Route::prefix('api')->name('api.')->group(function () {
                 Route::get('current-stay', [ProfileController::class, 'currentStay'])->name('current-stay');
                 Route::get('stays', [ProfileController::class, 'stays'])->name('stays');
                 Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+                Route::get('invoices/{invoice}/pdf', [PdfDocumentController::class, 'invoice'])->whereNumber('invoice')->name('invoices.pdf');
+                Route::get('invoices/{invoice}/payments/{payment}/pdf', [PdfDocumentController::class, 'receipt'])->whereNumber(['invoice', 'payment'])->name('payments.pdf');
                 Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
                 Route::get('maintenance-requests/eligible-occupancies', [MaintenanceRequestController::class, 'eligibleOccupancies'])->name('maintenance-requests.eligible-occupancies');
                 Route::get('maintenance-requests', [MaintenanceRequestController::class, 'index'])->name('maintenance-requests.index');

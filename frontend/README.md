@@ -105,4 +105,14 @@ Kế hoạch tiếp theo: [chủ trọ CT1–CT8](../backend/docs/frontend-owner
 
 Hạn thanh toán và điều chỉnh/hủy hóa đơn đã nối cho hai vai trò. Xem [hướng dẫn tự kiểm tra](docs/invoice-controls-self-test.md) và [biên bản nghiệm thu](docs/business-acceptance.md).
 
+Ngày 27/10/2026 bổ sung [chi phí sửa chữa](docs/repair-expenses-self-test.md) và [sửa sai phiếu thu](docs/payment-corrections-self-test.md). Chi phí liên kết chính khoản trong sổ; phiếu thu gốc được giữ, có thể hủy ghi nhận nhầm/thay thế và tính lại số dư. Không thực hiện hoàn tiền thực tế.
+
 Tài khoản tự test ngày 24/10/2026: **admin / 123** (chủ trọ) và **user / 123** (người thuê, phòng TEST-USER). [Thứ tự hoàn thiện và nâng cấp](docs/next-steps.md).
+
+Hoàn thiện ngày 30/10/2026: chủ trọ có **Thông tin nhà trọ** và **Điện nước → Nhập nhiều phòng**; hai vai trò tải PDF hóa đơn/phiếu thu theo quyền. [Tự thử thông tin/PDF](docs/property-pdf-self-test.md), [tự thử nhập nhiều phòng](docs/bulk-meters-self-test.md).
+
+Đã bổ sung bản trình riêng qua `npm run presentation`, cổng **5175** (Laravel 18002), CSDL/ảnh/phiên tách MySQL và bản demo cũ. Có dữ liệu một/nhiều người, hóa đơn/thu tiền/quá hạn, ảnh/lịch sử/chi phí sửa chữa; giữ trạng thái sau khởi động lại. `npm run presentation:checkpoint` lưu mã nguồn và dữ liệu, kiểm tra khôi phục riêng; `npm run presentation:restore -- MA_BAN_SAO` đưa dữ liệu trình về mốc đã lưu khi đã dừng máy chủ. [Cách chạy CMD, tài khoản và kịch bản trình](docs/presentation-guide.md).
+
+Giao diện chung có hiệu ứng hộp thoại/nút/thông báo nhẹ, khung chờ cho tổng quan/danh sách chính, tiến độ nhập nhiều phòng và cảnh báo rời trang có bản nháp ở thông tin nhà trọ, nhận phòng và gửi báo hỏng. Tôn trọng lựa chọn giảm chuyển động; đăng xuất/hết phiên không bị giữ lại bởi cảnh báo bản nháp.
+
+Nghiệm thu sau đợt hoàn thiện này: **94/94 kịch bản Chrome toàn bộ** trong một lượt 27,0 phút, frontend **131/131**, TypeScript/Vite và PHP style của các helper đạt. Bản trình riêng còn được đối chiếu 30 bước/10 ảnh, tập nghiệp vụ 15 bước, sao lưu và khôi phục dữ liệu/ảnh đạt. [Phạm vi và kết quả](docs/presentation-polish-acceptance.md).

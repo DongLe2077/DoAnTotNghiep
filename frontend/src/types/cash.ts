@@ -3,6 +3,7 @@ export type CashEntryType = CashType | 'invoice_payment'
 export interface CashTransaction {
   id: number; transaction_type: CashType; amount: string; occurred_at: string; description: string
   recorded_by: number; recorded_at: string; revision: number; is_deleted: boolean; deleted_at: string | null; version_token: string
+  maintenance_link?: { id: number; maintenance_request_id: number; title: string; is_active: boolean; version_token: string } | null
 }
 export interface CashEntry {
   id: string; source: 'payment' | 'cash_transaction'; source_id: number; entry_type: CashEntryType

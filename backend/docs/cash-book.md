@@ -54,7 +54,7 @@ Lấy `version_token` từ GET hoặc response tạo/sửa gần nhất. Ví d�
 }
 ```
 
-PUT/PATCH chỉ cần gửi trường muốn thay đổi cùng token. Sửa thành công trả 200 và token của dữ liệu mới; người/thời điểm ghi nhận gốc được giữ lại. Có thể đổi giữa `other_income` và `expense` khi sửa một khoản đã nhập sai.
+PUT/PATCH chỉ cần gửi trường muốn thay đổi cùng token. Sửa thành công trả 200 và token của dữ liệu mới; người/thời điểm ghi nhận gốc được giữ lại. Có thể đổi giữa `other_income` và `expense` khi sửa một khoản đã nhập sai. Nếu khoản chi đang liên kết sửa chữa, phải gỡ liên kết có lý do trước khi chuyển thành khoản thu, kể cả qua hoàn tác. [Quy tắc liên kết chi phí](maintenance-expenses.md).
 
 DELETE gửi JSON:
 
@@ -95,6 +95,8 @@ Nếu không gửi bộ lọc thời gian, sổ tổng hợp và API summary m�
 Một dòng sổ có `id` dạng `payment:15` hoặc `cash_transaction:15` để phân biệt hai nguồn trùng ID, cùng `source`, `source_id`, `entry_type`, `direction`, `amount`, `signed_amount`, `occurred_at`, `description`, thông tin ghi nhận. `signed_amount` âm cho chi phí, dương cho tiền thu; `amount` vẫn dương.
 
 Dòng từ thanh toán có thêm `invoice_id`, `invoice_number`, `payment_method`, với `can_edit=false`, `can_delete=false`. Dòng thu khác/chi phí có hai cờ này bằng true; muốn sửa/xóa phải đọc chi tiết khoản tương ứng để lấy token. Sổ không trả khóa chống trùng của thanh toán hoặc thông tin tài khoản nhạy cảm.
+
+Từ 27/10/2026, sổ chỉ tính phiếu thu còn hiệu lực sau [sửa sai](payment-corrections.md). Phiếu bị hủy ghi nhận vẫn có ở lịch sử hóa đơn nhưng không góp tiền; phiếu thay thế góp vào đúng ngày thực nhận đã sửa. Không sinh khoản chi hoàn tiền giả. Khoản chi liên kết sửa chữa vẫn là một hàng tài chính duy nhất, có `maintenance_link` để mở yêu cầu liên quan.
 
 Sổ và summary chỉ đọc hai nguồn. Không tạo bản ghi thu chi khi đọc báo cáo; mỗi lần thu vẫn chỉ tính một lần dù hóa đơn có nhiều dòng.
 

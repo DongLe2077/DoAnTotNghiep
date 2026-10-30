@@ -105,7 +105,7 @@ Các mốc thời gian theo `Asia/Ho_Chi_Minh`. Có thể chỉ gửi một mố
 - Chủ trọ vẫn xử lý yêu cầu cũ sau trả/chuyển phòng; tác giả vẫn thấy kết quả. Đại diện mới không tự nhận quyền xem các báo hỏng của tài khoản khác.
 - [Quá trình thuê](tenant-occupancy.md) chặn chuyển/trả phòng lùi trước thời điểm đã gửi yêu cầu để giữ đúng lịch sử. Thời gian xử lý về sau không đổi thời gian gửi gốc.
 - Gửi báo hỏng hoặc hoàn tất không tự đặt/bỏ trạng thái bảo trì phòng. Chủ trọ dùng [quản lý phòng](rooms-services.md) khi cần thay đổi trạng thái vận hành.
-- Không tự tạo hóa đơn hoặc chi phí từ trạng thái sửa chữa. Khoản chi thực tế ghi riêng qua [quản lý thu chi](cash-book.md), có thể ghi mã yêu cầu trong mô tả để đối chiếu.
+- Không tự tạo hóa đơn hoặc chi phí từ trạng thái sửa chữa. Khoản chi thực tế ghi qua [quản lý thu chi](cash-book.md), sau đó có thể [liên kết với yêu cầu](maintenance-expenses.md), xem tổng và lịch sử gắn/gỡ ngay trong chi tiết sửa chữa. Khoản đã xóa không tính tổng; khôi phục thì tính lại. Người thuê không đọc chi phí nội bộ.
 - Đã có [ảnh riêng tư và thông báo trong ứng dụng](audit-photos-notifications.md), giao diện chủ trọ xem ảnh/cập nhật/hoàn tất, cùng [giao diện người thuê gửi báo hỏng/ảnh và theo dõi](../../frontend/docs/tenant-self-test.md). Tạo yêu cầu trước rồi tải ảnh; ảnh lỗi thử lại riêng, không tạo lại nội dung báo hỏng. Chưa có phân công thợ hoặc thông báo email/SMS/Zalo.
 
 ## Kiểm thử

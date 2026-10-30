@@ -1,5 +1,15 @@
 # Kế hoạch chuẩn bị sản phẩm để giảng viên đánh giá — đầu tháng 11/2026
 
+**Đã chuẩn bị bản trình riêng:** `npm run presentation` mở cổng 5175 với CSDL/ảnh/phiên riêng; có dữ liệu một/nhiều thành viên, thu đủ/một phần/quá hạn, kỳ sẵn sàng lập hóa đơn và sự cố có ảnh/lịch sử/chi phí. Có lệnh tạo mốc mã nguồn/CSDL/ảnh và kiểm tra khôi phục, hướng dẫn trả dữ liệu về mốc sau tập demo. [Hướng dẫn thực hành và kịch bản 10–12 phút](../frontend/docs/presentation-guide.md). Khâu người dùng tập trình, giảng viên xem và thử trực tiếp điện thoại/máy khác tiếp tục thực hiện trước buổi báo cáo.
+
+[Kết quả nghiệm thu thông tin nhà trọ, PDF và nhập nhiều phòng ngày 30/10](../frontend/docs/property-pdf-bulk-acceptance.md).
+
+**Trạng thái sản phẩm ngày 30/10/2026:** theo yêu cầu bổ sung, đã hoàn thành thông tin nhà trọ, PDF hóa đơn/phiếu thu cho hai vai trò và nhập chỉ số nhiều phòng. Hồ sơ chống ghi đè theo phiên bản; PDF tiếng Việt thể hiện đúng hủy/thay thế, chỉ hiện thông tin chuyển khoản khi hóa đơn chưa thu/thu một phần. Bảng chỉ số xác nhận tối đa 100 dòng theo từng khoảng giá, có kết quả/giao dịch/chống trùng riêng từng dòng, phục hồi thủ công sau mất phản hồi và chặn bỏ qua khoảng giá liền trước. [Tự thử thông tin/PDF](../frontend/docs/property-pdf-self-test.md), [tự thử nhập nhiều phòng](../frontend/docs/bulk-meters-self-test.md).
+
+Kết quả đã xác nhận đến 30/10: backend **399 ca/4.145 assertions**, frontend **131 ca**, bản đóng gói đạt; Chrome cuối **14/14** (4,1 phút), PDF sau chỉnh font cuối **10/10** (97 assertions). MySQL **28 bảng nghiệp vụ/100 quan hệ/3 view**; **53 kiểm tra đồng thời/6 tình huống** trên CSDL riêng đạt, CSDL tạm đã dọn, không ghi nghiệp vụ thử vào dữ liệu thật. Năm PDF giả gồm **31 trang** đã được kiểm tra hình ảnh, không có chữ tràn trang hoặc ký tự thay thế. Các mốc cũ bên dưới được giữ theo thời điểm lập; Excel, ảnh chỉ số, hợp đồng/cọc/quyết toán, hoàn tiền thực tế và hosting chưa triển khai. Việc chuẩn bị bản trình/dữ liệu, tự thử và tập demo vẫn cần hoàn tất theo lịch thực tế.
+
+**Cập nhật sản phẩm 27/10/2026:** theo lựa chọn tiếp theo của người dùng, đã bổ sung [chi phí sửa chữa](../frontend/docs/repair-expenses-self-test.md) và [sửa sai phiếu thu](../frontend/docs/payment-corrections-self-test.md). Tại mốc 27/10, PDF/Excel và hoàn tiền thực tế còn là phần chọn riêng; trạng thái PDF mới nhất đã cập nhật ở trên. Những mốc/kết quả ban đầu bên dưới được giữ theo thời điểm lập kế hoạch.
+
 Lập ngày 25/10/2026. Người dùng dự kiến trình sản phẩm trong tuần đầu hoặc đầu tuần thứ hai tháng 11; chưa có ngày cụ thể. Giảng viên yêu cầu xem sản phẩm và đánh giá trước, sau đó mới cân nhắc chức năng bổ sung, cuối cùng mới làm báo cáo Word.
 
 ## Mục tiêu và thứ tự
@@ -8,9 +18,9 @@ Lập ngày 25/10/2026. Người dùng dự kiến trình sản phẩm trong tu�
 
 Mốc nội bộ đề xuất: sẵn sàng trước khi kết thúc **31/10**, dự phòng **01/11**. Khi lịch trình chính thức được chốt, lấy ngày đó làm mốc buổi xem sản phẩm; không tự suy ra yêu cầu nộp Word/slide của trường.
 
-Từ nay đến buổi xem sản phẩm, tập trung sửa lỗi, chuẩn bị môi trường/dữ liệu và tập demo. PDF, Excel, hợp đồng/cọc, QR, chat, tích hợp thanh toán, liên kết chi phí sửa chữa và quên mật khẩu chưa đưa vào đợt này. Các chức năng này chỉ trở lại kế hoạch sau khi có đánh giá và quyết định phạm vi mới.
+Phạm vi ban đầu ngày 25/10 tập trung sửa lỗi, chuẩn bị môi trường/dữ liệu và tập demo. Sau đó người dùng chọn bổ sung chi phí sửa chữa, sửa sai phiếu thu, thông tin nhà trọ/PDF và nhập nhiều phòng; các phần này nay đã có. Trước buổi xem tiếp tục chốt bản chạy và tự thử. Excel, hợp đồng/cọc, QR, chat, thanh toán trực tuyến và quên mật khẩu vẫn là phần chọn riêng sau đánh giá.
 
-## Điểm xuất phát
+## Điểm xuất phát tại thời điểm lập ngày 25/10
 
 - Hai vai trò chủ trọ/người thuê, đăng nhập/đăng xuất, tài khoản và phân quyền.
 - CT1–CT8: phòng/dịch vụ, người thuê/quá trình thuê, điện nước/hóa đơn/thu tiền, công nợ, thu chi và lịch sử, sửa chữa/ảnh, tổng quan/biểu đồ.
@@ -19,7 +29,7 @@ Từ nay đến buổi xem sản phẩm, tập trung sửa lỗi, chuẩn bị m
 - Ghi nhận gần nhất: 336 kiểm thử backend, 119 frontend, 25 kịch bản Chrome liên quan lịch sử/sửa chữa/người thuê/thông báo đạt; bản đóng gói và quy chuẩn PHP đạt. MySQL có 23 bảng nghiệp vụ, 81 quan hệ, 3 view.
 - Các con số trên là kết quả những lượt đã chạy, không phải chứng nhận toàn bộ sản phẩm không còn lỗi. Điện thoại thật, cài mới trên máy khác và hosting vẫn cần đối chiếu theo nhu cầu buổi đánh giá.
 
-Đây là kế hoạch cho các bước tiếp theo; việc tạo dữ liệu demo mới, cài bản sao MySQL, quay video và tổ chức buổi đánh giá chưa được thực hiện trong lần lập kế hoạch này.
+Tại lần lập kế hoạch ngày 25/10, việc tạo dữ liệu demo mới, cài bản sao MySQL, quay video và tổ chức buổi đánh giá chưa được thực hiện. Bản trình SQLite riêng và ảnh dự phòng đã được chuẩn bị sau đó như cập nhật ở đầu tài liệu; việc trình trực tiếp và thử máy khác vẫn cần thực hiện.
 
 ## Lịch thực hiện đề xuất
 
@@ -42,7 +52,7 @@ Nếu buổi xem được chốt sớm hơn dự kiến, giữ ba việc cốt l
 ## Bước 1 — Chốt phạm vi bản sản phẩm
 
 1. Lưu một danh sách ngắn các chức năng sẽ cho giảng viên thử, dựa trên mục Điểm xuất phát.
-2. Đánh dấu rõ các phần chưa có như PDF/Excel/hợp đồng/cọc; trình bày chúng là hướng phát triển sau đánh giá.
+2. Đánh dấu rõ các phần chưa có như Excel, ảnh đồng hồ, hợp đồng/cọc/quyết toán và hoàn tiền thực tế; PDF và nhập nhiều phòng đã thuộc bản sản phẩm hiện tại.
 3. Xác nhận hai vai trò và quy tắc quan trọng: người thuê chỉ xem dữ liệu được cấp quyền; báo hỏng mới do đại diện đủ điều kiện gửi; thành viên thường vẫn nhận thông báo chung khi đủ điều kiện.
 4. Giữ màu sắc/kiểu chữ và cách điều hướng hiện tại; chỉ sửa điểm khó dùng thực sự tìm được.
 
@@ -115,7 +125,7 @@ Chuẩn bị cách giải thích ngắn: Vue gọi Laravel qua API, phiên đăn
 
 1. Ghi góp ý thành ba nhóm: lỗi bắt buộc sửa; nghiệp vụ cần điều chỉnh; chức năng gợi ý thêm.
 2. Ưu tiên hai nhóm đầu, xác định kết quả mong đợi và kiểm tra lại sau sửa.
-3. Chọn chức năng bổ sung theo góp ý và thời gian thực tế. Các ứng viên đã có trong kế hoạch dài hạn là PDF hóa đơn/phiếu thu, Excel và liên kết chi phí sửa chữa; không mặc định phải làm tất cả.
+3. Chọn chức năng bổ sung theo góp ý và thời gian thực tế. Các ứng viên còn lại gồm Excel, ảnh đồng hồ và hợp đồng/cọc/quyết toán; PDF và liên kết chi phí sửa chữa đã được bổ sung, không lập lại thành việc chưa làm.
 4. Chốt lại bản sản phẩm để dùng cho báo cáo. Sau khi các thay đổi đã thống nhất được hoàn thiện, mới bắt đầu Word theo mẫu/yêu cầu cụ thể của giảng viên/trường.
 5. Khi làm Word, dùng đúng phạm vi/chức năng, sơ đồ CSDL và ảnh của bản đã chốt; trình bày trung thực việc đã làm, kiểm thử và giới hạn còn lại.
 
@@ -130,4 +140,4 @@ Chuẩn bị cách giải thích ngắn: Vue gọi Laravel qua API, phiên đăn
 | Đánh giá | Cho giảng viên thử và ghi nhận góp ý | Phân loại góp ý, lập đợt sửa/bổ sung tiếp theo |
 | Word | Lấy mẫu và yêu cầu sau khi đến giai đoạn này | Hỗ trợ soạn theo sản phẩm đã chốt và mẫu được cung cấp |
 
-Việc nên làm ngay tiếp theo: **chuẩn bị bộ dữ liệu và bản sản phẩm dùng để trình, rồi người dùng tự thử theo kịch bản**, không bắt đầu PDF/Excel hoặc Word trong đợt chuẩn bị này.
+Việc nên làm ngay tiếp theo: **chuẩn bị bộ dữ liệu và bản sản phẩm dùng để trình, rồi người dùng tự thử theo kịch bản**, tiếp tục kiểm tra các bổ sung đã có, giữ Excel và Word cho phạm vi/giai đoạn đã chốt.

@@ -9,6 +9,7 @@ import UiPageState from '@/components/ui/UiPageState.vue'
 import UiNotice from '@/components/ui/UiNotice.vue'
 import MaintenancePhotos from '@/components/maintenance/MaintenancePhotos.vue'
 import MaintenanceHistory from '@/components/maintenance/MaintenanceHistory.vue'
+import MaintenanceExpenses from '@/components/maintenance/MaintenanceExpenses.vue'
 import { useOwnerApi } from '@/composables/useOwnerApi'
 import { ApiError, toApiError } from '@/lib/api'
 import { formatDateTime } from '@/lib/notifications'
@@ -80,7 +81,8 @@ onBeforeUnmount(() => { alive = false; sequence++; request.value = null; window.
         <section class="record-card"><h2>{{ request.status === 'resolved' ? 'Kết quả sửa chữa' : 'Tiến độ xử lý' }}</h2><p v-if="request.resolution" class="plain-content">{{ request.resolution }}</p><p v-else class="help-text">Chưa có nội dung xử lý. Bạn có thể tiếp nhận và thông báo kế hoạch cho người gửi.</p><p class="help-text">Nội dung cập nhật được gửi đến đúng người báo hỏng qua thông báo trong ứng dụng.</p><p v-if="!request.can_process" class="closed-note">Yêu cầu đã hoàn tất và giữ nguyên kết quả. Nếu sự cố tái phát, người thuê gửi yêu cầu mới.</p><div v-if="request.can_process" class="button-row"><UiButton variant="secondary" @click="openEdit">Ghi tiến độ hoặc hoàn tất</UiButton></div></section>
         <MaintenancePhotos class="wide" :request-id="request.id" :photos="request.photos" />
         <MaintenanceHistory class="wide" :request-id="request.id" :refresh-key="request.version_token" />
-        <section class="record-card wide related-note"><h2>Đối chiếu công việc</h2><p class="help-text">Cập nhật sửa chữa không tự thay đổi trạng thái phòng hoặc ghi chi phí. Khi cần, bạn quản lý phòng và ghi khoản chi thực tế ở các mục tương ứng.</p><div class="button-row"><RouterLink class="record-link" to="/owner/rooms">Quản lý phòng →</RouterLink><RouterLink class="record-link" to="/owner/cash">Thu chi →</RouterLink></div></section>
+        <MaintenanceExpenses class="wide" :request-id="request.id" />
+        <section class="record-card wide related-note"><h2>Đối chiếu công việc</h2><p class="help-text">Cập nhật sửa chữa không tự thay đổi trạng thái phòng hoặc ghi chi phí. Các khoản chi thực tế được ghi trong sổ thu chi và liên kết ở phần Chi phí sửa chữa.</p><div class="button-row"><RouterLink class="record-link" to="/owner/rooms">Quản lý phòng →</RouterLink><RouterLink class="record-link" to="/owner/cash">Thu chi →</RouterLink></div></section>
       </div>
       <UiDialog :open="editing" title="Cập nhật sửa chữa" description="Người gửi sẽ thấy trạng thái và nội dung bạn ghi bên dưới." @update:open="value => { if (!value) closeEdit() }">
         <form class="form-grid" @submit.prevent="reviewing ? save() : review()">

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
+import { useUnsavedChanges } from '@/composables/useUnsavedChanges'
 import { useRouter } from 'vue-router'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiDialog from '@/components/ui/UiDialog.vue'
@@ -13,6 +14,8 @@ const router = useRouter(), { write, busy, error, errors, clearError } = useOwne
 const step = ref(1), roomIds = ref<number[]>([]), groupIds = ref<number[]>([]), tenantIds = ref<number[]>([]), representative = ref(''), startedAt = ref(localEventTime())
 const room = ref<Record<string, unknown> | null>(null), group = ref<Record<string, unknown> | null>(null), selectedTenants = reactive(new Map<number, Tenant>())
 const groupOpen = ref(false), groupCode = ref(''), groupVersion = ref(0), clientError = ref('')
+const saved = ref(false), initialStart = startedAt.value
+useUnsavedChanges(computed(() => !saved.value && !!(roomIds.value.length || groupIds.value.length || tenantIds.value.length || groupCode.value.trim() || startedAt.value !== initialStart)))
 const members = computed(() => tenantIds.value.map(id => selectedTenants.get(id)).filter((value): value is Tenant => !!value))
 const representatives = computed(() => members.value.filter(tenant => tenant.account?.is_active))
 function chooseTenant(value: Record<string, unknown>) { selectedTenants.set(Number(value.id), value as unknown as Tenant) }
@@ -30,6 +33,7 @@ async function createGroup() {
 async function submit() {
   try {
     const result = await write<{ data: Occupancy }>('post', '/occupancies', { room_id: roomIds.value[0], rental_group_id: groupIds.value[0], tenant_ids: [...tenantIds.value], started_at: eventPayload(startedAt.value), ...(representative.value ? { representative_tenant_id: Number(representative.value) } : {}) })
+    saved.value = true
     await router.replace({ path: `/owner/stays/${result.data.id}`, query: { received: '1' } })
   } catch { /* No automatic retry. The review stays open. */ }
 }

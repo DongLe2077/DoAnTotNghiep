@@ -1,6 +1,21 @@
 # Backend đã có và việc còn lại
 
-Cập nhật ngày 25/10/2026.
+[Kết quả nghiệm thu thông tin nhà trọ, PDF và nhập nhiều phòng ngày 30/10](../../frontend/docs/property-pdf-bulk-acceptance.md).
+
+Cập nhật ngày 30/10/2026.
+
+## Trạng thái hiện tại ngày 30/10/2026
+
+- **Thông tin nhà trọ:** hồ sơ dùng chung một nhà trọ; cấu hình tên/địa chỉ/liên hệ/tài khoản nhận tiền, phiên bản và khóa bảo vệ chống ghi đè. [Quy tắc/API](rental-property.md).
+- **PDF hóa đơn và phiếu thu:** chủ trọ và người thuê có quyền tải chứng từ tiếng Việt bằng font DejaVu Unicode cục bộ; giữ trạng thái hủy/thay thế, số tiền chính xác và kiểm tra quyền hiện tại. Hướng dẫn ngân hàng chỉ xuất trên hóa đơn chưa thu hoặc thu một phần. [Chi tiết](pdf-documents.md).
+- **Nhập chỉ số nhiều phòng:** từng dòng theo đợt thuê/khoảng giá, tối đa 100 dòng mỗi lượt xác nhận; giao dịch và kết quả riêng từng dòng, chống trùng và phục hồi thủ công sau mất phản hồi. Chặn bỏ qua khoảng giá liền trước chưa đủ chỉ số. [Quy tắc/API](bulk-meter-readings.md).
+- **Kiểm tra đã chạy:** toàn bộ backend 399 kiểm thử/4.145 assertions; frontend 131 kiểm thử; bản đóng gói đạt. PDF chạy lại sau chỉnh font cuối đạt 10/10 ca, 97 assertions. Chrome cuối đạt 14/14 ca trong 4,1 phút, gồm điện nước/hóa đơn, nghiệm thu giao diện, nhập nhiều phòng và thông tin nhà trọ/PDF; ảnh desktop và 320px đã được xem.
+- **MySQL và PDF:** xác minh 28 bảng nghiệp vụ/100 quan hệ/3 view; 53 kiểm tra đồng thời trong 6 tình huống trên CSDL riêng đạt, CSDL tạm đã dọn và không ghi nghiệp vụ thử vào dữ liệu thật. Năm PDF mẫu giả gồm 31 trang đã được đối chiếu hình ảnh; kiểm tra không thấy chữ tràn trang hoặc ký tự thay thế.
+- Excel, ảnh chỉ số điện/nước, hợp đồng/cọc/quyết toán, hoàn tiền thực tế và hosting chưa triển khai. Các kết quả cục bộ không thay thế nghiệm thu máy cài mới/điện thoại thật/hosting.
+
+## Các đợt đã kiểm tra trước
+
+Đợt 27/10/2026: đã bổ sung [chi phí sửa chữa](maintenance-expenses.md) và [sửa sai phiếu thu](payment-corrections.md). Chi phí liên kết khoản chi gốc, có gắn/gỡ, lịch sử và tổng theo trạng thái xóa/khôi phục. Phiếu thu sai được hủy hiệu lực hoặc thay bằng phiếu đúng cùng giao dịch; giữ phiếu gốc, tính lại công nợ/sổ tiền và thông báo. Không thực hiện hoàn tiền thực tế. MySQL hiện có 26 bảng nghiệp vụ/95 quan hệ/3 view; 23 bảng cũ được đối chiếu giữ nguyên khi nâng cấp. Kiểm tra backend hiện đạt 364 ca/3.756 assertions, frontend 127 ca và bản đóng gói đạt; kiểm tra đồng thời MySQL riêng đạt 61 bước/10 tình huống, CSDL thử đã dọn.
 
 Lịch sử xử lý sửa chữa đã có cho hai vai trò: từng lần đổi trạng thái/ghi chú trước sau, người thực hiện/thời điểm, phân trang, mốc dữ liệu cũ và ghi cùng giao dịch với yêu cầu/thông báo. Backend đạt 336 kiểm thử/3.428 assertions; frontend 119 kiểm thử, 25 kịch bản Chrome liên quan và bản đóng gói đạt. Kiểm tra MySQL mới đạt 14 bước và 23 bảng giữ nguyên sau rollback; ánh xạ 23 bảng/81 quan hệ/3 view hợp lệ. [Quy tắc và API](maintenance-history.md), [tự kiểm tra](../../frontend/docs/maintenance-history-self-test.md).
 
@@ -12,9 +27,10 @@ Kiểm tra tự động ngày 23/10/2026 sau bổ sung điều chỉnh/hủy và
 
 ## Đã có
 
-- Laravel/MySQL, 23 bảng nghiệp vụ/81 quan hệ sau nâng cấp; đăng nhập cookie session, CSRF, hai vai trò và kiểm tra tài khoản khóa.
+- Laravel/MySQL, 28 bảng nghiệp vụ/100 quan hệ sau nâng cấp; đăng nhập cookie session, CSRF, hai vai trò và kiểm tra tài khoản khóa.
 - Phòng/dịch vụ; hồ sơ/tài khoản người thuê; nhóm thuê, nhận phòng, thành viên, đại diện, dịch vụ theo kỳ, chuyển/trả phòng.
-- Chỉ số điện nước, xem trước/phát hành hóa đơn, quyền xem riêng từng hóa đơn.
+- Chỉ số điện nước một/nhiều phòng theo khoảng áp dụng giá, chống gửi trùng từng dòng; xem trước/phát hành hóa đơn, quyền xem riêng từng hóa đơn.
+- Thông tin nhà trọ có chống ghi đè; PDF hóa đơn/phiếu thu cho hai vai trò theo quyền hiện tại.
 - Thu tiền một phần/toàn bộ bằng tiền mặt/chuyển khoản xác nhận thủ công, chống thu vượt/gửi trùng.
 - Thu khác/chi phí, sổ thu chi, tổng hợp ngày/tháng; báo hỏng và cập nhật xử lý.
 - Nhật ký từng lần xử lý sửa chữa, trước/sau và tài khoản thực hiện; người gửi xem lịch sử của mình kể cả sau trả phòng. Không tự ghi chi phí. [Chi tiết](maintenance-history.md).
@@ -34,12 +50,13 @@ Kiểm tra tự động ngày 23/10/2026 sau bổ sung điều chỉnh/hủy và
 4. **Mã nguồn và môi trường:** đã khởi tạo Git, liên kết kho `DongLe2077/DoAnTotNghiep` và bổ sung hướng dẫn cài đặt ở README gốc. Giữ `.env`, dữ liệu tải lên và tệp chạy tạm ngoài Git; tiếp tục quản lý thay đổi và kiểm tra quy trình cài trên máy khác.
 5. **Vận hành:** cấu hình tên miền, HTTPS, cookie/CORS, tắt debug, quyền thư mục, theo dõi lỗi, sao lưu định kỳ và thử khôi phục; đánh giá hiệu năng báo cáo theo lượng dữ liệu thực tế. Chưa triển khai hoặc lập lịch sao lưu.
 
-Không cần chờ thêm nghiệp vụ mới để bắt đầu frontend. Sau khi giao diện dùng được, hoàn thiện các mục bàn giao và tài liệu đề tài.
+Hai vai trò đã có giao diện kết nối backend. Tiếp tục tự thử trên bản trình, hoàn thiện bàn giao và chốt nội dung báo cáo theo đánh giá của giảng viên.
 
 ## Mở rộng khi đặc tả yêu cầu
 
 - Hoàn tiền có đối chiếu và chứng từ; hiện điều chỉnh hóa đơn không được giảm tổng xuống dưới số đã thu.
-- Xuất hóa đơn/biên nhận PDF và báo cáo Excel.
+- Xuất báo cáo Excel; PDF hóa đơn/phiếu thu đã có.
+- Ảnh đồng hồ theo kỳ chỉ số; nhập nhiều phòng đã có.
 - Phân công thợ, thông báo ngoài ứng dụng qua email/SMS/Zalo hoặc đẩy thời gian thực. Nhắc hóa đơn đã có lịch 08:00, cần tiến trình lập lịch Laravel hoạt động để chạy tự động.
 - Đối soát ngân hàng/thanh toán trực tuyến; hiện chuyển khoản do chủ trọ xác nhận thủ công.
 - Quên mật khẩu tự phục vụ: hiện tự đổi khi biết mật khẩu cũ; chủ trọ đặt lại tài khoản người thuê qua chức năng quản lý tài khoản. Chưa có kênh email/SMS khôi phục, bảng users hiện không có email.

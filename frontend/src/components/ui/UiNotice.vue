@@ -3,7 +3,7 @@ withDefaults(defineProps<{ tone?: 'info' | 'success' | 'warning' | 'danger'; tit
 </script>
 
 <template>
-  <div class="ui-notice" :class="`ui-notice--${tone}`" :role="tone === 'danger' ? 'alert' : 'status'">
+  <div class="ui-notice" :class="`ui-notice--${tone}`" :role="tone === 'danger' ? 'alert' : 'status'" aria-atomic="true">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path v-if="tone === 'success'" d="m8 12 3 3 5-6" /><path v-else d="M12 7v6m0 4v.01" /></svg>
     <div><strong v-if="title">{{ title }}</strong><div><slot /></div></div>
   </div>
@@ -16,4 +16,7 @@ withDefaults(defineProps<{ tone?: 'info' | 'success' | 'warning' | 'danger'; tit
 .ui-notice--success { color: var(--color-success); background: var(--color-success-soft); }
 .ui-notice--warning { color: var(--color-warning); background: var(--color-warning-soft); }
 .ui-notice--danger { color: var(--color-danger); background: var(--color-danger-soft); }
+.ui-notice > div { min-width: 0; overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: no-preference) { .ui-notice { animation: notice-in var(--motion-normal, 180ms) ease-out; } }
+@keyframes notice-in { from { opacity: 0; } to { opacity: 1; } }
 </style>

@@ -14,7 +14,8 @@ withDefaults(defineProps<{
 </template>
 
 <style scoped>
-.ui-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 11px 18px; border: 1px solid transparent; border-radius: var(--radius-control); font-size: 14px; font-weight: 600; line-height: 1.5; text-decoration: none; transition: background 120ms ease; }
+.ui-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 11px 18px; border: 1px solid transparent; border-radius: var(--radius-control); font-size: 14px; font-weight: 600; line-height: 1.5; text-decoration: none; transition: background var(--motion-fast) ease, border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease; }
+.ui-button:active:not(:disabled) { box-shadow: inset 0 0 0 2px rgb(0 0 0 / 10%); }
 .ui-button--primary { color: #fff; background: var(--color-primary); }
 .ui-button--primary:hover:not(:disabled) { background: var(--color-primary-hover); }
 .ui-button--secondary { color: var(--color-primary); background: var(--color-surface); border-color: var(--color-input-border); }

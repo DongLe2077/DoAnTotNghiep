@@ -28,6 +28,8 @@ export const router = createRouter({
         { path: 'notifications', name: 'notifications', component: () => import('@/views/NotificationsView.vue'), meta: { title: 'Thông báo' } },
         { path: 'forbidden', name: 'forbidden', component: () => import('@/views/ForbiddenView.vue'), meta: { title: 'Không có quyền truy cập' } },
         { path: 'owner', name: 'owner-home', component: () => import('@/views/owner/DashboardView.vue'), meta: { title: 'Tổng quan', role: 'owner' } },
+        { path: 'owner/property', component: () => import('@/views/owner/PropertyView.vue'), meta: { title: 'Thông tin nhà trọ', role: 'owner' } },
+        { path: 'owner/meters/bulk', component: () => import('@/views/owner/BulkMetersView.vue'), meta: { title: 'Nhập chỉ số nhiều phòng', role: 'owner' } },
         { path: 'owner/announcements', component: () => import('@/views/owner/AnnouncementsView.vue'), meta: { title: 'Thông báo chung', role: 'owner' } },
         { path: 'owner/announcements/new', component: () => import('@/views/owner/NewAnnouncementView.vue'), meta: { title: 'Soạn thông báo', role: 'owner' } },
         { path: 'owner/announcements/:id(\\d+)', component: () => import('@/views/owner/AnnouncementDetailView.vue'), meta: { title: 'Thông báo đã gửi', role: 'owner' } },
@@ -61,7 +63,7 @@ export const router = createRouter({
       ],
     },
   ],
-  scrollBehavior: () => ({ top: 0 }),
+  scrollBehavior: (_to, _from, savedPosition) => savedPosition ?? { top: 0 },
 })
 
 router.beforeEach(async to => {

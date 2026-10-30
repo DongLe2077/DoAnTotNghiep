@@ -62,7 +62,7 @@ class InvoiceControls
             } else {
                 abort_if($locked->cancelled_at !== null, 409, 'Hóa đơn đã hủy. Cần khôi phục trước khi thay đổi.');
                 if ($action === 'cancel') {
-                    abort_if($locked->payments()->lockForUpdate()->first() !== null, 409, 'Hóa đơn đã có lần thu tiền nên không được hủy. Dùng điều chỉnh và giữ nguyên phiếu thu.');
+                    abort_if($locked->payments()->effective()->lockForUpdate()->first() !== null, 409, 'Hóa đơn còn phiếu thu có hiệu lực nên không được hủy. Cần đối chiếu các lần thu trước.');
                     $locked->cancelled_at = now()->startOfSecond();
                 } elseif ($action === 'due_date') {
                     abort_if($values['due_date'] < now()->format('Y-m-d'), 422, 'Hạn thanh toán mới phải từ hôm nay trở đi.');

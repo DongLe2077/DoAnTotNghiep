@@ -28,6 +28,16 @@ onMounted(syncOpen)
 <style scoped>
 .ui-dialog { width: min(560px, calc(100% - 32px)); max-height: calc(100dvh - 48px); padding: 24px; border: 1px solid var(--color-border); border-radius: var(--radius-card); color: var(--color-text); background: var(--color-surface); box-shadow: var(--shadow-popover); }
 .ui-dialog::backdrop { background: rgb(23 45 34 / 35%); }
+@supports (transition-behavior: allow-discrete) {
+  .ui-dialog { opacity: 0; transform: translateY(8px); transition: opacity var(--motion-normal, 180ms) var(--motion-ease, ease), transform var(--motion-normal, 180ms) var(--motion-ease, ease), display var(--motion-normal, 180ms) allow-discrete, overlay var(--motion-normal, 180ms) allow-discrete; }
+  .ui-dialog[open] { opacity: 1; transform: translateY(0); }
+  .ui-dialog::backdrop { background: rgb(23 45 34 / 0%); transition: background var(--motion-normal, 180ms), display var(--motion-normal, 180ms) allow-discrete, overlay var(--motion-normal, 180ms) allow-discrete; }
+  .ui-dialog[open]::backdrop { background: rgb(23 45 34 / 35%); }
+  @starting-style {
+    .ui-dialog[open] { opacity: 0; transform: translateY(8px); }
+    .ui-dialog[open]::backdrop { background: rgb(23 45 34 / 0%); }
+  }
+}
 header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 h2 { margin: 4px 0; font-size: 22px; font-weight: 600; }
 .close { flex-shrink: 0; width: 44px; height: 44px; border: 0; border-radius: 10px; color: var(--color-text-secondary); background: var(--color-bg); font-size: 26px; line-height: 1; }

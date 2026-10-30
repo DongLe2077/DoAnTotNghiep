@@ -100,5 +100,6 @@ FROM rooms r LEFT JOIN (
     GROUP BY o.room_id
 ) s ON s.room_id = r.id
 SQL);
+        (require database_path('migrations/2026_10_28_000001_create_rental_properties.php'))->up();
     }
 }

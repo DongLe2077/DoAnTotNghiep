@@ -52,4 +52,4 @@ Hai tab sửa cùng khoản có thể gặp thông báo dữ liệu đã đổi.
 
 Tiếp tục thử Phòng, Dịch vụ, Người thuê và Quá trình thuê bằng dữ liệu mẫu. Thu nhỏ cửa sổ để kiểm tra menu thu gọn và biểu mẫu. Mỗi thao tác ảnh hưởng dữ liệu có bước xem lại hoặc xác nhận phù hợp. Đăng xuất/đăng nhập lại, kiểm tra không giữ nội dung riêng tư của tài khoản trước.
 
-NT1–NT4 đã có [giao diện riêng cho người thuê](tenant-self-test.md). Xuất PDF/Excel, hủy/điều chỉnh hóa đơn và hoàn tiền chưa nằm trong phạm vi hiện tại. Quên mật khẩu và đăng ký công khai vẫn để sau theo quyết định trước đó. Bản dùng thử chạy tại máy này; chưa triển khai lên máy chủ công khai.
+NT1–NT4 đã có [giao diện riêng cho người thuê](tenant-self-test.md). Đã có điều chỉnh/hủy hóa đơn, [chi phí sửa chữa](repair-expenses-self-test.md) và [sửa sai phiếu thu](payment-corrections-self-test.md). Xuất PDF/Excel và hoàn tiền thực tế chưa triển khai. Quên mật khẩu và đăng ký công khai vẫn để sau theo quyết định trước đó. Bản dùng thử chạy tại máy này; chưa triển khai lên máy chủ công khai.

@@ -7,6 +7,7 @@ import UiNotice from '@/components/ui/UiNotice.vue'
 import UiPageState from '@/components/ui/UiPageState.vue'
 import OwnerField from '@/components/owner/OwnerField.vue'
 import TenantPhotoPicker from '@/components/maintenance/TenantPhotoPicker.vue'
+import { useUnsavedChanges } from '@/composables/useUnsavedChanges'
 import { useTenantApi } from '@/composables/useTenantApi'
 import { photoFormData, photoSelectionError } from '@/lib/tenant-photos'
 import { toApiError } from '@/lib/api'
@@ -16,6 +17,8 @@ const eligible = ref<EligibleStay[]>([]), checking = ref(true), eligibilityError
 const form = reactive({ occupancy_id: '', title: '', description: '' })
 const frozen = ref<{ occupancy_id: string; title: string; description: string } | null>(null)
 const saved = ref<MyMaintenance | null>(null), pendingPhotos = ref<File[] | null>(null), localError = ref('')
+const completed = ref(false)
+useUnsavedChanges(computed(() => !completed.value && (saved.value ? !!(files.value.length || pendingPhotos.value?.length) : !!(form.title.trim() || form.description.trim() || files.value.length))))
 const location = computed(() => eligible.value.find(item => String(item.occupancy_id) === form.occupancy_id))
 const messages = computed(() => Object.values(client.errors.value).flat())
 let alive = true
@@ -33,9 +36,9 @@ function prepare() {
 }
 async function upload() {
   if (!saved.value) return
-  if (!files.value.length && !pendingPhotos.value) { await router.push(`/tenant/maintenance/${saved.value.id}?created=1`); return }
+  if (!files.value.length && !pendingPhotos.value) { completed.value = true; await router.push(`/tenant/maintenance/${saved.value.id}?created=1`); return }
   pendingPhotos.value ??= [...files.value]
-  try { await client.post(`/maintenance-requests/${saved.value.id}/photos`, photoFormData(pendingPhotos.value)); files.value = []; pendingPhotos.value = null; await router.push(`/tenant/maintenance/${saved.value.id}?created=1`) }
+  try { await client.post(`/maintenance-requests/${saved.value.id}/photos`, photoFormData(pendingPhotos.value)); files.value = []; pendingPhotos.value = null; completed.value = true; await router.push(`/tenant/maintenance/${saved.value.id}?created=1`) }
   catch (caught) { if (toApiError(caught).status === 422) pendingPhotos.value = null }
 }
 async function send() {

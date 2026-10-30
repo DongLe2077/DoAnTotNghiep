@@ -1,5 +1,11 @@
 # Ánh xạ CSDL rental_management
 
+[Kết quả nghiệm thu thông tin nhà trọ, PDF và nhập nhiều phòng ngày 30/10](../../frontend/docs/property-pdf-bulk-acceptance.md).
+
+Cập nhật 30/10/2026: **28 bảng nghiệp vụ/28 model, 100 quan hệ và 3 view**. Bảng `rental_properties` → `RentalProperty` giữ hồ sơ chung một nhà trọ, người cập nhật và phiên bản chống ghi đè. Bảng `meter_reading_requests` → `MeterReadingRequestRecord` giữ mã/nội dung gốc để đối chiếu gửi lại chỉ số nhiều phòng; xóa chỉ số hợp lệ không xóa danh tính yêu cầu cũ. Các bảng nghiệp vụ có trước được giữ nguyên khi nâng cấp. [Thông tin nhà trọ](rental-property.md), [PDF](pdf-documents.md), [nhập nhiều phòng](bulk-meter-readings.md). Các mốc bên dưới mô tả lịch sử nâng cấp.
+
+Cập nhật 27/10/2026: **26 bảng nghiệp vụ/26 model, 95 quan hệ và 3 view**. Hai bảng `maintenance_expense_links`/`maintenance_expense_histories` lưu liên kết khoản chi và lịch sử; `payment_corrections` lưu đối chiếu phiếu sai/thay thế. View `invoice_balances` chỉ cộng phiếu còn hiệu lực. [Chi phí sửa chữa](maintenance-expenses.md), [sửa sai phiếu thu](payment-corrections.md). Dữ liệu 23 bảng có trước được giữ nguyên sau nâng cấp; các số liệu theo ngày bên dưới mô tả lịch sử.
+
 Cập nhật 25/10/2026: **23 bảng nghiệp vụ/23 model, 81 quan hệ và 3 view**. Bảng `maintenance_request_histories` → `MaintenanceRequestHistory` giữ nhật ký cập nhật, FK đến yêu cầu và tài khoản thực hiện. [Quy tắc lịch sử sửa chữa](maintenance-history.md). Các số liệu theo ngày bên dưới mô tả các đợt trước.
 
 Cập nhật 24/10/2026: sau kiểm soát hóa đơn và thông báo chung, hiện có **22 bảng nghiệp vụ/22 model, 78 quan hệ và 3 view**. `announcements` → `Announcement` lưu nội dung/phạm vi gửi; `app_notifications.announcement_id` liên kết thông báo cá nhân và thời điểm đọc. [Chi tiết thông báo chung](announcements.md). Các số liệu theo ngày bên dưới mô tả lịch sử nâng cấp.

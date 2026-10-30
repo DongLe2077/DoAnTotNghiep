@@ -1959,6 +1959,398 @@
             ]
         },
         {
+            "TABLE_NAME": "maintenance_expense_histories",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_unicode_ci",
+            "TABLE_COMMENT": "",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "maintenance_expense_link_id",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "maintenance_request_id",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "cash_transaction_id",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "revision",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "action",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(20)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "before_data",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "json",
+                    "COLUMN_TYPE": "json",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "after_data",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "json",
+                    "COLUMN_TYPE": "json",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "performed_by",
+                    "ORDINAL_POSITION": 9,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "actor_username",
+                    "ORDINAL_POSITION": 10,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(80)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "actor_role",
+                    "ORDINAL_POSITION": 11,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(20)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "reason",
+                    "ORDINAL_POSITION": 12,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(1000)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "idempotency_key",
+                    "ORDINAL_POSITION": 13,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(64)",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "request_fingerprint",
+                    "ORDINAL_POSITION": 14,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(64)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "created_at",
+                    "ORDINAL_POSITION": 15,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "maintenance_expense_histories_cash_transaction_id_foreign",
+                    "COLUMN_NAME": "cash_transaction_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "cash_transactions",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "maintenance_expense_histories_idempotency_key_unique",
+                    "COLUMN_NAME": "idempotency_key",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "maintenance_expense_histories_maintenance_request_id_foreign",
+                    "COLUMN_NAME": "maintenance_request_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "maintenance_requests",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "maintenance_expense_histories_performed_by_foreign",
+                    "COLUMN_NAME": "performed_by",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "users",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "maintenance_expense_history_link_fk",
+                    "COLUMN_NAME": "maintenance_expense_link_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "maintenance_expense_links",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "maintenance_expense_history_revision",
+                    "COLUMN_NAME": "maintenance_expense_link_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "maintenance_expense_history_revision",
+                    "COLUMN_NAME": "revision",
+                    "ORDINAL_POSITION": 2,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "maintenance_expense_links",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_unicode_ci",
+            "TABLE_COMMENT": "",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "cash_transaction_id",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "maintenance_request_id",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "is_active",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": "1",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "tinyint",
+                    "COLUMN_TYPE": "tinyint(1)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 3,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "revision",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": "1",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "created_at",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "updated_at",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "maintenance_expense_links_cash_transaction_id_foreign",
+                    "COLUMN_NAME": "cash_transaction_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "cash_transactions",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "maintenance_expense_links_cash_transaction_id_unique",
+                    "COLUMN_NAME": "cash_transaction_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "maintenance_expense_links_maintenance_request_id_foreign",
+                    "COLUMN_NAME": "maintenance_request_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "maintenance_requests",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
             "TABLE_NAME": "maintenance_photos",
             "TABLE_TYPE": "BASE TABLE",
             "ENGINE": "InnoDB",
@@ -2493,6 +2885,189 @@
                 {
                     "CONSTRAINT_NAME": "fk_maintenance_requests_sender",
                     "COLUMN_NAME": "submitted_by",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "users",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "meter_reading_requests",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_unicode_ci",
+            "TABLE_COMMENT": "",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "idempotency_key",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(64)",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "occupancy_service_id",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "meter_reading_id",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "original_reading_id",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "recorded_by",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "request_data",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "json",
+                    "COLUMN_TYPE": "json",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "request_fingerprint",
+                    "ORDINAL_POSITION": 9,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "char",
+                    "COLUMN_TYPE": "char(64)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "created_at",
+                    "ORDINAL_POSITION": 10,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "meter_reading_requests_idempotency_key_unique",
+                    "COLUMN_NAME": "idempotency_key",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "meter_reading_requests_meter_reading_id_foreign",
+                    "COLUMN_NAME": "meter_reading_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "meter_readings",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "meter_reading_requests_occupancy_id_foreign",
+                    "COLUMN_NAME": "occupancy_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "occupancies",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "meter_reading_requests_occupancy_service_id_foreign",
+                    "COLUMN_NAME": "occupancy_service_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "occupancy_services",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "meter_reading_requests_recorded_by_foreign",
+                    "COLUMN_NAME": "recorded_by",
                     "ORDINAL_POSITION": 1,
                     "REFERENCED_TABLE_NAME": "users",
                     "REFERENCED_COLUMN_NAME": "id"
@@ -3105,6 +3680,242 @@
             ]
         },
         {
+            "TABLE_NAME": "payment_corrections",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_unicode_ci",
+            "TABLE_COMMENT": "",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "invoice_id",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "payment_id",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "replacement_payment_id",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "action",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(20)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "reason",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "text",
+                    "COLUMN_TYPE": "text",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "before_data",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "json",
+                    "COLUMN_TYPE": "json",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "after_data",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "json",
+                    "COLUMN_TYPE": "json",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "performed_by",
+                    "ORDINAL_POSITION": 9,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "actor_username",
+                    "ORDINAL_POSITION": 10,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(80)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "idempotency_key",
+                    "ORDINAL_POSITION": 11,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(64)",
+                    "COLUMN_KEY": "UNI",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "request_fingerprint",
+                    "ORDINAL_POSITION": 12,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "char",
+                    "COLUMN_TYPE": "char(64)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "created_at",
+                    "ORDINAL_POSITION": 13,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "datetime",
+                    "COLUMN_TYPE": "datetime",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "payment_corrections_idempotency_key_unique",
+                    "COLUMN_NAME": "idempotency_key",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "payment_corrections_invoice_id_foreign",
+                    "COLUMN_NAME": "invoice_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "invoices",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "payment_corrections_payment_id_foreign",
+                    "COLUMN_NAME": "payment_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "payments",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "payment_corrections_payment_id_unique",
+                    "COLUMN_NAME": "payment_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "payment_corrections_performed_by_foreign",
+                    "COLUMN_NAME": "performed_by",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "users",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "payment_corrections_replacement_payment_id_foreign",
+                    "COLUMN_NAME": "replacement_payment_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "payments",
+                    "REFERENCED_COLUMN_NAME": "id"
+                },
+                {
+                    "CONSTRAINT_NAME": "payment_corrections_replacement_payment_id_unique",
+                    "COLUMN_NAME": "replacement_payment_id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
             "TABLE_NAME": "payments",
             "TABLE_TYPE": "BASE TABLE",
             "ENGINE": "InnoDB",
@@ -3308,6 +4119,213 @@
                     "ORDINAL_POSITION": 1,
                     "REFERENCED_TABLE_NAME": null,
                     "REFERENCED_COLUMN_NAME": null
+                }
+            ]
+        },
+        {
+            "TABLE_NAME": "rental_properties",
+            "TABLE_TYPE": "BASE TABLE",
+            "ENGINE": "InnoDB",
+            "TABLE_COLLATION": "utf8mb4_unicode_ci",
+            "TABLE_COMMENT": "",
+            "columns": [
+                {
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "PRI",
+                    "EXTRA": "auto_increment",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "name",
+                    "ORDINAL_POSITION": 2,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(150)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "address",
+                    "ORDINAL_POSITION": 3,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(500)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "contact_name",
+                    "ORDINAL_POSITION": 4,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(150)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "phone",
+                    "ORDINAL_POSITION": 5,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(30)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "email",
+                    "ORDINAL_POSITION": 6,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(254)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "bank_name",
+                    "ORDINAL_POSITION": 7,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(150)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "bank_account_number",
+                    "ORDINAL_POSITION": 8,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(50)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "bank_account_name",
+                    "ORDINAL_POSITION": 9,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "varchar",
+                    "COLUMN_TYPE": "varchar(150)",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "notes",
+                    "ORDINAL_POSITION": 10,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "text",
+                    "COLUMN_TYPE": "text",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "revision",
+                    "ORDINAL_POSITION": 11,
+                    "COLUMN_DEFAULT": "1",
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "int",
+                    "COLUMN_TYPE": "int unsigned",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 10,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "updated_by",
+                    "ORDINAL_POSITION": 12,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "NO",
+                    "DATA_TYPE": "bigint",
+                    "COLUMN_TYPE": "bigint unsigned",
+                    "COLUMN_KEY": "MUL",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": 20,
+                    "NUMERIC_SCALE": 0
+                },
+                {
+                    "COLUMN_NAME": "created_at",
+                    "ORDINAL_POSITION": 13,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "timestamp",
+                    "COLUMN_TYPE": "timestamp",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                },
+                {
+                    "COLUMN_NAME": "updated_at",
+                    "ORDINAL_POSITION": 14,
+                    "COLUMN_DEFAULT": null,
+                    "IS_NULLABLE": "YES",
+                    "DATA_TYPE": "timestamp",
+                    "COLUMN_TYPE": "timestamp",
+                    "COLUMN_KEY": "",
+                    "EXTRA": "",
+                    "COLUMN_COMMENT": "",
+                    "NUMERIC_PRECISION": null,
+                    "NUMERIC_SCALE": null
+                }
+            ],
+            "keys": [
+                {
+                    "CONSTRAINT_NAME": "PRIMARY",
+                    "COLUMN_NAME": "id",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": null,
+                    "REFERENCED_COLUMN_NAME": null
+                },
+                {
+                    "CONSTRAINT_NAME": "rental_properties_updated_by_foreign",
+                    "COLUMN_NAME": "updated_by",
+                    "ORDINAL_POSITION": 1,
+                    "REFERENCED_TABLE_NAME": "users",
+                    "REFERENCED_COLUMN_NAME": "id"
                 }
             ]
         },

@@ -8,9 +8,9 @@ Hoàn thành ngày 23/10/2026, có giao diện chủ trọ và người thuê.
 - Một hóa đơn chỉ quá hạn khi còn nợ hợp lệ, chưa hủy và `due_date` nhỏ hơn ngày hiện tại. Ngày hạn đóng vẫn chưa quá hạn. Thu đủ thì hết công nợ quá hạn. Không tự tính tiền phạt.
 - Chủ trọ đặt/đổi hạn sau phát hành bằng thao tác có lý do, xác nhận và lịch sử. Hạn mới từ hôm nay trở đi; gửi lại chính yêu cầu đã ghi nhận vẫn được chấp nhận sau khi qua ngày.
 - Điều chỉnh là khoản tăng/giảm riêng, lưu số tiền và lý do; không sửa/xóa dòng phòng, dịch vụ hoặc chỉ số đã phát hành. Tổng mới không âm, không vượt 16 chữ số nguyên/2 số lẻ và không thấp hơn số đã thu. Tổng sau điều chỉnh dùng cho công nợ, thu tiền, báo cáo và biểu đồ; không cộng điều chỉnh thành tiền thực thu/chi.
-- Chỉ hủy hóa đơn chưa có bất kỳ phiếu thu nào. Sau hủy tổng có hiệu lực và công nợ bằng 0, trạng thái `cancelled`, không thể thu tiền/nhắc nợ. Hóa đơn, dòng gốc, điều chỉnh và quyền xem được giữ nguyên.
+- Chỉ hủy hóa đơn không còn phiếu thu có hiệu lực. Phiếu đã hủy ghi nhận qua nghiệp vụ sửa sai vẫn giữ trong lịch sử nhưng không chặn hủy hóa đơn. Sau hủy tổng có hiệu lực và công nợ bằng 0, trạng thái `cancelled`, không thể thu tiền/nhắc nợ. Hóa đơn, dòng gốc, điều chỉnh và quyền xem được giữ nguyên.
 - Hủy không mở khóa nguồn điện nước hoặc cho phát hành trùng cùng đợt thuê/tháng. Có thể khôi phục bằng thao tác có lý do; tổng điều chỉnh và hạn đã lưu có hiệu lực trở lại. Cần sửa số tiền thì điều chỉnh trên chính hóa đơn đó.
-- Hóa đơn đã thu tiền chỉ được điều chỉnh trong giới hạn trên; không xóa/hủy phiếu thu và không tự hoàn tiền.
+- Điều chỉnh hóa đơn không xóa/hủy phiếu thu và không tự hoàn tiền. Ghi nhận phiếu sai được xử lý riêng bằng [sửa sai phiếu thu](payment-corrections.md), giữ phiếu gốc và tính lại số đã thu còn hiệu lực.
 - Người thuê chỉ đọc hóa đơn còn quyền, hạn đóng, lịch sử và lý do; không có thao tác quản trị. Thông báo cập nhật hóa đơn giữ quyền theo cấp/thu hồi hiện tại, kể cả hóa đơn đã trả đủ hoặc đã hủy.
 
 ## API

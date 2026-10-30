@@ -14,6 +14,7 @@ const isMenuOpen = ref(false)
 const isLoggingOut = ref(false)
 const logoutError = ref('')
 const isDemo = import.meta.env.VITE_DEMO_MODE === '1'
+const isPresentation = import.meta.env.VITE_PRESENTATION_MODE === '1'
 const sidebar = ref<HTMLElement | null>(null)
 const menuButton = ref<HTMLButtonElement | null>(null)
 let previousBodyOverflow = ''
@@ -45,6 +46,7 @@ const ownerNavigation: NavigationItem[] = [
   { label: 'Thu chi', to: '/owner/cash', icon: icons.cash },
   { label: 'Sửa chữa', to: '/owner/maintenance', icon: icons.maintenance },
   { label: 'Thông báo chung', to: '/owner/announcements', icon: 'M3 10v4h4l10 5V5L7 10H3Zm4 4 2 7h3l-2-6m10-7v8' },
+  { label: 'Thông tin nhà trọ', to: '/owner/property', icon: icons.account },
 ]
 
 const tenantNavigation: NavigationItem[] = [
@@ -206,7 +208,7 @@ onBeforeUnmount(() => {
         <button type="button" aria-label="Đóng thông báo lỗi" @click="logoutError = ''">×</button>
       </div>
 
-      <p v-if="isDemo" class="demo-banner" role="status">Bản dùng thử · Dữ liệu mẫu được giữ khi khởi động lại. Các tab cùng trình duyệt dùng chung tài khoản đăng nhập.</p>
+      <p v-if="isDemo" class="demo-banner" role="status">{{ isPresentation ? 'Bản trình đánh giá · Dữ liệu giả riêng, được giữ khi khởi động lại.' : 'Bản dùng thử · Dữ liệu mẫu được giữ khi khởi động lại.' }} Các tab cùng trình duyệt dùng chung tài khoản đăng nhập.</p>
       <main id="main-content" class="main-content" tabindex="-1"><RouterView :key="auth.user ? `${auth.user.id}:${auth.user.role}:${route.path}` : 'anonymous'" /></main>
       <footer class="app-footer"><span>Quản lý nhà trọ</span><span>Dữ liệu hiển thị theo quyền tài khoản</span></footer>
       <nav v-if="!isOwner && !isMenuOpen" class="tenant-bottom-navigation" aria-label="Điều hướng người thuê"><RouterLink v-for="item in tenantBottomNavigation" :key="item.to" :to="item.to" :class="{ 'is-active': bottomActive(item.to) }" :aria-current="bottomActive(item.to) ? 'page' : undefined"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="item.icon" /></svg><span>{{ item.label }}</span></RouterLink></nav>

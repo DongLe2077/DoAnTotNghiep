@@ -7,6 +7,9 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "demo": "node scripts/demo.mjs",
+    "presentation": "node scripts/presentation.mjs",
+    "presentation:checkpoint": "node scripts/presentation-checkpoint.mjs",
+    "presentation:restore": "node scripts/restore-presentation.mjs",
     "build": "vue-tsc --noEmit && vite build",
     "typecheck": "vue-tsc --noEmit",
     "preview": "vite preview --host 127.0.0.1",

@@ -33,6 +33,9 @@
   --radius-control: 10px;
   --radius-card: 16px;
   --shadow-popover: 0 16px 48px rgb(35 59 50 / 12%);
+  --motion-fast: 120ms;
+  --motion-normal: 180ms;
+  --motion-ease: cubic-bezier(.2, .7, .2, 1);
   font-family: var(--font-family);
   color: var(--color-text);
   background: var(--color-bg);
@@ -80,5 +83,6 @@ textarea:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--colo
 .boot-screen p { margin: 0; }
 @media (max-width: 640px) { .ui-input, .ui-select, .ui-textarea { font-size: 16px; } }
 @media (prefers-reduced-motion: reduce) {
+  :root { --motion-fast: 0ms; --motion-normal: 0ms; }
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }

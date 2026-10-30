@@ -46,7 +46,7 @@ class InvoiceQueries
         if ($detail) {
             $query->with([
                 'items' => fn ($items) => $items->with('occupancyService.service', 'meterReading')->orderBy('id'),
-                'payments' => fn ($payments) => $payments->orderBy('paid_at')->orderBy('id'),
+                'payments' => fn ($payments) => $payments->with('correction', 'replacementFor', 'invoice')->orderBy('paid_at')->orderBy('id'),
                 'changes' => fn ($changes) => $changes->with('performedBy')->orderBy('revision'),
             ]);
             if ($tenantUserId === null) {

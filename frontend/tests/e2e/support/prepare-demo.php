@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Storage;
 
 $frontend = dirname(__DIR__, 3);
 $backend = dirname($frontend).DIRECTORY_SEPARATOR.'backend';
-$root = $frontend.DIRECTORY_SEPARATOR.'.cache'.DIRECTORY_SEPARATOR.'e2e';
+$root = $frontend.DIRECTORY_SEPARATOR.'.cache'.DIRECTORY_SEPARATOR.(getenv('E2E_PRESENTATION') === '1' ? 'presentation' : 'e2e');
 $database = $root.DIRECTORY_SEPARATOR.'owner-demo.sqlite';
 $runId = getenv('E2E_RUN_ID');
 $storage = $root.DIRECTORY_SEPARATOR.'runs'.DIRECTORY_SEPARATOR.$runId.DIRECTORY_SEPARATOR.'storage';
@@ -43,6 +43,19 @@ if (! Schema::hasTable('announcements')) {
 }
 if (! Schema::hasTable('maintenance_request_histories')) {
     DB::transaction(fn () => (require $backend.'/database/migrations/2026_10_25_000001_create_maintenance_request_histories.php')->up());
+}
+if (! Schema::hasTable('maintenance_expense_links')) {
+    DB::transaction(fn () => (require $backend.'/database/migrations/2026_10_27_000001_create_maintenance_expense_links.php')->up());
+}
+if (! Schema::hasTable('payment_corrections')) {
+    DB::transaction(fn () => (require $backend.'/database/migrations/2026_10_27_000002_create_payment_corrections.php')->up());
+}
+
+if (! Schema::hasTable('rental_properties')) {
+    DB::transaction(fn () => (require $backend.'/database/migrations/2026_10_28_000001_create_rental_properties.php')->up());
+}
+if (! Schema::hasTable('meter_reading_requests')) {
+    DB::transaction(fn () => (require $backend.'/database/migrations/2026_10_28_000002_create_meter_reading_requests.php')->up());
 }
 
 // Adopt previous demo uploads into stable manual-demo storage, matching each stored hash.

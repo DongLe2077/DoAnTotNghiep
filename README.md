@@ -52,6 +52,12 @@ npm run dev
 
 Mở `http://127.0.0.1:5173/login`, đăng nhập bằng tài khoản ứng dụng đã có. Frontend proxy `/api` đến Laravel, dùng cookie session/CSRF hiện tại. [Hướng dẫn frontend và kiểm thử](frontend/README.md).
 
+Nâng cấp ngày 27/10/2026: đã có liên kết chi phí sửa chữa và sửa sai phiếu thu có đối chiếu; giữ dữ liệu/phiếu gốc. Backend 364 kiểm thử, frontend 127 kiểm thử và bản đóng gói đạt. MySQL 26 bảng nghiệp vụ/95 quan hệ/3 view; kiểm tra đồng thời riêng 61 bước đạt. [Kết quả Chrome và giới hạn từng lượt](frontend/docs/financial-upgrades-acceptance.md).
+
+Hoàn thiện ngày 30/10/2026: thông tin nhà trọ, PDF hóa đơn/phiếu thu theo quyền và nhập chỉ số nhiều phòng có chống gửi trùng. Backend 399 kiểm thử, frontend 131 kiểm thử, đóng gói và 14 kịch bản Chrome liên quan đạt; MySQL xác minh 28 bảng/100 quan hệ/3 view. [Phạm vi, kết quả và giới hạn nghiệm thu](frontend/docs/property-pdf-bulk-acceptance.md).
+
+Đợt tiếp theo cùng ngày: đã chuẩn bị bản trình riêng và hoàn thiện phản hồi/hiệu ứng giao diện; **94/94 kịch bản Chrome toàn bộ**, 131 kiểm thử frontend và đóng gói đạt. Có dữ liệu nhiều tình huống, mốc mã nguồn/CSDL/ảnh và công cụ khôi phục sau tập demo. [Hướng dẫn trình](frontend/docs/presentation-guide.md), [biên bản nghiệm thu](frontend/docs/presentation-polish-acceptance.md).
+
 ## Kiểm tra và tài liệu
 
 ```powershell
@@ -72,8 +78,17 @@ Bổ sung lịch sử sửa chữa 25/10/2026: 336 kiểm thử backend, 119 fro
 - [Chống gửi trùng thu khác/chi phí](backend/docs/cash-idempotency.md)
 - [Thông báo chung: quy tắc/API](backend/docs/announcements.md), [tự kiểm tra trên giao diện](frontend/docs/announcements-self-test.md)
 - [Lịch sử sửa chữa: quy tắc/API](backend/docs/maintenance-history.md), [tự kiểm tra](frontend/docs/maintenance-history-self-test.md)
+- [Chi phí sửa chữa: quy tắc/API](backend/docs/maintenance-expenses.md), [tự kiểm tra](frontend/docs/repair-expenses-self-test.md)
+- [Sửa sai phiếu thu: quy tắc/API](backend/docs/payment-corrections.md), [tự kiểm tra](frontend/docs/payment-corrections-self-test.md)
+- [Nghiệm thu chi phí sửa chữa/sửa sai phiếu thu ngày 27/10](frontend/docs/financial-upgrades-acceptance.md)
+- [Thông tin nhà trọ/PDF: tự kiểm tra](frontend/docs/property-pdf-self-test.md), [quy tắc cấu hình](backend/docs/rental-property.md), [PDF](backend/docs/pdf-documents.md)
+- [Nhập chỉ số nhiều phòng: tự kiểm tra](frontend/docs/bulk-meters-self-test.md), [quy tắc/API](backend/docs/bulk-meter-readings.md)
 - [Kế hoạch giao diện frontend](backend/docs/frontend-plan.md)
 - [Kế hoạch chuẩn bị sản phẩm để giảng viên đánh giá đầu tháng 11/2026](docs/initial-report-plan-2026-11.md)
+- [Kế hoạch bổ sung và nâng cấp chức năng ngày 27/10/2026](docs/feature-upgrade-plan-2026-10-27.md)
+- [Bản trình sản phẩm: chạy CMD, tài khoản, dữ liệu và sao lưu/khôi phục](frontend/docs/presentation-guide.md)
+- [Nghiệm thu bản trình và hoàn thiện giao diện ngày 30/10](frontend/docs/presentation-polish-acceptance.md)
+- [Thứ tự nâng cấp sau ngày 30/10](docs/next-upgrade-plan-2026-10-30.md)
 
 `.env`, dữ liệu tải lên, thư viện cài đặt và các tệp chạy tạm được giữ ngoài Git.
 

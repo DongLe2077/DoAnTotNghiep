@@ -15,11 +15,15 @@ Backend Laravel 12, sử dụng PHP 8.2 trở lên và CSDL MySQL `rental_manage
 - Đã có API quản lý thu khác/chi phí, sổ thu chi gồm tiền hóa đơn đã thu và tổng hợp chênh lệch theo ngày/tháng: [docs/cash-book.md](docs/cash-book.md).
 - Đã có API đại diện gửi báo hỏng, chủ trọ tiếp nhận/cập nhật kết quả, người gửi xem tiến độ và lịch sử của mình: [docs/maintenance-requests.md](docs/maintenance-requests.md).
 - Lịch sử từng lần xử lý sửa chữa, trước/sau, người thực hiện, thời điểm và mốc dữ liệu cũ: [docs/maintenance-history.md](docs/maintenance-history.md).
+- Liên kết chi phí sửa chữa với khoản chi gốc, lịch sử gắn/gỡ và tổng theo trạng thái khoản chi: [docs/maintenance-expenses.md](docs/maintenance-expenses.md).
+- Sửa sai phiếu thu bằng hủy ghi nhận/thay thế có đối chiếu, giữ phiếu gốc và cập nhật số dư/sổ tiền: [docs/payment-corrections.md](docs/payment-corrections.md).
 - Đã có tổng quan và công nợ theo hóa đơn/phòng/nhóm: [docs/dashboard-receivables.md](docs/dashboard-receivables.md).
 - Đã có hồ sơ/phòng/dịch vụ hiện tại, lịch sử riêng của người thuê và đổi mật khẩu: [docs/tenant-portal.md](docs/tenant-portal.md).
 - Phạm vi backend đã có và việc trước bàn giao: [docs/backend-readiness.md](docs/backend-readiness.md).
 - Đã có nhật ký/hoàn tác thu chi, ảnh báo hỏng riêng tư và thông báo nhắc thanh toán/cập nhật sửa chữa: [docs/audit-photos-notifications.md](docs/audit-photos-notifications.md).
 - Đã có thông báo chung toàn bộ/theo phòng, xem trước người nhận, chống gửi trùng và thống kê đã đọc: [docs/announcements.md](docs/announcements.md).
+- Thông tin nhà trọ dùng chung trên chứng từ và xuất PDF theo quyền: [cấu hình](docs/rental-property.md), [PDF](docs/pdf-documents.md).
+- Nhập chỉ số nhiều phòng, kết quả từng dòng, bản chờ/chống trùng và bảo toàn khóa kỳ: [docs/bulk-meter-readings.md](docs/bulk-meter-readings.md).
 - POST thu khác/chi phí đã có mã chống gửi trùng bền vững: [docs/cash-idempotency.md](docs/cash-idempotency.md).
 - Kế hoạch làm giao diện, thứ tự màn hình và nghiệm thu: [docs/frontend-plan.md](docs/frontend-plan.md). Chức năng quên mật khẩu để đợt sau theo yêu cầu.
 
@@ -57,10 +61,10 @@ php artisan serve
 
 ## CSDL hiện có
 
-- Đã kết nối MySQL 8.0.43; từ 16 bảng gốc, hiện mở rộng thành 23 bảng nghiệp vụ/23 model và 81 quan hệ Eloquent. Bảng `migrations` dùng theo dõi nâng cấp.
+- Đã kết nối MySQL 8.0.43; từ 16 bảng gốc, hiện mở rộng thành 28 bảng nghiệp vụ/28 model và 100 quan hệ Eloquent. Bảng `migrations` dùng theo dõi nâng cấp.
 - Chi tiết bảng, cột, kiểu dữ liệu, thời gian và khóa ngoại: [docs/database-mapping.md](docs/database-mapping.md).
-- Bản chụp cấu trúc 23 bảng nghiệp vụ và 3 view (không chứa bản ghi): `database/schema/rental_management.json`.
-- Các migration/dữ liệu mẫu mặc định đã loại bỏ; 7 migration bổ sung nhật ký thu chi, ảnh báo hỏng, thông báo, mã chống gửi trùng, kiểm soát hóa đơn, thông báo chung và lịch sử sửa chữa. Dữ liệu cũ được giữ nguyên.
+- Bản chụp cấu trúc 28 bảng nghiệp vụ và 3 view (không chứa bản ghi): `database/schema/rental_management.json`.
+- Các migration/dữ liệu mẫu mặc định đã loại bỏ; 11 migration mở rộng gồm các phần tài chính/sửa chữa, thông tin nhà trọ và mã gửi lại chỉ số. Dữ liệu nghiệp vụ cũ được giữ.
 - Session và cache lưu bằng file; queue chạy đồng bộ, không cần thêm bảng hệ thống.
 - Múi giờ ứng dụng: `Asia/Ho_Chi_Minh`.
 - Không chạy `migrate:fresh`, `migrate:refresh` hoặc `db:wipe` trên CSDL hiện có.

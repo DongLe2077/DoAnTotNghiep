@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue'
+import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 
 type PageStateKind = 'loading' | 'empty' | 'error' | 'forbidden' | 'not-found'
 
@@ -8,6 +9,7 @@ const props = withDefaults(defineProps<{
   title?: string
   description?: string
   headingLevel?: 'h1' | 'h2' | 'h3'
+  skeleton?: 'dashboard' | 'cards' | 'list'
 }>(), { kind: 'empty', headingLevel: 'h2' })
 
 const defaults: Record<PageStateKind, { title: string; description: string }> = {
@@ -23,8 +25,8 @@ const headingId = `page-state-${useId()}`
 </script>
 
 <template>
-  <section class="page-state" :class="`page-state--${kind}`" :aria-labelledby="headingId" :role="kind === 'error' ? 'alert' : kind === 'loading' ? 'status' : undefined" aria-live="polite">
-    <span class="page-state__symbol" aria-hidden="true">
+  <section class="page-state" :class="[`page-state--${kind}`, { 'page-state--skeleton': kind === 'loading' && skeleton }]" :aria-labelledby="headingId" :role="kind === 'error' ? 'alert' : kind === 'loading' ? 'status' : undefined" aria-live="polite">
+    <span v-if="kind !== 'loading' || !skeleton" class="page-state__symbol" aria-hidden="true">
       <svg v-if="kind === 'loading'" class="page-state__spinner" viewBox="0 0 32 32"><circle cx="16" cy="16" r="11" /><path d="M16 5a11 11 0 0 1 11 11" /></svg>
       <svg v-else viewBox="0 0 32 32">
         <template v-if="kind === 'forbidden'"><rect x="7" y="14" width="18" height="14" rx="3" /><path d="M11 14V9a5 5 0 0 1 10 0v5m-5 6v3" /></template>
@@ -35,6 +37,7 @@ const headingId = `page-state-${useId()}`
     </span>
     <component :is="headingLevel" :id="headingId" class="page-state__title">{{ titleText }}</component>
     <p v-if="descriptionText" class="page-state__description">{{ descriptionText }}</p>
+    <UiSkeleton v-if="kind === 'loading' && skeleton" :layout="skeleton" />
     <div v-if="$slots.actions || $slots.default" class="page-state__actions"><slot name="actions"><slot /></slot></div>
   </section>
 </template>
@@ -49,6 +52,9 @@ const headingId = `page-state-${useId()}`
 .page-state__actions { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; width: 100%; margin-top: 28px; }
 .page-state__spinner { animation: state-spin 1s linear infinite; }
 .page-state__spinner circle { opacity: .18; }
+.page-state--skeleton { padding: 0; align-items: stretch; text-align: left; gap: 12px; }
+.page-state--skeleton .page-state__title { font-size: 17px; letter-spacing: 0; }
+.page-state--skeleton .page-state__description { margin: 0 0 8px; }
 @keyframes state-spin { to { transform: rotate(360deg); } }
 @media (max-width: 560px) { .page-state { padding: 32px 20px; } .page-state__title { font-size: 22px; } .page-state__actions { flex-direction: column; align-items: stretch; } }
 @media (prefers-reduced-motion: reduce) { .page-state__spinner { animation: none; } }

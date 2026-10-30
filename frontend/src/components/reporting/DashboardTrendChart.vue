@@ -74,7 +74,7 @@ function label(item: MonthlyStatistics) { return `Tháng ${chartMonth(item.month
 .month-column:hover, .month-column.is-selected { background: #235c4b09; }
 .month-column.is-selected .month-label { color: var(--color-primary); font-weight: 700; }
 .bar-pair { display: flex; align-items: end; justify-content: center; gap: 4px; min-width: 0; }
-.bar { display: block; width: 18px; max-width: 38%; border-radius: 4px 4px 0 0; transition: height .2s ease, background .2s ease; }
+.bar { display: block; width: 18px; max-width: 38%; border-radius: 4px 4px 0 0; transition: height var(--motion-normal, 180ms) var(--motion-ease, ease), background var(--motion-normal, 180ms) ease; }
 .month-label { display: block; padding-top: 8px; font-size: 12px; line-height: 1.3; }
 .month-label small { display: block; margin-top: 3px; font-size: 10px; font-weight: 400; }
 .plot-empty { position: absolute; top: 65px; left: 8px; right: 8px; padding: 16px; color: var(--color-text-secondary); text-align: center; font-size: 13px; background: var(--color-surface); border-radius: 8px; pointer-events: none; }

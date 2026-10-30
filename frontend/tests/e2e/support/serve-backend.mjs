@@ -7,7 +7,9 @@ import { fileURLToPath } from 'node:url'
 const supportPath = dirname(fileURLToPath(import.meta.url))
 const frontendPath = resolve(supportPath, '../../..')
 const backendPath = resolve(frontendPath, '../backend')
-const isolatedPath = resolve(frontendPath, '.cache/e2e')
+const presentationMode = process.env.E2E_PRESENTATION === '1'
+if (presentationMode && process.env.E2E_DEMO !== '1') throw new Error('Presentation mode requires the isolated demo.')
+const isolatedPath = resolve(frontendPath, presentationMode ? '.cache/presentation' : '.cache/e2e')
 const demoMode = process.env.E2E_DEMO === '1'
 let runId = randomBytes(8).toString('hex')
 if (demoMode) {
@@ -69,7 +71,7 @@ const env = {
   DB_PASSWORD: '',
   DB_FOREIGN_KEYS: 'true',
   SESSION_DRIVER: 'file',
-  SESSION_COOKIE: demoMode ? 'rental_owner_demo_session' : 'rental_e2e_session',
+  SESSION_COOKIE: presentationMode ? 'rental_presentation_session' : demoMode ? 'rental_owner_demo_session' : 'rental_e2e_session',
   SESSION_DOMAIN: 'null',
   SESSION_SECURE_COOKIE: 'false',
   SESSION_HTTP_ONLY: 'true',
@@ -87,6 +89,7 @@ const env = {
 // Browser tests always reset their own fixture; the manual demo retains user edits.
 const scripts = demoMode && existsSync(env.DB_DATABASE) ? [] : ['prepare-backend.php']
 if (demoMode) scripts.push('prepare-demo.php')
+if (presentationMode) scripts.push('prepare-presentation.php')
 for (const script of scripts) {
   const prepared = spawnSync(php, [resolve(supportPath, script)], {
     cwd: backendPath,
@@ -98,7 +101,7 @@ for (const script of scripts) {
   if (prepared.error) throw prepared.error
   process.stdout.write(prepared.stdout || '')
   process.stderr.write(prepared.stderr || '')
-  const ready = script === 'prepare-backend.php' ? 'Isolated E2E auth fixtures ready' : '"demo_accounts_ready":true'
+  const ready = script === 'prepare-backend.php' ? 'Isolated E2E auth fixtures ready' : script === 'prepare-presentation.php' ? '"presentation_ready":true' : '"demo_accounts_ready":true'
   if (prepared.status !== 0 || !prepared.stdout.includes(ready)) process.exit(prepared.status || 1)
 }
 

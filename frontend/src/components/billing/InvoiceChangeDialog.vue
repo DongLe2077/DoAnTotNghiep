@@ -51,7 +51,7 @@ async function save() {
   <form v-else-if="!reviewing" class="form-grid" @submit.prevent="reviewing = true; confirmed = false">
     <template v-if="action === 'adjustment'"><OwnerField v-model="amount" label="Khoản điều chỉnh tăng / giảm" name="amount" type="number" step="0.01" required :errors="client.errors.value" /><p class="help-text">Ví dụ: -50000 để giảm 50.000đ; 50000 để tăng 50.000đ. Tổng mới phải từ số đã thu trở lên.</p></template>
     <OwnerField v-if="action === 'due_date'" v-model="dueDate" label="Hạn thanh toán mới" name="due_date" type="date" required :min="localEventTime().slice(0, 10)" :errors="client.errors.value" />
-    <UiNotice v-if="action === 'cancel'" tone="warning">Chỉ hủy khi chưa có bất kỳ lần thu nào. Hóa đơn và nguồn điện nước vẫn được giữ để đối chiếu, không phát hành trùng cùng kỳ. Có thể khôi phục hóa đơn khi cần.</UiNotice>
+    <UiNotice v-if="action === 'cancel'" tone="warning">Chỉ hủy khi không còn phiếu thu có hiệu lực. Hóa đơn và nguồn điện nước vẫn được giữ để đối chiếu, không phát hành trùng cùng kỳ. Có thể khôi phục hóa đơn khi cần.</UiNotice>
     <UiNotice v-if="action === 'restore'" tone="warning">Khôi phục sẽ đưa hóa đơn trở lại công nợ theo tổng đã điều chỉnh và hạn đóng đã lưu.</UiNotice>
     <OwnerField v-model="reason" label="Lý do thay đổi" name="reason" required :max-length="1000" :errors="client.errors.value" />
     <UiButton type="submit">Xem lại thay đổi</UiButton>

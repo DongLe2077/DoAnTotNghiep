@@ -31,7 +31,7 @@ void load()
 <template>
   <section class="management-page dashboard-page">
     <header class="management-header"><div><span class="eyebrow">Không gian chủ trọ</span><h1>Tổng quan</h1><p>Theo dõi nơi ở, các việc cần xử lý và dòng tiền.</p></div><form class="button-row" @submit.prevent="load"><label class="select-field">Tháng theo dõi<input v-model="month" type="month" class="ui-input" required /></label><UiButton type="submit" variant="secondary" :loading="loading">Cập nhật</UiButton></form></header>
-    <UiPageState v-if="loading" kind="loading" title="Đang tổng hợp thông tin…" />
+    <UiPageState v-if="loading" kind="loading" skeleton="dashboard" title="Đang tổng hợp thông tin…" />
     <UiPageState v-else-if="error" kind="error" :description="error"><UiButton @click="load">Thử lại</UiButton></UiPageState>
     <template v-else-if="data">
       <section aria-labelledby="current-title"><div class="dashboard-section-heading"><h2 id="current-title">Tình hình hiện tại</h2><p class="help-text">Cập nhật {{ formatDateTime(data.as_of) }}</p></div><div class="dashboard-stats">

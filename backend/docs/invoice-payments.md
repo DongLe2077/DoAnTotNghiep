@@ -75,7 +75,7 @@ Các lần thu được tổng hợp cùng khoản thu khác/chi phí trong [s�
 
 Backend khóa bản ghi hóa đơn trong transaction, đọc các dòng tiền/lần thu hiện tại, tính chính xác bằng số thập phân rồi ghi. Các lần thu cùng hóa đơn được xử lý lần lượt và kiểm tra lại số dư; khóa duy nhất cùng kiểm tra payload xử lý tranh chấp cùng mã yêu cầu.
 
-Các lần thu là bản ghi đã xác nhận. API không sửa/xóa hoặc hoàn tiền phiếu thu. Đã có điều chỉnh tăng/giảm và hủy/khôi phục có lịch sử; chỉ hủy hóa đơn chưa có phiếu thu, tổng sau điều chỉnh không thấp hơn số đã thu. Xem `invoice-controls.md`. Không có tích hợp thanh toán trực tuyến.
+Các lần thu là bản ghi đã xác nhận, không sửa/xóa trực tiếp. Từ 27/10/2026 có [sửa sai phiếu thu](payment-corrections.md): hủy hiệu lực ghi nhận nhầm hoặc thay bằng phiếu đúng, giữ phiếu gốc và lịch sử, cập nhật số dư/sổ tiền. Gửi lại yêu cầu thu ban đầu vẫn trả phiếu gốc ở trạng thái hiện tại, không tạo phiếu mới. Chỉ hủy hóa đơn khi không còn phiếu có hiệu lực; tổng sau điều chỉnh không thấp hơn số đã thu còn hiệu lực. Chưa có hoàn tiền thực tế hoặc thanh toán trực tuyến.
 
 ## Lọc lịch sử
 

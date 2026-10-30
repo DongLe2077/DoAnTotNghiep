@@ -15,7 +15,12 @@ class InvoicePayments
 {
     public function query(array $filters = []): Builder
     {
-        $query = Payment::query()->with('invoice.occupancy.room', 'invoice.occupancy.rentalGroup');
+        $query = Payment::query()->with('invoice.occupancy.room', 'invoice.occupancy.rentalGroup', 'correction', 'replacementFor');
+        if (($filters['status'] ?? null) === 'active') {
+            $query->effective();
+        } elseif (($filters['status'] ?? null) === 'voided') {
+            $query->whereHas('correction');
+        }
         foreach (['invoice_id', 'payment_method'] as $field) {
             if (isset($filters[$field])) {
                 $query->where($field, $filters[$field]);
@@ -66,7 +71,7 @@ class InvoicePayments
                 }
                 abort_if($total->isNegative(), 409, 'Tổng sau điều chỉnh không hợp lệ.');
                 $paid = BigDecimal::zero()->toScale(2);
-                foreach ($locked->payments()->orderBy('id')->lockForUpdate()->get() as $payment) {
+                foreach ($locked->payments()->effective()->orderBy('id')->lockForUpdate()->get() as $payment) {
                     abort_unless(BigDecimal::of($payment->amount)->isPositive(), 409, 'Lịch sử thu tiền không hợp lệ, cần kiểm tra dữ liệu.');
                     $paid = $paid->plus($payment->amount);
                 }

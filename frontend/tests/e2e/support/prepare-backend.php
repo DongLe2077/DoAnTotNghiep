@@ -1,6 +1,7 @@
 <?php
 
 // Only a disposable SQLite fixture is created; application migrations are not run.
+use App\Services\CashBook;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -10,13 +11,14 @@ use Illuminate\Support\Facades\Storage;
 
 $frontendPath = dirname(__DIR__, 3);
 $backendPath = dirname($frontendPath).DIRECTORY_SEPARATOR.'backend';
-$expectedRoot = $frontendPath.DIRECTORY_SEPARATOR.'.cache'.DIRECTORY_SEPARATOR.'e2e';
+$presentationMode = getenv('E2E_PRESENTATION') === '1';
+$expectedRoot = $frontendPath.DIRECTORY_SEPARATOR.'.cache'.DIRECTORY_SEPARATOR.($presentationMode ? 'presentation' : 'e2e');
 $demoMode = getenv('E2E_DEMO') === '1';
 $expectedDatabase = $expectedRoot.DIRECTORY_SEPARATOR.($demoMode ? 'owner-demo.sqlite' : 'auth.sqlite');
 $runId = getenv('E2E_RUN_ID');
 $expectedStorage = $expectedRoot.DIRECTORY_SEPARATOR.'runs'.DIRECTORY_SEPARATOR.$runId.DIRECTORY_SEPARATOR.'storage';
 
-if (getenv('APP_ENV') !== 'e2e' || getenv('DB_CONNECTION') !== 'sqlite'
+if (($presentationMode && ! $demoMode) || getenv('APP_ENV') !== 'e2e' || getenv('DB_CONNECTION') !== 'sqlite'
     || getenv('E2E_ISOLATED_PATH') !== $expectedRoot || getenv('DB_DATABASE') !== $expectedDatabase
     || ! preg_match('/^[a-f0-9]{16}$/', $runId ?: '') || getenv('LARAVEL_STORAGE_PATH') !== $expectedStorage) {
     throw new RuntimeException('Refusing to prepare a database outside the isolated frontend E2E directory.');
@@ -297,8 +299,10 @@ if ($demoMode) {
         'created_at' => $fixtureTime, 'updated_at' => $fixtureTime]);
     $demoRoom = DB::table('rooms')->insertGetId(['room_number' => 'B202', 'capacity' => 3,
         'default_monthly_rent' => '2800000.00', 'operational_status' => 'available', 'created_at' => $fixtureTime, 'updated_at' => $fixtureTime]);
-    foreach (['B203', 'B204'] as $number) DB::table('rooms')->insert(['room_number' => $number, 'capacity' => 3,
-        'default_monthly_rent' => '2800000.00', 'operational_status' => 'available', 'created_at' => $fixtureTime, 'updated_at' => $fixtureTime]);
+    foreach (['B203', 'B204'] as $number) {
+        DB::table('rooms')->insert(['room_number' => $number, 'capacity' => 3,
+            'default_monthly_rent' => '2800000.00', 'operational_status' => 'available', 'created_at' => $fixtureTime, 'updated_at' => $fixtureTime]);
+    }
     $demoGroup = DB::table('rental_groups')->insertGetId(['group_code' => 'NHOM-HOANG', 'created_at' => $fixtureTime]);
     $from = now()->startOfYear()->format('Y-m-d H:i:s');
     $demoOccupancy = DB::table('occupancies')->insertGetId(['room_id' => $demoRoom, 'rental_group_id' => $demoGroup,
@@ -317,24 +321,30 @@ if ($demoMode) {
             'created_at' => $fixtureTime, 'updated_at' => $fixtureTime]);
         $period = DB::table('occupancy_services')->insertGetId(['occupancy_id' => $demoOccupancy, 'service_id' => $service,
             'effective_from' => $from, 'unit_price' => $price, 'billing_method' => $method, 'unit' => $unit, 'created_at' => $fixtureTime]);
-        if ($previous !== null) DB::table('meter_readings')->insert(['occupancy_service_id' => $period,
-            'period_start' => $periodStart, 'period_end' => $periodEnd, 'previous_reading' => $previous,
-            'current_reading' => $current, 'recorded_by' => $demoOwner, 'recorded_at' => $fixtureTime]);
+        if ($previous !== null) {
+            DB::table('meter_readings')->insert(['occupancy_service_id' => $period,
+                'period_start' => $periodStart, 'period_end' => $periodEnd, 'previous_reading' => $previous,
+                'current_reading' => $current, 'recorded_by' => $demoOwner, 'recorded_at' => $fixtureTime]);
+        }
     }
     $demoReport = DB::table('maintenance_requests')->insertGetId(['occupancy_id' => $demoOccupancy,
         'submitted_by' => $demoUser, 'representative_assignment_id' => $demoRep, 'title' => 'Vòi nước bếp bị rò',
         'description' => 'Nước rỉ ở van dưới bồn rửa. Nhờ chủ trọ sắp xếp kiểm tra.', 'status' => 'submitted',
         'resolution' => null, 'submitted_at' => $fixtureTime, 'updated_at' => $fixtureTime, 'revision' => 0]);
     $addNotice($demoOwner, 'maintenance_submitted', 'demo-owner-report', ['title' => 'Có yêu cầu báo hỏng mới', 'body' => 'Vòi nước bếp phòng B202 bị rò.'], reportId: $demoReport);
-    app(\App\Services\CashBook::class)->record(['idempotency_key' => 'demo-seed-expense-001', 'transaction_type' => 'expense',
+    app(CashBook::class)->record(['idempotency_key' => 'demo-seed-expense-001', 'transaction_type' => 'expense',
         'amount' => '150000.00', 'occurred_at' => $fixtureTime, 'description' => 'Mua vật tư sửa chữa (mẫu)', 'reason' => 'Khoản chi minh họa để thử chỉnh sửa và hoàn tác'], $demoOwner);
-    app(\App\Services\CashBook::class)->record(['idempotency_key' => 'demo-seed-income-001', 'transaction_type' => 'other_income',
+    app(CashBook::class)->record(['idempotency_key' => 'demo-seed-income-001', 'transaction_type' => 'other_income',
         'amount' => '50000.00', 'occurred_at' => $fixtureTime, 'description' => 'Thu khác (mẫu)', 'reason' => 'Dữ liệu cho bản chạy thử'], $demoOwner);
 }
 
 (require $backendPath.'/database/migrations/2026_10_23_000001_add_invoice_controls.php')->up();
 (require $backendPath.'/database/migrations/2026_10_24_000001_create_announcements.php')->up();
 (require $backendPath.'/database/migrations/2026_10_25_000001_create_maintenance_request_histories.php')->up();
+(require $backendPath.'/database/migrations/2026_10_27_000001_create_maintenance_expense_links.php')->up();
+(require $backendPath.'/database/migrations/2026_10_27_000002_create_payment_corrections.php')->up();
+(require $backendPath.'/database/migrations/2026_10_28_000001_create_rental_properties.php')->up();
+(require $backendPath.'/database/migrations/2026_10_28_000002_create_meter_reading_requests.php')->up();
 if (! $demoMode) {
     // An explicit synthetic past deadline exercises overdue UI without backdating live invoices.
     DB::table('invoices')->where('id', 1)->update(['due_date' => now()->subDays(2)->format('Y-m-d')]);

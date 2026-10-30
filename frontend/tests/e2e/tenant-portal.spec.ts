@@ -98,7 +98,7 @@ test('NT2 follows grants, partial/full receipts and revocation without offering 
   await page.getByRole('link', { name: 'Xem hóa đơn và lịch sử thanh toán →', exact: true }).click()
   await expect(page).toHaveURL(`/tenant/invoices/${invoice.id}`)
   await expect(page.locator('.ui-badge').filter({ hasText: 'Thanh toán một phần' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: '300.000,25 ₫', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /^PT-\d+ · 300\.000,25 ₫$/ })).toBeVisible()
   await expect(page.getByRole('button', { name: /Ghi nhận thu tiền|Xác nhận đã nhận tiền/ })).toHaveCount(0)
   const balance = (await (await request.get(`/api/owner/invoices/${invoice.id}`)).json()).data.outstanding_amount
   await apiWrite(request, 'POST', `/owner/invoices/${invoice.id}/payments`, { idempotency_key: crypto.randomUUID(), amount: balance, paid_at: invoice.issued_at, payment_method: 'bank_transfer' })

@@ -14,7 +14,7 @@ void load()
 <template>
   <section class="management-page tenant-page">
     <header class="management-header"><div><span class="eyebrow">Không gian của bạn</span><h1>Phòng của tôi</h1><p>Nơi ở, dịch vụ và những thông tin bạn cần mỗi ngày.</p></div><UiButton variant="secondary" :loading="loading" @click="load">Làm mới thông tin</UiButton></header>
-    <UiPageState v-if="loading" kind="loading" />
+    <UiPageState v-if="loading" kind="loading" skeleton="cards" />
     <UiPageState v-else-if="error" :kind="status === 404 ? 'not-found' : 'error'" :title="status === 404 ? 'Chưa có hồ sơ liên kết' : 'Chưa tải được phòng của bạn'" :description="status === 404 ? 'Hãy liên hệ chủ trọ để liên kết tài khoản với hồ sơ người thuê.' : error"><UiButton @click="load">Thử lại</UiButton></UiPageState>
     <template v-else-if="stay">
       <article class="record-card tenant-room-hero"><div><UiBadge tone="success">Đang cư trú</UiBadge><h2>Phòng {{ stay.room.room_number }}</h2><p>Nhóm {{ stay.group.group_code }}</p><p class="help-text">Bạn vào ở từ {{ formatDateTime(stay.moved_in_at) }}</p></div><div class="tenant-rent"><span>Giá thuê toàn phòng / tháng</span><strong>{{ formatMoney(stay.monthly_room_rent) }}</strong><small>Giá đã thỏa thuận cho phòng, không phải tiền riêng của từng người.</small></div></article>

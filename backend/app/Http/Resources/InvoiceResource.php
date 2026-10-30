@@ -73,6 +73,8 @@ class InvoiceResource extends JsonResource
                 'amount' => $payment->amount,
                 'paid_at' => $payment->paid_at->format('Y-m-d H:i:s'),
                 'payment_method' => $payment->payment_method,
+                'receipt_number' => 'PT-'.$payment->id,
+                ...PaymentResource::metadata($payment, $isOwner),
             ])),
             'access_grants' => $this->when($isOwner && $this->relationLoaded('accessGrants'), fn () => $this->accessGrants->map(fn ($grant) => [
                 'id' => $grant->id,

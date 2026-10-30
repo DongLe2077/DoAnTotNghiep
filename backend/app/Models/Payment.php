@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Payment extends Model
 {
@@ -42,5 +44,20 @@ class Payment extends Model
     public function recordedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recorded_by', 'id');
+    }
+
+    public function correction(): HasOne
+    {
+        return $this->hasOne(PaymentCorrection::class);
+    }
+
+    public function replacementFor(): HasOne
+    {
+        return $this->hasOne(PaymentCorrection::class, 'replacement_payment_id');
+    }
+
+    public function scopeEffective(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('correction');
     }
 }

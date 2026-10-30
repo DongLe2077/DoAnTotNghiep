@@ -61,7 +61,7 @@ class MeterReadingManager
         });
     }
 
-    private function lockContext(Occupancy $occupancy, int $serviceId): array
+    public function lockContext(Occupancy $occupancy, int $serviceId): array
     {
         Room::query()->lockForUpdate()->findOrFail($occupancy->room_id);
         RentalGroup::query()->lockForUpdate()->findOrFail($occupancy->rental_group_id);
@@ -72,7 +72,7 @@ class MeterReadingManager
         $readings = MeterReading::query()->whereIn('occupancy_service_id', $periods->modelKeys())
             ->orderBy('period_start')->orderBy('period_end')->orderBy('id')->lockForUpdate()->get();
 
-        return [$locked, $service, $readings];
+        return [$locked, $service, $readings, $periods];
     }
 
     private function validatePeriod(Occupancy $occupancy, OccupancyService $service, array $data): array

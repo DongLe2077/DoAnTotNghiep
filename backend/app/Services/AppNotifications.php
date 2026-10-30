@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceAccessGrant;
 use App\Models\InvoiceChange;
 use App\Models\MaintenanceRequest;
+use App\Models\PaymentCorrection;
 use App\Models\User;
 use Brick\Math\BigDecimal;
 use Illuminate\Database\Eloquent\Builder;
@@ -61,6 +62,15 @@ class AppNotifications
         $this->add($report->submitted_by, 'maintenance_updated', 'maintenance:'.$report->id.':revision:'.$report->revision,
             ['title' => $report->status === 'resolved' ? 'Yêu cầu sửa chữa đã hoàn thành' : 'Yêu cầu sửa chữa có cập nhật',
                 'body' => mb_substr($report->resolution ?? 'Chủ trọ đã tiếp nhận yêu cầu.', 0, 500), 'status' => $report->status], maintenanceId: $report->id);
+    }
+
+    public function paymentCorrected(Invoice $invoice, PaymentCorrection $correction): void
+    {
+        $grant = InvoiceAccessGrant::query()->where('invoice_id', $invoice->id)->whereNull('revoked_at')->first();
+        if ($grant !== null) {
+            $this->add($grant->user_id, 'invoice_updated', 'payment-correction:'.$correction->id,
+                ['title' => 'Phiếu thu hóa đơn được sửa sai', 'body' => 'Hóa đơn '.$invoice->invoice_number.' — '.mb_substr($correction->reason, 0, 400)], invoiceId: $invoice->id);
+        }
     }
 
     /** @return array{notification: ?AppNotification, replayed: bool, skip_reason: ?string} */

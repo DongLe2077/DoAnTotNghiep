@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Owner;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Owner\CorrectPaymentRequest;
 use App\Http\Requests\Owner\PaymentIndexRequest;
 use App\Http\Requests\Owner\RecordPaymentRequest;
 use App\Http\Resources\InvoiceResource;
@@ -11,6 +12,7 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Services\InvoicePayments;
 use App\Services\InvoiceQueries;
+use App\Services\PaymentCorrections;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -48,6 +50,20 @@ class PaymentController extends Controller
             'replayed' => $result['replayed'],
             'data' => new PaymentResource($this->payments->query()->findOrFail($result['payment']->id)),
             'invoice' => new InvoiceResource($this->invoices->query(detail: true)->findOrFail($invoice->id)),
+        ], $result['replayed'] ? 200 : 201);
+    }
+
+    public function correct(CorrectPaymentRequest $request, Payment $payment, PaymentCorrections $corrections): JsonResponse
+    {
+        $result = $corrections->correct($payment, $request->validated(), $request->user('web'));
+        $correction = $result['correction'];
+
+        return response()->json([
+            'message' => $result['replayed'] ? 'Yêu cầu sửa sai đã được ghi nhận; trả lại kết quả đã lưu.' : 'Đã sửa sai phiếu thu và cập nhật số tiền còn hiệu lực.',
+            'replayed' => $result['replayed'],
+            'data' => new PaymentResource($this->payments->query()->findOrFail($payment->id)),
+            'replacement' => $correction->replacement_payment_id === null ? null : new PaymentResource($this->payments->query()->findOrFail($correction->replacement_payment_id)),
+            'invoice' => new InvoiceResource($this->invoices->query(detail: true)->findOrFail($payment->invoice_id)),
         ], $result['replayed'] ? 200 : 201);
     }
 }

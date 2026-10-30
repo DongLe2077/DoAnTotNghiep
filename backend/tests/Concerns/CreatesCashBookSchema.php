@@ -24,5 +24,6 @@ trait CreatesCashBookSchema
         });
         (require database_path('migrations/2026_10_20_000001_add_cash_transaction_history.php'))->up();
         (require database_path('migrations/2026_10_20_000004_create_cash_creation_requests.php'))->up();
+        (require database_path('migrations/2026_10_27_000001_create_maintenance_expense_links.php'))->up();
     }
 }

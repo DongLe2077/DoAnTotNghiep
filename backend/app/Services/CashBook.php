@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\CashCreationRequest;
 use App\Models\CashTransaction;
 use App\Models\CashTransactionHistory;
+use App\Models\MaintenanceExpenseLink;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
@@ -18,7 +19,7 @@ class CashBook
 {
     public function query(array $filters = []): EloquentBuilder
     {
-        $query = CashTransaction::query();
+        $query = CashTransaction::query()->with('maintenanceLink.maintenanceRequest');
         if (($filters['state'] ?? 'active') === 'all') {
             $query->withTrashed();
         } elseif (($filters['state'] ?? 'active') === 'deleted') {
@@ -104,6 +105,7 @@ class CashBook
             $this->assertVersion($locked, $data['version_token']);
             $before = $this->snapshot($locked);
             $locked->fill($this->values($data));
+            $this->assertLinkedExpenseType($locked);
             if (! $locked->isDirty()) {
                 return $locked;
             }
@@ -144,12 +146,22 @@ class CashBook
                 $entry->fill($this->values($history->before_data));
                 $entry->deleted_at = $history->before_data['deleted_at'];
             }
+            $this->assertLinkedExpenseType($entry);
             $entry->revision++;
             $entry->save();
             $this->audit($entry, 'reverted', $before, $actorId, $data['reason'], $history->id);
 
             return $entry->refresh();
         }, 3);
+    }
+
+    private function assertLinkedExpenseType(CashTransaction $entry): void
+    {
+        if ($entry->transaction_type !== 'expense') {
+            abort_if(MaintenanceExpenseLink::query()->where('cash_transaction_id', $entry->id)
+                ->where('is_active', true)->lockForUpdate()->first() !== null, 409,
+                'Khoản chi đang liên kết sửa chữa. Cần gỡ liên kết trước khi đổi thành khoản thu.');
+        }
     }
 
     private function snapshot(CashTransaction $entry): array
@@ -185,6 +197,7 @@ class CashBook
     {
         // No invoice/items join is needed: each confirmed payment contributes exactly once.
         $payments = DB::table('payments')->join('invoices', 'invoices.id', '=', 'payments.invoice_id')
+            ->whereNotExists(fn ($query) => $query->selectRaw('1')->from('payment_corrections')->whereColumn('payment_corrections.payment_id', 'payments.id'))
             ->selectRaw("payments.id AS source_id, 'payment' AS source, 'invoice_payment' AS entry_type,
                 payments.amount, payments.paid_at AS occurred_at, NULL AS description,
                 payments.recorded_by, payments.recorded_at, payments.invoice_id,

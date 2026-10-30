@@ -10,6 +10,7 @@ import OwnerPager from '@/components/owner/OwnerPager.vue'
 import CashHistoryDelta from './CashHistoryDelta.vue'
 import { eventPayload, localEventTime, useOwnerApi } from '@/composables/useOwnerApi'
 import { toApiError } from '@/lib/api'
+import { useAuthStore } from '@/stores/auth'
 import { formatDateTime } from '@/lib/notifications'
 import { cashActionLabel, cashMoney, cashTypeLabel, type CashHistory, type CashTransaction, type CashType } from '@/types/cash'
 import type { PageResult } from '@/types/owner'
@@ -17,6 +18,7 @@ import type { PageResult } from '@/types/owner'
 const props = defineProps<{ open: boolean; id: number | null }>()
 const emit = defineEmits<{ close: []; changed: [] }>()
 const client = useOwnerApi(), current = ref<CashTransaction | null>(null), histories = ref<CashHistory[]>([])
+const auth = useAuthStore()
 const loading = ref(false), error = ref(''), notice = ref(''), conflict = ref(false), uncertain = ref(false)
 const page = ref(1), lastPage = ref(1), total = ref(0)
 const mode = ref<'view' | 'edit' | 'delete' | 'revert'>('view'), review = ref(false)
@@ -49,6 +51,7 @@ watch(() => [props.open, props.id] as const, () => {
   if (props.open) void load(1)
 }, { immediate: true })
 onBeforeUnmount(() => { alive = false; sequence++ })
+watch(() => auth.user ? `${auth.user.id}:${auth.user.role}` : '', () => { sequence++; current.value = null; histories.value = []; mode.value = 'view'; review.value = false; notice.value = ''; form.reason = ''; emit('close') }, { flush: 'sync' })
 function close() { if (!client.busy.value) emit('close') }
 function start(next: 'edit' | 'delete' | 'revert') {
   if (!current.value || client.busy.value || next === 'revert' && !canRevert.value) return
@@ -99,6 +102,7 @@ async function confirm() {
       <template v-if="mode === 'view'">
         <div class="button-row"><UiBadge :tone="current.is_deleted ? 'neutral' : current.transaction_type === 'expense' ? 'warning' : 'success'">{{ current.is_deleted ? 'Đã xóa' : cashTypeLabel(current.transaction_type) }}</UiBadge><strong class="cash-detail-amount">{{ cashMoney(current.amount) }}</strong></div>
         <dl class="record-facts"><div><dt>Nội dung</dt><dd>{{ current.description }}</dd></div><div><dt>Phát sinh (giờ Việt Nam)</dt><dd>{{ formatDateTime(current.occurred_at) }}</dd></div><div><dt>Ghi nhận lần đầu</dt><dd>{{ formatDateTime(current.recorded_at) }}</dd></div><div v-if="current.deleted_at"><dt>Thời điểm xóa</dt><dd>{{ formatDateTime(current.deleted_at) }}</dd></div></dl>
+        <UiNotice v-if="current.maintenance_link?.is_active" tone="info">Khoản chi này đang liên kết với yêu cầu sửa chữa #{{ current.maintenance_link.maintenance_request_id }}: {{ current.maintenance_link.title }}. Thay đổi khoản gốc sẽ cập nhật chi phí sửa chữa tương ứng.<RouterLink class="record-link" :to="`/owner/maintenance/${current.maintenance_link.maintenance_request_id}`" @click="close">Mở yêu cầu sửa chữa →</RouterLink></UiNotice>
         <div class="button-row cash-detail-actions"><UiButton v-if="!current.is_deleted" variant="secondary" @click="start('edit')">Sửa khoản này</UiButton><UiButton v-if="!current.is_deleted" variant="danger" @click="start('delete')">Xóa khoản này</UiButton><UiButton v-if="canRevert" variant="secondary" @click="start('revert')">{{ current.is_deleted ? 'Hoàn tác để khôi phục' : 'Hoàn tác mới nhất' }}</UiButton><UiButton v-else-if="page !== 1" variant="secondary" @click="load(1)">Về nhật ký mới nhất</UiButton></div>
         <h3 class="cash-history-title">Nhật ký chỉnh sửa</h3>
         <p v-if="!histories.length" class="help-text">Chưa có nhật ký. Các khoản cũ bắt đầu lưu nhật ký từ lần thay đổi đầu tiên sau nâng cấp.</p>
@@ -112,7 +116,7 @@ async function confirm() {
       </template>
       <form v-else id="cash-change-form" class="form-grid" @submit.prevent="prepare">
         <fieldset class="form-grid" :disabled="client.busy.value || conflict || uncertain">
-          <template v-if="mode === 'edit'"><label class="select-field">Loại khoản thu chi<select v-model="form.transaction_type" class="ui-select"><option value="expense">Chi phí</option><option value="other_income">Thu khác</option></select></label><OwnerField v-model="form.amount" label="Số tiền (VNĐ)" name="amount" :errors="client.errors.value" hint="Số dương, tối đa 2 số lẻ, không dùng dấu phân cách hàng nghìn." required :max-length="19" /><OwnerField v-model="form.occurred_at" label="Thời điểm phát sinh (giờ Việt Nam)" name="occurred_at" type="datetime-local" step="1" :max="localEventTime()" :errors="client.errors.value" required /><OwnerField v-model="form.description" label="Nội dung thu chi" name="description" :max-length="255" :errors="client.errors.value" required /></template>
+          <template v-if="mode === 'edit'"><label class="select-field">Loại khoản thu chi<select v-model="form.transaction_type" class="ui-select" :disabled="Boolean(current.maintenance_link?.is_active)"><option value="expense">Chi phí</option><option value="other_income">Thu khác</option></select></label><OwnerField v-model="form.amount" label="Số tiền (VNĐ)" name="amount" :errors="client.errors.value" hint="Số dương, tối đa 2 số lẻ, không dùng dấu phân cách hàng nghìn." required :max-length="19" /><OwnerField v-model="form.occurred_at" label="Thời điểm phát sinh (giờ Việt Nam)" name="occurred_at" type="datetime-local" step="1" :max="localEventTime()" :errors="client.errors.value" required /><OwnerField v-model="form.description" label="Nội dung thu chi" name="description" :max-length="255" :errors="client.errors.value" required /></template>
           <template v-else><p>{{ current.description }} · <strong>{{ cashMoney(current.amount) }}</strong></p><UiNotice tone="warning">{{ mode === 'delete' ? 'Khoản xóa được giữ trong nhật ký để có thể khôi phục.' : latest?.before === null ? 'Hoàn tác tạo sẽ đưa khoản này sang đã xóa.' : latest?.before?.deleted_at ? 'Hoàn tác này sẽ đưa khoản về trạng thái đã xóa.' : current.is_deleted ? 'Khoản sẽ được khôi phục và tính lại vào sổ thu chi.' : 'Dữ liệu được đưa về trước thao tác mới nhất.' }}</UiNotice></template>
           <OwnerField v-model="form.reason" label="Lý do thay đổi" name="reason" :max-length="1000" :errors="client.errors.value" :required="mode === 'revert'" />
         </fieldset>
