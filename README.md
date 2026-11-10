@@ -1,10 +1,15 @@
 # Hệ thống quản lý nhà trọ
 
+**Phạm vi khóa luận:** không thực hiện quản lý hợp đồng. [Các đề xuất nghiệp vụ mới](docs/additional-feature-ideas-2026-10-30.md).
+
+Hướng mobile đã chọn: [PWA cài từ website lên màn hình chính](docs/pwa-mobile-plan-2026-10-30.md). Đã có manifest/icon/nút cài, mở lại khung khi mất mạng và cập nhật có xác nhận giữa các tab. Người dùng xác nhận đã cài Android ngày 02/11; còn đối chiếu camera/PDF và các luồng trên thiết bị thật. [Cài trên Android](frontend/docs/mobile-android-guide.md), [nghiệm thu/bàn giao ngày 01/11](frontend/docs/pwa-mobile-acceptance-2026-11-01.md).
+
+Đã triển khai bản dữ liệu mẫu lên **https://rentbase.alwaysdata.net/login**, Vue/Laravel và **MariaDB 11.8.9 trên Alwaysdata**. Ngày 03/11 đã chuyển khỏi Aiven sang một CSDL `rentbase_rental_management`, giữ dữ liệu/ảnh và địa chỉ PWA; bản online không phụ thuộc máy Windows. [Nghiệm thu chuyển CSDL, sao lưu và Workbench](docs/mariadb-migration-acceptance-2026-11-03.md), [hướng dẫn hosting và Android](docs/hosting-rentbase-2026-11-01.md). [Dữ liệu mô phỏng](docs/scheduler-and-demo-audit-2026-11-02.md) phân biệt các tình huống đã có/chưa có mẫu. Tiếp theo đối chiếu thiết bị thật và các lượt lịch theo giờ, chốt bản trình giảng viên.
 Mã nguồn đồ án quản lý phòng, người thuê, quá trình thuê và thu chi.
 
 ## Cấu trúc
 
-- `backend/`: Laravel 12, PHP 8.2+, MySQL 8.0; xác thực bằng cookie session và CSRF.
+- `backend/`: Laravel 12, PHP 8.2+; MySQL 8.0 cho phát triển, MariaDB 11.8.9 trên hosting; xác thực bằng cookie session và CSRF.
 - `frontend/`: Vue 3 + TypeScript + Vite; xác thực/tài khoản/thông báo và CT1–CT8 chủ trọ đã nối API, gồm phòng/người thuê, điện nước/hóa đơn/thu tiền, công nợ, thu chi/hoàn tác, sửa chữa và tổng quan. NT1–NT4 người thuê đã có phòng/hồ sơ/lịch sử, hóa đơn/biên nhận, báo hỏng/ảnh và thông báo. [Tự kiểm tra người thuê](frontend/docs/tenant-self-test.md). [Các màn hình](frontend/docs/owner-management.md), [bản dùng thử và tự kiểm tra](frontend/docs/owner-self-test.md).
 
 ## Chức năng backend
@@ -21,7 +26,7 @@ Mã nguồn đồ án quản lý phòng, người thuê, quá trình thuê và t
 
 ## Chạy backend
 
-Ứng dụng sử dụng CSDL `rental_management` có sẵn 16 bảng gốc. Bảy migration trong mã nguồn chỉ bổ sung phần mở rộng, không tạo lại CSDL gốc. Kho mã nguồn có bản chụp cấu trúc, không chứa dữ liệu người thuê hoặc mật khẩu kết nối.
+Ứng dụng sử dụng CSDL `rental_management` có sẵn 16 bảng gốc. 11 migration trong mã nguồn bổ sung phần mở rộng. Với MySQL cloud rỗng, dùng baseline đầy đủ và lệnh khởi tạo có kiểm soát trong [hướng dẫn hosting](docs/hosting-rentbase-2026-11-01.md). Kho mã nguồn không chứa dữ liệu người thuê hoặc mật khẩu kết nối.
 
 ```powershell
 cd backend

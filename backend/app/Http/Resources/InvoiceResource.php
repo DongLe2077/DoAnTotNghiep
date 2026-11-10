@@ -36,6 +36,8 @@ class InvoiceResource extends JsonResource
             'overdue_days' => InvoiceControls::dueStatus($this->resource) === 'overdue' ? (int) $this->due_date->startOfDay()->diffInDays(now()->startOfDay()) : 0,
             'cancelled_at' => $this->cancelled_at?->format('Y-m-d H:i:s'),
             'revision' => $this->revision,
+            'payos_configured' => $this->whenHas('payos_configured'),
+            'payos_review_transfers' => $this->whenHas('payos_review_transfers'),
             'version_token' => $this->when($isOwner, fn () => InvoiceControls::version($this->resource)),
             'changes' => $this->whenLoaded('changes', fn () => $this->changes->map(fn ($change) => [
                 'id' => $change->id, 'revision' => $change->revision, 'action' => $change->action,

@@ -42,11 +42,11 @@ class InvoicePayments
     }
 
     /** @return array{payment: Payment, replayed: bool} */
-    public function record(Invoice $invoice, array $data, int $actorId): array
+    public function record(Invoice $invoice, array $data, int $actorId, bool $requireFullBalance = false): array
     {
         $values = $this->values($data);
         try {
-            return DB::transaction(function () use ($invoice, $values, $actorId) {
+            return DB::transaction(function () use ($invoice, $values, $actorId, $requireFullBalance) {
                 // All receipts for the same invoice serialize on its immutable parent row.
                 $locked = Invoice::query()->lockForUpdate()->findOrFail($invoice->id);
                 $existing = Payment::query()->where('idempotency_key', $values['idempotency_key'])->lockForUpdate()->first();
@@ -78,6 +78,7 @@ class InvoicePayments
                 abort_if($paid->isGreaterThan($total), 409, 'Lịch sử thu tiền vượt tổng hóa đơn, cần kiểm tra dữ liệu.');
                 $outstanding = $total->minus($paid);
                 abort_if($outstanding->isZero(), 409, 'Hóa đơn đã thanh toán đủ, không thể thu thêm.');
+                abort_if($requireFullBalance && ! $outstanding->isEqualTo($values['amount']), 409, 'Số tiền chuyển khoản khác số dư hiện tại.');
                 abort_if(BigDecimal::of($values['amount'])->isGreaterThan($outstanding), 409, 'Số tiền thu vượt số còn nợ '.$outstanding.'.');
                 $payment = Payment::create($values + ['invoice_id' => $locked->id, 'recorded_by' => $actorId]);
 

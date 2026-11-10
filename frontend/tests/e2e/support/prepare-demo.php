@@ -17,11 +17,12 @@ use Illuminate\Support\Facades\Storage;
 
 $frontend = dirname(__DIR__, 3);
 $backend = dirname($frontend).DIRECTORY_SEPARATOR.'backend';
-$root = $frontend.DIRECTORY_SEPARATOR.'.cache'.DIRECTORY_SEPARATOR.(getenv('E2E_PRESENTATION') === '1' ? 'presentation' : 'e2e');
+$mobileMode = getenv('E2E_MOBILE') === '1';
+$root = $frontend.DIRECTORY_SEPARATOR.'.cache'.DIRECTORY_SEPARATOR.($mobileMode ? 'mobile-https' : (getenv('E2E_PRESENTATION') === '1' ? 'presentation' : 'e2e'));
 $database = $root.DIRECTORY_SEPARATOR.'owner-demo.sqlite';
 $runId = getenv('E2E_RUN_ID');
 $storage = $root.DIRECTORY_SEPARATOR.'runs'.DIRECTORY_SEPARATOR.$runId.DIRECTORY_SEPARATOR.'storage';
-if (getenv('E2E_DEMO') !== '1' || getenv('APP_ENV') !== 'e2e' || getenv('DB_CONNECTION') !== 'sqlite'
+if (($mobileMode && getenv('E2E_PRESENTATION') !== '1') || getenv('E2E_DEMO') !== '1' || getenv('APP_ENV') !== 'e2e' || getenv('DB_CONNECTION') !== 'sqlite'
     || getenv('DB_DATABASE') !== $database || ! is_file($database) || ! preg_match('/^[a-f0-9]{16}$/D', $runId ?: '')
     || getenv('LARAVEL_STORAGE_PATH') !== $storage) {
     throw new RuntimeException('Only the isolated manual demo can receive sample accounts.');

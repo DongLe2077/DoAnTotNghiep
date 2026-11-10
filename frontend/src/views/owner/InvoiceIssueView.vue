@@ -7,6 +7,7 @@ import OwnerField from '@/components/owner/OwnerField.vue'
 import OccupancyPicker from '@/components/billing/OccupancyPicker.vue'
 import InvoiceLines from '@/components/billing/InvoiceLines.vue'
 import { useOwnerApi } from '@/composables/useOwnerApi'
+import { registerReloadBlocker } from '@/lib/reload-safety'
 import { toApiError } from '@/lib/api'
 import { localEventTime } from '@/composables/useOwnerApi'
 import { dueDateText } from '@/lib/invoice-controls'
@@ -18,6 +19,8 @@ import type { Invoice, InvoicePreview } from '@/types/billing'
 const route = useRoute(), router = useRouter(), client = useOwnerApi()
 const occupancyId = ref<number | null>(Number(route.query.occupancy_id) > 0 ? Number(route.query.occupancy_id) : null), month = ref(previousMonth()), dueDate = ref(''), preview = ref<InvoicePreview | null>(null), occupancy = ref<Occupancy | null>(null), reviewing = ref(false), confirm = ref(false), message = ref(''), representative = ref('')
 let alive = true, sequence = 0, detailSequence = 0
+const releaseReloadGuard = registerReloadBlocker(() => !!occupancyId.value || !!preview.value || client.busy.value)
+onBeforeUnmount(releaseReloadGuard)
 const candidates = computed(() => { const end = occupancy.value?.ended_at; return end ? occupancy.value?.members?.filter(item => item.moved_in_at < end && (!item.moved_out_at || item.moved_out_at >= end)) ?? [] : [] })
 watch([occupancyId, month], () => { sequence++; preview.value = null; reviewing.value = false; confirm.value = false; message.value = ''; client.clearError() })
 watch(occupancyId, async id => { const current = ++detailSequence; occupancy.value = null; representative.value = ''; if (!id) return; try { const result = await client.get<{ data: Occupancy }>(`/occupancies/${id}`); if (alive && current === detailSequence && id === occupancyId.value) occupancy.value = result.data } catch (caught) { if (alive && current === detailSequence) message.value = toApiError(caught).message } }, { immediate: true })

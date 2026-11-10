@@ -2,8 +2,9 @@
 
 // This helper deliberately does not bootstrap Laravel or read its normal .env.
 $frontend = dirname(__DIR__, 3);
-$root = $frontend.DIRECTORY_SEPARATOR.'.cache'.DIRECTORY_SEPARATOR.'presentation';
-$checkpoints = $frontend.DIRECTORY_SEPARATOR.'.cache'.DIRECTORY_SEPARATOR.'presentation-checkpoints';
+$mobile = getenv('PRESENTATION_SNAPSHOT_MOBILE') === '1';
+$root = $frontend.DIRECTORY_SEPARATOR.'.cache'.DIRECTORY_SEPARATOR.($mobile ? 'mobile-https' : 'presentation');
+$checkpoints = $frontend.DIRECTORY_SEPARATOR.'.cache'.DIRECTORY_SEPARATOR.($mobile ? 'mobile-checkpoints' : 'presentation-checkpoints');
 $destination = $argv[1] ?? '';
 $mode = $argv[2] ?? 'snapshot';
 $parent = realpath(dirname($destination));

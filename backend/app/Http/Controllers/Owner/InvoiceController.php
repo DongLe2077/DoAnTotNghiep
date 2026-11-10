@@ -10,7 +10,9 @@ use App\Http\Resources\InvoiceResource;
 use App\Models\Invoice;
 use App\Services\InvoiceAccessManager;
 use App\Services\InvoiceControls;
+use App\Services\InvoicePayos;
 use App\Services\InvoiceQueries;
+use App\Services\PayosGateway;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -54,6 +56,11 @@ class InvoiceController extends Controller
 
     private function resource(Invoice $invoice): InvoiceResource
     {
-        return new InvoiceResource($this->queries->query(detail: true)->findOrFail($invoice->id));
+        $detail = $this->queries->query(detail: true)->findOrFail($invoice->id);
+        if (app(PayosGateway::class)->configured()) {
+            $detail->setAttribute('payos_review_transfers', app(InvoicePayos::class)->reviewTransfers($invoice));
+        }
+
+        return new InvoiceResource($detail);
     }
 }

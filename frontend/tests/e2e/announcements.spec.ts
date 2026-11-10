@@ -64,7 +64,7 @@ test('owner previews all room members, rejects changed audience, reconciles lost
   const tenantContext = await browser.newContext({ baseURL }), tenantPage = await tenantContext.newPage()
   tenantPage.setDefaultTimeout(15_000)
   await login(tenantPage, c.tenant.username); await tenantPage.goto('/notifications?type=owner_announcement')
-  await expect(tenantPage.getByRole('heading', { name: title, exact: true })).toBeVisible(); await tenantPage.getByRole('button', { name: `Xem nội dung: ${title}`, exact: true }).click()
+  await expect(tenantPage.getByRole('heading', { name: title, exact: true })).toBeVisible(); await tenantPage.getByRole('button', { name: `Xem thông báo: ${title}`, exact: true }).click()
   const dialog = tenantPage.getByRole('dialog'); await expect(dialog.getByText(body, { exact: true })).toBeVisible(); expect(await tenantPage.evaluate(() => (window as unknown as Record<string, unknown>).announcementInjected)).toBeUndefined()
   await dialog.getByRole('link', { name: 'Mở trang chi tiết →', exact: true }).click(); await expect(tenantPage).toHaveURL(`/tenant/announcements/${id}`)
   await expect(tenantPage.getByText('Đã đọc', { exact: true })).toBeVisible()

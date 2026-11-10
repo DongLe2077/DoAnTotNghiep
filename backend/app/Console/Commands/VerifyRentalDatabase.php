@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\MariaDbSchemaColumns;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -13,7 +14,7 @@ use Throwable;
 
 class VerifyRentalDatabase extends Command
 {
-    protected $signature = 'rental:verify-database';
+    protected $signature = 'rental:verify-database {--database= : Explicit target database, defaults to rental_management}';
 
     protected $description = 'Verify the application schema and registered Eloquent mappings using read-only queries';
 
@@ -25,12 +26,31 @@ class VerifyRentalDatabase extends Command
             $snapshot = json_decode(file_get_contents(database_path('schema/rental_management.json')), true, flags: JSON_THROW_ON_ERROR);
             $models = config('rental.models');
 
-            if ($database !== $snapshot['database'] || $connection->getDriverName() !== 'mysql') {
-                throw new RuntimeException('Use the MySQL rental_management connection for this verification.');
+            $isMariaDb = $connection->getDriverName() === 'mariadb';
+            if ($database !== ($this->option('database') ?: $snapshot['database']) || ! in_array($connection->getDriverName(), ['mysql', 'mariadb'], true)) {
+                throw new RuntimeException('Use the explicitly selected MySQL or MariaDB database for this verification.');
             }
 
             $tables = $connection->select("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME != 'migrations' ORDER BY TABLE_NAME", [$database]);
-            if (array_column($tables, 'TABLE_NAME') !== array_keys($models)) {
+            $actualTables = array_column($tables, 'TABLE_NAME');
+            $expectedTables = array_keys($models);
+            $payosTables = [
+                'invoice_payos_checkouts' => ['id', 'invoice_id', 'order_code', 'amount', 'invoice_version', 'status', 'link_id', 'checkout_url', 'expires_at', 'checked_at', 'created_at', 'updated_at'],
+                'invoice_payos_transfers' => ['id', 'checkout_id', 'reference_key', 'reference', 'amount', 'paid_at', 'payment_id', 'review_reason', 'created_at'],
+            ];
+            $hasPayos = array_intersect($actualTables, array_keys($payosTables)) !== [];
+            if ($hasPayos) {
+                foreach ($payosTables as $table => $columns) {
+                    if ($connection->getSchemaBuilder()->getColumnListing($table) !== $columns) {
+                        throw new RuntimeException("Incomplete PayOS migration: {$table}");
+                    }
+                }
+                $actualTables = array_values(array_diff($actualTables, array_keys($payosTables)));
+            }
+            // Information-schema collation may ignore underscores; compare sets in PHP order.
+            sort($actualTables, SORT_STRING);
+            sort($expectedTables, SORT_STRING);
+            if ($actualTables !== $expectedTables) {
                 throw new RuntimeException('The application tables do not match the registered models.');
             }
 
@@ -51,12 +71,24 @@ class VerifyRentalDatabase extends Command
 
                 $liveColumns = $connection->select('SELECT COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, EXTRA FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? ORDER BY ORDINAL_POSITION', [$database, $tableName]);
                 $expectedColumns = array_map(fn (array $column) => array_intersect_key($column, array_flip(['COLUMN_NAME', 'COLUMN_TYPE', 'IS_NULLABLE', 'EXTRA'])), $table['columns']);
-                if (array_map(fn (object $column) => (array) $column, $liveColumns) != $expectedColumns) {
+                $actualColumns = array_map(fn (object $column) => (array) $column, $liveColumns);
+                if ($isMariaDb) {
+                    $jsonColumns = array_column(array_filter($expectedColumns, fn (array $column): bool => $column['COLUMN_TYPE'] === 'json'), 'COLUMN_NAME');
+                    $checks = array_column($connection->select('SELECT CHECK_CLAUSE FROM information_schema.CHECK_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = ? AND TABLE_NAME = ?', [$database, $tableName]), 'CHECK_CLAUSE');
+                    $actualColumns = MariaDbSchemaColumns::normalize($actualColumns, $jsonColumns, $checks);
+                    $expectedColumns = MariaDbSchemaColumns::normalize($expectedColumns);
+                }
+                if ($actualColumns != $expectedColumns) {
                     throw new RuntimeException("Schema has changed since the snapshot: {$tableName}");
                 }
 
                 $liveKeys = $connection->select('SELECT CONSTRAINT_NAME, COLUMN_NAME, ORDINAL_POSITION, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? ORDER BY CONSTRAINT_NAME, ORDINAL_POSITION', [$database, $tableName]);
-                if (array_map(fn (object $key) => (array) $key, $liveKeys) != $table['keys']) {
+                $actualKeys = array_map(fn (object $key) => (array) $key, $liveKeys);
+                $expectedKeys = $table['keys'];
+                $keyOrder = fn (array $left, array $right): int => [$left['CONSTRAINT_NAME'], (int) $left['ORDINAL_POSITION']] <=> [$right['CONSTRAINT_NAME'], (int) $right['ORDINAL_POSITION']];
+                usort($actualKeys, $keyOrder);
+                usort($expectedKeys, $keyOrder);
+                if ($actualKeys != $expectedKeys) {
                     throw new RuntimeException("Keys or foreign key scopes have changed: {$tableName}");
                 }
 
@@ -109,6 +141,9 @@ class VerifyRentalDatabase extends Command
             $viewCount = count(array_filter($snapshot['tables'], fn (array $table) => $table['TABLE_TYPE'] === 'VIEW'));
             $tableCount = count($models);
             $this->info("Verified {$tableCount} application tables and {$relationCount} relations; {$viewCount} views are documented in the schema snapshot. No data was modified.");
+            if ($hasPayos) {
+                $this->info('Verified columns for both PayOS tables added after the schema snapshot.');
+            }
 
             return self::SUCCESS;
         } catch (Throwable $exception) {

@@ -19,6 +19,7 @@ import type { PageResult } from '@/types/owner'
 import type { MaintenanceExpense, MaintenanceExpenseHistory, MaintenanceExpenseSummary } from '@/types/maintenance-expenses'
 
 const props = defineProps<{ requestId: number }>()
+const open = defineModel<boolean>('open', { required: true })
 const client = useOwnerApi(), auth = useAuthStore()
 const items = ref<MaintenanceExpense[]>([]), summary = ref<MaintenanceExpenseSummary | null>(null)
 const loading = ref(false), error = ref(''), notice = ref(''), page = ref(1), last = ref(1), total = ref(0)
@@ -26,6 +27,7 @@ const dialog = ref(false), creating = ref(false), detailId = ref<number | null>(
 const chosen = ref<MaintenanceExpense['cash_transaction'] | null>(null), association = ref<MaintenanceExpense | null>(null)
 const selecting = ref(false), selectError = ref(''), reason = ref(''), reviewing = ref(false), abandoning = ref(false)
 const pending = ref<PendingMaintenanceExpense | null>(null), storageError = ref(''), invalidStorageKey = ref<string | null>(null)
+watch(() => Boolean(pending.value || storageError.value), needsReview => { if (needsReview) open.value = true })
 const candidates = ref<CashTransaction[]>([]), search = ref(''), candidateLoading = ref(false), candidateError = ref('')
 const candidatePage = ref(1), candidateLast = ref(1), candidateTotal = ref(0)
 const historyOpen = ref(false), historyLoaded = ref(false), histories = ref<MaintenanceExpenseHistory[]>([])
@@ -193,8 +195,10 @@ window.addEventListener('storage', storageChanged)
 </script>
 
 <template>
-  <section class="record-card maintenance-expenses" aria-label="Chi phí sửa chữa">
-    <header class="expense-heading"><div><h2>Chi phí sửa chữa</h2><p class="help-text">Liên kết khoản chi thực tế trong sổ thu chi. Mỗi khoản được tính một lần.</p></div><div class="button-row"><UiButton variant="secondary" :loading="loading" @click="load()">Làm mới chi phí</UiButton><UiButton @click="openLink">Liên kết khoản chi</UiButton></div></header>
+  <details class="workflow-disclosure" :open="open" @toggle="open = ($event.currentTarget as HTMLDetailsElement).open">
+    <summary>Chi phí sửa chữa<span v-if="pending || storageError"> · Có yêu cầu đang chờ</span></summary>
+  <section class="workflow-disclosure-body maintenance-expenses" aria-label="Chi phí sửa chữa">
+    <header class="expense-heading"><p class="help-text">Mỗi khoản chi liên kết được tính một lần.</p><div class="button-row"><UiButton variant="ghost" :loading="loading" @click="load()">Làm mới chi phí</UiButton><UiButton @click="openLink">Liên kết khoản chi</UiButton></div></header>
     <UiNotice v-if="notice" tone="success">{{ notice }}</UiNotice>
     <UiNotice v-if="pending || storageError" tone="warning">Có yêu cầu liên kết đang chờ đối chiếu. <UiButton variant="ghost" @click="openLink">Mở yêu cầu đang chờ</UiButton></UiNotice>
     <UiPageState v-if="loading" kind="loading" heading-level="h3" title="Đang tải chi phí sửa chữa…" />
@@ -205,7 +209,7 @@ window.addEventListener('storage', storageChanged)
       <ul v-else class="expense-list" aria-label="Các khoản chi sửa chữa"><li v-for="item in items" :key="item.id"><article><div><h3>{{ item.cash_transaction.description }}</h3><p class="help-text">Khoản chi #{{ item.cash_transaction_id }} · {{ formatDateTime(item.cash_transaction.occurred_at) }}</p><UiBadge :tone="item.included_in_total ? 'warning' : 'neutral'">{{ item.included_in_total ? 'Đang tính vào chi phí' : 'Đã xóa khỏi sổ · Không tính vào tổng' }}</UiBadge></div><div class="expense-actions"><strong>{{ cashMoney(item.cash_transaction.amount) }}</strong><div class="button-row"><UiButton variant="secondary" :aria-label="`Xem khoản chi ${item.cash_transaction_id}`" @click="detailId = item.cash_transaction_id">Xem khoản chi</UiButton><UiButton variant="ghost" :aria-label="`Bỏ liên kết khoản chi ${item.cash_transaction_id}`" @click="openUnlink(item)">Bỏ liên kết</UiButton></div></div></article></li></ul>
       <OwnerPager v-if="total > 10" :page="page" :last-page="last" :total="total" :loading="loading" @change="load($event)" />
     </template>
-    <p class="help-text expense-note">Chỉ chủ trọ xem phần chi phí. Bỏ liên kết không xóa khoản chi trong sổ; sửa, xóa hoặc khôi phục khoản gốc sẽ cập nhật tổng tương ứng.</p>
+    <p class="help-text expense-note">Bỏ liên kết sẽ giữ khoản chi trong sổ. <RouterLink class="record-link" to="/owner/cash">Mở sổ thu chi →</RouterLink></p>
     <details class="expense-history" :open="historyOpen" @toggle="toggleHistory"><summary>Lịch sử liên kết chi phí</summary><UiPageState v-if="historyLoading" kind="loading" heading-level="h3" /><UiPageState v-else-if="historyError" kind="error" heading-level="h3" :description="historyError"><UiButton @click="loadHistory(historyPage)">Thử lại lịch sử liên kết</UiButton></UiPageState><template v-else><p v-if="!histories.length" class="help-text">Chưa có lịch sử liên kết.</p><ol v-else aria-label="Nhật ký liên kết khoản chi"><li v-for="entry in histories" :key="entry.id"><strong>{{ entry.action === 'linked' ? 'Liên kết' : 'Bỏ liên kết' }} khoản chi #{{ entry.cash_transaction_id }}</strong><p>{{ entry.actor.username }} · {{ formatDateTime(entry.created_at) }}</p><p v-if="entry.after.cash_snapshot">Số tiền khi ghi nhận: {{ cashMoney(entry.after.cash_snapshot.amount) }} · {{ entry.after.cash_snapshot.description }}</p><p class="expense-reason">Lý do: {{ entry.reason }}</p></li></ol><OwnerPager v-if="historyTotal > 10" :page="historyPage" :last-page="historyLast" :total="historyTotal" :loading="historyLoading" @change="loadHistory($event)" /><UiButton v-if="historyLoaded" variant="ghost" @click="loadHistory(1)">Làm mới lịch sử liên kết</UiButton></template></details>
     <UiDialog :open="dialog" :title="abandoning ? 'Đối chiếu trước khi bỏ yêu cầu' : reviewing ? 'Xem lại liên kết chi phí' : mode === 'unlink' ? 'Bỏ liên kết khoản chi' : 'Chọn khoản chi sửa chữa'" @update:open="value => { if (!value) close() }">
       <p v-if="client.error.value" class="form-error" role="alert">{{ client.error.value }}</p>
@@ -238,11 +242,12 @@ window.addEventListener('storage', storageChanged)
     <CashCreateDialog :open="creating" @close="creating = false" @saved="created" />
     <CashDetailDialog :open="detailId !== null" :id="detailId" @close="detailId = null" @changed="cashChanged" />
   </section>
+  </details>
 </template>
 
 <style scoped>
 .expense-heading { display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 16px; }
-.expense-heading h2 { margin-bottom: 6px; }.expense-total { display: grid; gap: 8px; margin: 20px 0; padding: 18px; background: var(--color-primary-soft); border-radius: 12px; }.expense-total strong { font-size: 26px; color: var(--color-primary); overflow-wrap: anywhere; }.expense-total span, .expense-total small { font-size: 13px; color: var(--color-text-secondary); }
+.expense-total { display: grid; gap: 8px; margin: 20px 0; padding: 18px; background: var(--color-primary-soft); border-radius: 12px; }.expense-total strong { font-size: 26px; color: var(--color-primary); overflow-wrap: anywhere; }.expense-total span, .expense-total small { font-size: 13px; color: var(--color-text-secondary); }
 .expense-list { list-style: none; margin: 0; padding: 0; }.expense-list article { display: flex; justify-content: space-between; align-items: start; gap: 24px; padding: 20px 0; border-bottom: 1px solid var(--color-border); }.expense-list h3 { font-size: 16px; line-height: 1.7; overflow-wrap: anywhere; }.expense-list article > div { min-width: 0; }.expense-actions { display: grid; gap: 12px; justify-items: end; }.expense-actions > strong { white-space: nowrap; }.expense-note { margin-top: 20px; line-height: 1.8; }
 .expense-history { margin-top: 24px; border-top: 1px solid var(--color-border); padding-top: 14px; }.expense-history summary { cursor: pointer; color: var(--color-primary); padding: 8px 0; font-size: 14px; }.expense-history ol { padding-left: 20px; }.expense-history li { padding: 14px 0; font-size: 14px; border-bottom: 1px solid var(--color-border); }.expense-history li p { font-size: 13px; color: var(--color-text-secondary); }.expense-reason { white-space: pre-wrap; overflow-wrap: anywhere; }
 .expense-choices { margin: 0; padding: 0; border: 0; display: grid; gap: 8px; }.expense-choices > label { display: flex; align-items: start; gap: 12px; padding: 14px; border: 1px solid var(--color-border); border-radius: 10px; cursor: pointer; }.expense-choices input { width: 18px; height: 18px; flex-shrink: 0; margin-top: 3px; }.expense-choices span { min-width: 0; }.expense-choices strong, .expense-choices small { display: block; font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }.expense-choices small { color: var(--color-text-secondary); }

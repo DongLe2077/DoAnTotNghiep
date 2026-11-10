@@ -8,8 +8,12 @@ const supportPath = dirname(fileURLToPath(import.meta.url))
 const frontendPath = resolve(supportPath, '../../..')
 const backendPath = resolve(frontendPath, '../backend')
 const presentationMode = process.env.E2E_PRESENTATION === '1'
+const mobileMode = process.env.E2E_MOBILE === '1'
 if (presentationMode && process.env.E2E_DEMO !== '1') throw new Error('Presentation mode requires the isolated demo.')
-const isolatedPath = resolve(frontendPath, presentationMode ? '.cache/presentation' : '.cache/e2e')
+if (mobileMode && !presentationMode) throw new Error('Mobile HTTPS mode requires the isolated presentation fixtures.')
+const publicOrigin = mobileMode ? process.env.MOBILE_PUBLIC_ORIGIN : ''
+if (mobileMode && !/^https:\/\/[a-z0-9-]+\.trycloudflare\.com$/.test(publicOrigin || '')) throw new Error('Mobile demo requires its exact HTTPS tunnel origin.')
+const isolatedPath = resolve(frontendPath, mobileMode ? '.cache/mobile-https' : presentationMode ? '.cache/presentation' : '.cache/e2e')
 const demoMode = process.env.E2E_DEMO === '1'
 let runId = randomBytes(8).toString('hex')
 if (demoMode) {
@@ -54,7 +58,7 @@ const env = {
   APP_NAME: 'Rental E2E',
   APP_DEBUG: 'false',
   APP_KEY: `base64:${randomBytes(32).toString('base64')}`,
-  APP_URL: `http://127.0.0.1:${port}`,
+  APP_URL: mobileMode ? publicOrigin : `http://127.0.0.1:${port}`,
   APP_CONFIG_CACHE: cacheFile('config.php'),
   APP_ROUTES_CACHE: cacheFile('routes.php'),
   APP_EVENTS_CACHE: cacheFile('events.php'),
@@ -71,9 +75,9 @@ const env = {
   DB_PASSWORD: '',
   DB_FOREIGN_KEYS: 'true',
   SESSION_DRIVER: 'file',
-  SESSION_COOKIE: presentationMode ? 'rental_presentation_session' : demoMode ? 'rental_owner_demo_session' : 'rental_e2e_session',
+  SESSION_COOKIE: mobileMode ? 'rental_mobile_demo_session' : presentationMode ? 'rental_presentation_session' : demoMode ? 'rental_owner_demo_session' : 'rental_e2e_session',
   SESSION_DOMAIN: 'null',
-  SESSION_SECURE_COOKIE: 'false',
+  SESSION_SECURE_COOKIE: mobileMode ? 'true' : 'false',
   SESSION_HTTP_ONLY: 'true',
   SESSION_SAME_SITE: 'lax',
   SESSION_PATH: '/',
@@ -82,14 +86,16 @@ const env = {
   LOG_CHANNEL: 'single',
   MAIL_MAILER: 'array',
   QUEUE_CONNECTION: 'sync',
-  BCRYPT_ROUNDS: '4',
-  CORS_ALLOWED_ORIGINS: `http://127.0.0.1:${frontendPort}`,
+  BCRYPT_ROUNDS: mobileMode ? '10' : '4',
+  E2E_DEMO_RESET_PASSWORDS: mobileMode ? '0' : process.env.E2E_DEMO_RESET_PASSWORDS || '0',
+  CORS_ALLOWED_ORIGINS: mobileMode ? publicOrigin : `http://127.0.0.1:${frontendPort}`,
 }
 
 // Browser tests always reset their own fixture; the manual demo retains user edits.
 const scripts = demoMode && existsSync(env.DB_DATABASE) ? [] : ['prepare-backend.php']
 if (demoMode) scripts.push('prepare-demo.php')
 if (presentationMode) scripts.push('prepare-presentation.php')
+if (mobileMode) scripts.push('prepare-mobile.php')
 for (const script of scripts) {
   const prepared = spawnSync(php, [resolve(supportPath, script)], {
     cwd: backendPath,
@@ -101,11 +107,12 @@ for (const script of scripts) {
   if (prepared.error) throw prepared.error
   process.stdout.write(prepared.stdout || '')
   process.stderr.write(prepared.stderr || '')
-  const ready = script === 'prepare-backend.php' ? 'Isolated E2E auth fixtures ready' : script === 'prepare-presentation.php' ? '"presentation_ready":true' : '"demo_accounts_ready":true'
+  const ready = script === 'prepare-backend.php' ? 'Isolated E2E auth fixtures ready' : script === 'prepare-presentation.php' ? '"presentation_ready":true' : script === 'prepare-mobile.php' ? '"mobile_accounts_ready":true' : '"demo_accounts_ready":true'
   if (prepared.status !== 0 || !prepared.stdout.includes(ready)) process.exit(prepared.status || 1)
 }
 
 const server = spawn(php, [
+  ...(mobileMode ? ['-d', 'upload_max_filesize=6M', '-d', 'post_max_size=28M', '-d', 'expose_php=0'] : []),
   '-S', `127.0.0.1:${port}`,
   '-t', resolve(backendPath, 'public'),
   resolve(supportPath, 'router.php'),
@@ -126,4 +133,7 @@ server.on('exit', (code, signal) => {
 for (const signal of ['SIGINT', 'SIGTERM']) {
   process.on(signal, () => server.kill(signal))
 }
-if (process.send) process.on('message', message => { if (message === 'shutdown') server.kill() })
+if (process.send) {
+  process.on('message', message => { if (message === 'shutdown') server.kill() })
+  process.once('disconnect', () => server.kill())
+}

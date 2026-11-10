@@ -27,13 +27,24 @@ async function login(page: Page, username: string, password = fixturePassword) {
   expect((await response).status()).toBe(200)
 }
 
+async function expectOwnerIdentity(page: Page) {
+  await expect(page.locator('.topbar')).toBeVisible()
+  const menuButton = page.getByRole('button', { name: 'Mở menu', exact: true })
+  if (await menuButton.isVisible()) {
+    await menuButton.click()
+    const navigation = page.getByRole('dialog', { name: 'Điều hướng chính', exact: true })
+    await expect(navigation.getByText('e2e_owner', { exact: true })).toBeVisible()
+    await navigation.getByRole('button', { name: 'Đóng menu', exact: true }).click()
+  } else await expect(page.getByText('e2e_owner', { exact: true }).first()).toBeVisible()
+}
+
 test('owner signs in with real cookies, survives reload, and signs out', async ({ page, context, request }) => {
   await page.goto('/owner')
   await expect(page).toHaveURL(/\/login(?:\?|$)/)
   await screenshot(page, 'login-desktop')
   await login(page, 'e2e_owner')
   await expect(page).toHaveURL(/\/owner\/?$/)
-  await expect(page.getByText('e2e_owner', { exact: true }).first()).toBeVisible()
+  await expectOwnerIdentity(page)
   await screenshot(page, 'owner')
 
   const cookies = await context.cookies()
@@ -45,7 +56,7 @@ test('owner signs in with real cookies, survives reload, and signs out', async (
 
   await page.reload()
   await expect(page).toHaveURL(/\/owner\/?$/)
-  await expect(page.getByText('e2e_owner', { exact: true }).first()).toBeVisible()
+  await expectOwnerIdentity(page)
   const previousSession = (await context.cookies()).map((cookie) => `${cookie.name}=${cookie.value}`).join('; ')
   await page.getByRole('button', { name: 'Đăng xuất', exact: true }).click()
   await expect(page).toHaveURL(/\/login(?:\?|$)/)

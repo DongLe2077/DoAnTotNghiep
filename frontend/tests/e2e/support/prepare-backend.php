@@ -12,13 +12,14 @@ use Illuminate\Support\Facades\Storage;
 $frontendPath = dirname(__DIR__, 3);
 $backendPath = dirname($frontendPath).DIRECTORY_SEPARATOR.'backend';
 $presentationMode = getenv('E2E_PRESENTATION') === '1';
-$expectedRoot = $frontendPath.DIRECTORY_SEPARATOR.'.cache'.DIRECTORY_SEPARATOR.($presentationMode ? 'presentation' : 'e2e');
+$mobileMode = getenv('E2E_MOBILE') === '1';
+$expectedRoot = $frontendPath.DIRECTORY_SEPARATOR.'.cache'.DIRECTORY_SEPARATOR.($mobileMode ? 'mobile-https' : ($presentationMode ? 'presentation' : 'e2e'));
 $demoMode = getenv('E2E_DEMO') === '1';
 $expectedDatabase = $expectedRoot.DIRECTORY_SEPARATOR.($demoMode ? 'owner-demo.sqlite' : 'auth.sqlite');
 $runId = getenv('E2E_RUN_ID');
 $expectedStorage = $expectedRoot.DIRECTORY_SEPARATOR.'runs'.DIRECTORY_SEPARATOR.$runId.DIRECTORY_SEPARATOR.'storage';
 
-if (($presentationMode && ! $demoMode) || getenv('APP_ENV') !== 'e2e' || getenv('DB_CONNECTION') !== 'sqlite'
+if (($mobileMode && ! $presentationMode) || ($presentationMode && ! $demoMode) || getenv('APP_ENV') !== 'e2e' || getenv('DB_CONNECTION') !== 'sqlite'
     || getenv('E2E_ISOLATED_PATH') !== $expectedRoot || getenv('DB_DATABASE') !== $expectedDatabase
     || ! preg_match('/^[a-f0-9]{16}$/', $runId ?: '') || getenv('LARAVEL_STORAGE_PATH') !== $expectedStorage) {
     throw new RuntimeException('Refusing to prepare a database outside the isolated frontend E2E directory.');

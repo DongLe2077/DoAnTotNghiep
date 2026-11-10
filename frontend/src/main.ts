@@ -1,17 +1,30 @@
-import { createApp } from 'vue'
+import { createApp, watch } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import { router } from '@/router'
 import { useAuthStore } from '@/stores/auth'
 import { onSessionExpired } from '@/lib/api'
 import { getRoleHome } from '@/router/navigation'
+import { initializePwaInstall } from '@/lib/pwa-install'
+import { initializePwaRuntime } from '@/lib/pwa-runtime'
+import { clearFormSafety, initializeFormSafety, setReloadOwner } from '@/lib/reload-safety'
+import { initializeMobileViewport } from '@/lib/mobile-viewport'
 import './styles/main.css'
 import './styles/management.css'
 import './styles/tenant.css'
 
+initializePwaInstall()
+initializePwaRuntime()
+initializeFormSafety()
+initializeMobileViewport()
 const app = createApp(App)
 app.use(createPinia())
 const auth = useAuthStore()
+watch(() => auth.user ? `${auth.user.id}:${auth.user.role}` : '', () => {
+  setReloadOwner(auth.user?.role === 'owner' ? auth.user.id : null)
+  clearFormSafety()
+}, { immediate: true, flush: 'sync' })
+router.afterEach(clearFormSafety)
 
 onSessionExpired(() => {
   const hadSession = auth.isAuthenticated

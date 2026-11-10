@@ -39,6 +39,6 @@ Lượt Chrome cuối chạy toàn bộ thư mục `tests/e2e` với Chrome, m�
 - Người dùng tập kịch bản và cho giảng viên tự thử; ghi nhận góp ý cụ thể.
 - Thử điện thoại thật/máy trình bày khác; ảnh kích thước 320–390px kiểm tra bố cục mô phỏng.
 - Bản sao hiện nằm tại máy phát triển; sao chép thêm sang thiết bị khác để dự phòng hỏng máy.
-- Hosting, video, Excel, ảnh đồng hồ, hợp đồng/cọc và Word vẫn thuộc các đợt chọn riêng.
+- Hosting, video, Excel, ảnh đồng hồ và Word vẫn thuộc các đợt chọn riêng.
 
 [Cách chạy CMD, tài khoản và thao tác lưu mốc/khôi phục](presentation-guide.md). Bản trình đang dùng được đưa về dữ liệu ban đầu sau nghiệm thu, không để lại khoản thu hay hóa đơn của lượt tập.

@@ -13,3 +13,11 @@ export interface MyStay {
 export interface EligibleStay { occupancy_id: number; room: { id: number; room_number: string }; group: { id: number; group_code: string } }
 export type MyMaintenance = Omit<MaintenanceRequest, 'version_token' | 'reporter'>
 export function tenantPaymentLabel(status: PaymentStatus) { return { unpaid: 'Chưa thanh toán', partially_paid: 'Thanh toán một phần', paid: 'Đã thanh toán đủ', inconsistent: 'Cần đối chiếu', cancelled: 'Đã hủy' }[status] }
+
+export function tenantPaymentTone(status: PaymentStatus) {
+  return { unpaid: 'warning', partially_paid: 'warning', paid: 'success', inconsistent: 'danger', cancelled: 'neutral' }[status] as 'warning' | 'success' | 'danger' | 'neutral'
+}
+
+export function tenantHasBalance(status: PaymentStatus) {
+  return status === 'unpaid' || status === 'partially_paid'
+}

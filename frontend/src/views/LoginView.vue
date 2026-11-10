@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ApiError } from '@/lib/api'
 import { safeRedirect } from '@/router/navigation'
 import { useAuthStore } from '@/stores/auth'
+import PwaInstallButton from '@/components/pwa/PwaInstallButton.vue'
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -85,7 +86,7 @@ onBeforeUnmount(() => {
         </span>
         <span>Nhà Trọ<span class="brand-dot">.</span></span>
       </a>
-      <span class="header-caption">Không gian quản lý nhà trọ</span>
+      <PwaInstallButton />
     </header>
 
     <main class="login-main">

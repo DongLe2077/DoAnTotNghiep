@@ -9,6 +9,7 @@ import UiPageState from '@/components/ui/UiPageState.vue'
 import OwnerPager from '@/components/owner/OwnerPager.vue'
 import { eventPayload, useOwnerApi } from '@/composables/useOwnerApi'
 import { useAuthStore } from '@/stores/auth'
+import { registerReloadBlocker } from '@/lib/reload-safety'
 import { ApiError, toApiError } from '@/lib/api'
 import { decimalText, inputTime, previousMonth } from '@/lib/billing'
 import { formatDateTime } from '@/lib/notifications'
@@ -35,6 +36,8 @@ const visible = computed(() => rows.value.map(row => drafts[draftKey(row)]).filt
 const selected = computed(() => Object.values(drafts).filter(draft => draft.selected && editable(draft)))
 const dirty = computed(() => Object.values(drafts).some(draft => !['saved', 'replayed', 'unknown'].includes(draft.state) && !rowPending(draft.row) && (draft.selected || draft.current !== '' || !draft.row.baseline_known && draft.previous !== '' || draft.start !== inputTime(draft.row.period_start ?? '') || draft.end !== inputTime(draft.row.period_end ?? ''))))
 const anyOpenDialog = computed(() => reviewing.value || !!replacement.value || !!refreshDraft.value || discardCorrupt.value)
+const releaseReloadGuard = registerReloadBlocker(() => auth.user?.role === 'owner' && (dirty.value || sending.value))
+onBeforeUnmount(releaseReloadGuard)
 function readingInput(event: Event, draft: Draft, field: 'previous' | 'current') { draft[field] = (event.target as HTMLInputElement).value }
 function rowPending(row: BulkMeterRow) { return pending.value.some(item => item.payload.billing_month === row.billing_month && item.payload.occupancy_service_id === row.occupancy_service_id) }
 function editable(draft: Draft) { return draft.row.can_record && !draft.stale && !['saved', 'replayed', 'unknown', 'conflict', 'rejected'].includes(draft.state) && !rowPending(draft.row) }

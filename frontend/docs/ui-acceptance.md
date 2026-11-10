@@ -1,5 +1,7 @@
 # Nghiệm thu giao diện và luồng nghiệp vụ — 25/10/2026
 
+**Cập nhật 04/11:** đã sửa thanh trên cùng khi cuộn, bố cục chọn tháng, căn hàng bộ lọc công nợ và rà điện thoại/máy tính. Xem [biên bản giao diện mới](../../docs/responsive-ui-acceptance-2026-11-04.md); các kết quả bên dưới giữ làm lịch sử nghiệm thu ngày 25/10.
+
 ## Phạm vi
 
 Nghiệm thu cục bộ giao diện Vue với Laravel thật, dữ liệu và ảnh thử trong SQLite riêng. Phạm vi gồm CT1–CT8 chủ trọ, NT1–NT4 người thuê, xác thực/phân quyền, ảnh sự cố, thông báo chung, tình huống lỗi mạng/phiên và màn hình nhỏ. Không thay đổi `.env` hoặc bản ghi MySQL của người dùng, không triển khai hosting.
@@ -35,7 +37,7 @@ Giao diện đăng nhập chỉ hiển thị tài khoản mẫu khi chạy với
 
 - Kiểm tra màn hình điện thoại trong trình duyệt là kiểm tra bố cục; chưa thay thế thao tác trên điện thoại thật.
 - Chưa kiểm thử cài mới trên máy tính khác bằng bản sao MySQL, chưa triển khai và chưa nghiệm thu hosting.
-- PDF/Excel, sửa sai phiếu thu và hợp đồng/cọc vẫn là phần nâng cấp theo [kế hoạch](next-steps.md), không nằm trong lần sửa giao diện này. Nhật ký từng lần sửa chữa đã được bổ sung ở đợt tiếp theo cùng ngày; xem [hướng dẫn riêng](maintenance-history-self-test.md).
+- Tại đợt nghiệm thu giao diện này, PDF/Excel và sửa sai phiếu thu còn thuộc các đợt nâng cấp khác; xem [kế hoạch và phạm vi hiện tại](next-steps.md). Nhật ký từng lần sửa chữa đã được bổ sung ở đợt tiếp theo cùng ngày; xem [hướng dẫn riêng](maintenance-history-self-test.md).
 - Khi tự thử hai vai trò đồng thời, dùng hai trình duyệt/hồ sơ hoặc cửa sổ ẩn danh. Trang không có quyền vẫn giữ nguyên kiểm tra phân quyền.
 
 ## Kết quả kiểm thử

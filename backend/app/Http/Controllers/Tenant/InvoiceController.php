@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\InvoiceIndexRequest;
 use App\Http\Resources\InvoiceResource;
 use App\Services\InvoiceQueries;
+use App\Services\PayosGateway;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -21,8 +22,11 @@ class InvoiceController extends Controller
             ->orderByDesc('invoices.billing_month')->orderByDesc('invoices.id')->paginate($filters['per_page'] ?? 15)->withQueryString());
     }
 
-    public function show(Request $request, string $invoice): InvoiceResource
+    public function show(Request $request, string $invoice, PayosGateway $payos): InvoiceResource
     {
-        return new InvoiceResource($this->queries->query(tenantUserId: $request->user('web')->id, detail: true)->findOrFail($invoice));
+        $visible = $this->queries->query(tenantUserId: $request->user('web')->id, detail: true)->findOrFail($invoice);
+        $visible->setAttribute('payos_configured', $payos->configured());
+
+        return new InvoiceResource($visible);
     }
 }

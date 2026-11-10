@@ -32,6 +32,7 @@ class PaymentResource extends JsonResource
     {
         $correction = $payment->correction;
         $values = ['status' => $correction === null ? 'active' : 'voided',
+            'source' => str_starts_with((string) $payment->idempotency_key, 'payos-') ? 'payos' : 'manual',
             'replaces_payment_id' => $payment->replacementFor?->payment_id,
             'correction' => $correction === null ? null : [
                 'id' => $correction->id, 'action' => $correction->action, 'reason' => $correction->reason,

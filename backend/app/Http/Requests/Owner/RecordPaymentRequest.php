@@ -12,7 +12,7 @@ class RecordPaymentRequest extends OwnerRequest
             'amount' => ['required', 'regex:/^\d{1,16}(?:\.\d{1,2})?$/D', 'gt:0'],
             'paid_at' => ['required', 'date_format:Y-m-d H:i:s', 'before_or_equal:now', 'after_or_equal:1000-01-01 00:00:00'],
             'payment_method' => ['required', Rule::in(['cash', 'bank_transfer'])],
-            'idempotency_key' => ['required', 'string', 'regex:/^[A-Za-z0-9][A-Za-z0-9._:-]{7,63}$/D'],
+            'idempotency_key' => ['required', 'string', 'regex:/^[A-Za-z0-9][A-Za-z0-9._:-]{7,63}$/D', 'not_regex:/^payos-/i'],
             'invoice_id' => ['prohibited'],
             'recorded_by' => ['prohibited'],
             'recorded_at' => ['prohibited'],

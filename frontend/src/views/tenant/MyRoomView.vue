@@ -13,16 +13,61 @@ void load()
 </script>
 <template>
   <section class="management-page tenant-page">
-    <header class="management-header"><div><span class="eyebrow">Không gian của bạn</span><h1>Phòng của tôi</h1><p>Nơi ở, dịch vụ và những thông tin bạn cần mỗi ngày.</p></div><UiButton variant="secondary" :loading="loading" @click="load">Làm mới thông tin</UiButton></header>
+    <header class="management-header workflow-header"><div><h1>Phòng của tôi</h1></div><UiButton variant="ghost" :loading="loading" @click="load">Làm mới thông tin</UiButton></header>
     <UiPageState v-if="loading" kind="loading" skeleton="cards" />
     <UiPageState v-else-if="error" :kind="status === 404 ? 'not-found' : 'error'" :title="status === 404 ? 'Chưa có hồ sơ liên kết' : 'Chưa tải được phòng của bạn'" :description="status === 404 ? 'Hãy liên hệ chủ trọ để liên kết tài khoản với hồ sơ người thuê.' : error"><UiButton @click="load">Thử lại</UiButton></UiPageState>
     <template v-else-if="stay">
-      <article class="record-card tenant-room-hero"><div><UiBadge tone="success">Đang cư trú</UiBadge><h2>Phòng {{ stay.room.room_number }}</h2><p>Nhóm {{ stay.group.group_code }}</p><p class="help-text">Bạn vào ở từ {{ formatDateTime(stay.moved_in_at) }}</p></div><div class="tenant-rent"><span>Giá thuê toàn phòng / tháng</span><strong>{{ formatMoney(stay.monthly_room_rent) }}</strong><small>Giá đã thỏa thuận cho phòng, không phải tiền riêng của từng người.</small></div></article>
-      <UiNotice v-if="stay.room.operational_status === 'maintenance'" tone="warning">Phòng đang được chủ trọ đánh dấu bảo trì. Thông tin cư trú của bạn vẫn được giữ nguyên.</UiNotice>
-      <div class="tenant-quick-links"><RouterLink to="/tenant/invoices">Xem hóa đơn <span aria-hidden="true">→</span></RouterLink><RouterLink :to="stay.can_submit_maintenance ? '/tenant/maintenance/new' : '/tenant/maintenance'">{{ stay.can_submit_maintenance ? 'Gửi báo hỏng' : 'Yêu cầu đã gửi' }} <span aria-hidden="true">→</span></RouterLink><RouterLink to="/tenant/stays">Lịch sử cư trú <span aria-hidden="true">→</span></RouterLink></div>
-      <section class="dashboard-section"><div class="dashboard-section-heading"><h2>Dịch vụ đang sử dụng</h2><span class="help-text">Giá đã áp dụng cho đợt thuê</span></div><p v-if="!stay.services?.length" class="record-card help-text">Chưa có dịch vụ đang áp dụng cho phòng.</p><div v-else class="management-grid"><article v-for="service in stay.services" :key="service.id" class="record-card"><header><h3>{{ service.service.name }}</h3><UiBadge :tone="service.billing_method === 'metered' ? 'info' : 'neutral'">{{ service.billing_method === 'metered' ? 'Theo chỉ số' : 'Theo phòng' }}</UiBadge></header><dl class="record-facts"><div><dt>Đơn giá</dt><dd><strong>{{ formatUnitPrice(service.unit_price) }} / {{ service.unit }}</strong></dd></div><div><dt>Áp dụng từ</dt><dd>{{ formatDateTime(service.effective_from) }}</dd></div></dl><p class="help-text">{{ service.billing_method === 'metered' ? 'Số tiền được tính theo lượng điện/nước sử dụng và thể hiện trên hóa đơn.' : 'Phí được phân bổ theo thời gian sử dụng trong tháng.' }}</p></article></div></section>
-      <UiNotice tone="info">{{ stay.is_current_representative ? 'Bạn đang là đại diện của nhóm và có thể gửi báo hỏng cho phòng này.' : 'Bạn là thành viên đang cư trú. Đại diện hiện tại của nhóm thực hiện gửi báo hỏng.' }} Quyền xem hóa đơn được chủ trọ cấp riêng.</UiNotice>
+      <div class="room-sections">
+        <article class="record-card tenant-room-hero">
+          <div><UiBadge tone="success">Đang cư trú</UiBadge><h2>Phòng {{ stay.room.room_number }}</h2></div>
+          <div class="tenant-rent"><span>Giá thuê toàn phòng / tháng</span><strong>{{ formatMoney(stay.monthly_room_rent) }}</strong></div>
+        </article>
+        <UiNotice v-if="stay.room.operational_status === 'maintenance'" tone="warning">Phòng đang được bảo trì.</UiNotice>
+        <section class="record-card" aria-labelledby="room-services-title">
+          <h2 id="room-services-title">Dịch vụ đang sử dụng</h2>
+          <p v-if="!stay.services?.length" class="help-text">Phòng chưa có dịch vụ đang áp dụng.</p>
+          <dl v-else class="room-services">
+            <div v-for="service in stay.services" :key="service.id">
+              <dt>{{ service.service.name }}</dt>
+              <dd>{{ formatUnitPrice(service.unit_price) }} / {{ service.unit }}</dd>
+            </div>
+          </dl>
+          <details v-if="stay.services?.length" class="workflow-disclosure">
+            <summary>Cách tính và thời gian áp dụng</summary>
+            <div class="workflow-disclosure-body">
+              <ul class="detail-items">
+                <li v-for="service in stay.services" :key="service.id">
+                  <strong>{{ service.service.name }}</strong>
+                  <p class="help-text">{{ service.billing_method === 'metered' ? 'Theo lượng sử dụng' : 'Phân bổ theo thời gian sử dụng trong tháng' }} · Từ {{ formatDateTime(service.effective_from) }}</p>
+                </li>
+              </ul>
+            </div>
+          </details>
+        </section>
+        <details class="workflow-disclosure">
+          <summary>Thông tin cư trú</summary>
+          <div class="workflow-disclosure-body">
+            <dl class="record-facts">
+              <div><dt>Nhóm thuê</dt><dd>{{ stay.group.group_code }}</dd></div>
+              <div><dt>Vào ở từ</dt><dd>{{ formatDateTime(stay.moved_in_at) }}</dd></div>
+            </dl>
+            <p class="help-text">{{ stay.is_current_representative ? 'Bạn là đại diện nhóm và có thể gửi báo hỏng.' : 'Bạn là thành viên đang cư trú. Đại diện nhóm gửi báo hỏng cho phòng.' }} Quyền xem hóa đơn do chủ trọ cấp.</p>
+            <RouterLink class="workflow-card-link" to="/tenant/stays">Xem lịch sử cư trú →</RouterLink>
+          </div>
+        </details>
+      </div>
     </template>
-    <template v-else><UiPageState title="Bạn chưa có phòng đang cư trú" description="Khi chủ trọ ghi nhận bạn vào ở, thông tin phòng và dịch vụ sẽ xuất hiện tại đây." /><div class="tenant-quick-links"><RouterLink to="/tenant/stays">Xem lịch sử cư trú →</RouterLink><RouterLink to="/tenant/invoices">Hóa đơn còn quyền xem →</RouterLink><RouterLink to="/tenant/maintenance">Yêu cầu bạn đã gửi →</RouterLink></div></template>
+    <UiPageState v-else title="Bạn chưa có phòng đang cư trú" description="Khi chủ trọ ghi nhận bạn vào ở, thông tin phòng và dịch vụ sẽ xuất hiện tại đây." />
   </section>
 </template>
+
+<style scoped>
+.room-sections { display: grid; gap: 16px; }
+.tenant-room-hero h2 { margin: 8px 0 0; font-size: clamp(24px, 6vw, 32px); }
+.tenant-rent { gap: 4px; }
+.room-services { margin: 0 0 14px; }
+.room-services > div { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; padding: 10px 0; }
+.room-services > div + div { border-top: 1px solid var(--color-border); }
+.room-services dd { margin: 0; color: var(--color-primary); font-weight: 650; }
+.room-sections :deep(.ui-notice) { margin: 0; }
+</style>

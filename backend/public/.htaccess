@@ -1,9 +1,34 @@
+DirectoryIndex index.php
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "same-origin"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+    <FilesMatch "\.(js|css|woff2|png|svg|ico)$">
+        Header set Cache-Control "public, max-age=604800"
+    </FilesMatch>
+    <FilesMatch "^(sw\.js|manifest\.webmanifest)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+    <Files "sw.js">
+        Header set Service-Worker-Allowed "/"
+    </Files>
+    <FilesMatch "\.html$">
+        Header set Cache-Control "no-store"
+    </FilesMatch>
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
     </IfModule>
 
     RewriteEngine On
+
+    # Only the public front controller executes PHP; private files are never served.
+    RewriteRule (^|/)\. - [R=404,L]
+    RewriteRule \.(?:env|log|sqlite|db|pem|key|sql|map)(?:/|$) - [R=404,L,NC]
+    RewriteRule ^(?!index\.php$).*\.php(?:/|$) - [R=404,L,NC]
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .

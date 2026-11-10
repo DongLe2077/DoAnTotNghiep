@@ -44,6 +44,12 @@ async function noHorizontalOverflow(page: Page) {
 
 const listUrl = /\/api\/notifications(?:\?.*)?$/
 
+async function openMoreFilters(page: Page) {
+  if (!await page.getByLabel('Loại thông báo', { exact: true }).isVisible()) {
+    await page.getByText(/^Bộ lọc thêm/).click()
+  }
+}
+
 test('owner inbox uses real private notifications, pagination, unread and type filters', async ({ page }) => {
   await openInbox(page, 'e2e_notify_owner')
   await expect(page.getByRole('article')).toHaveCount(15)
@@ -60,13 +66,14 @@ test('owner inbox uses real private notifications, pagination, unread and type f
   await expect(page.getByRole('heading', { name: 'Báo hỏng cần xem 01', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Trang sau', exact: true })).toBeDisabled()
 
-  await page.getByRole('checkbox', { name: 'Chỉ xem chưa đọc', exact: true }).check()
+  await page.getByRole('button', { name: 'Chưa đọc', exact: true }).click()
   await expect(page.getByRole('navigation', { name: 'Phân trang thông báo' })).toContainText('17 thông báo')
   await expect(page.getByRole('article')).toHaveCount(15)
   await page.getByRole('button', { name: 'Trang sau', exact: true }).click()
   await expect(page.getByRole('article')).toHaveCount(2)
   await expect(page.getByRole('heading', { name: 'Báo hỏng cần xem 01', exact: true })).toHaveCount(0)
 
+  await openMoreFilters(page)
   await page.getByLabel('Loại thông báo', { exact: true }).selectOption('invoice_reminder')
   await expect(page.getByText('Không có thông báo chưa đọc', { exact: true })).toBeVisible()
   await expect(page.getByRole('article')).toHaveCount(0)
@@ -85,11 +92,12 @@ test('tenant opens current permitted invoice and maintenance subjects through re
   await noHorizontalOverflow(page)
   await screenshot(page, 'notifications-tenant-mobile')
 
+  await openMoreFilters(page)
   await page.getByLabel('Loại thông báo', { exact: true }).selectOption('invoice_reminder')
   await expect(page.getByRole('article')).toHaveCount(2)
   const invoiceCard = page.getByRole('article').filter({ hasText: 'Nhắc thanh toán hóa đơn 02' })
   const invoiceResponse = page.waitForResponse((response) => response.url().endsWith('/api/tenant/invoices/1'))
-  await invoiceCard.getByRole('button', { name: /^Xem nội dung/ }).click()
+  await invoiceCard.getByRole('button', { name: /^Xem hóa đơn:/ }).click()
   expect((await invoiceResponse).status()).toBe(200)
   const invoiceDialog = page.getByRole('dialog')
   await expect(invoiceDialog.getByText('HD-E2E-2026-10-A101', { exact: true })).toBeVisible()
@@ -102,15 +110,16 @@ test('tenant opens current permitted invoice and maintenance subjects through re
 
   // Opening again must recheck the real API, including when the notice is already read.
   const freshInvoice = page.waitForResponse((response) => response.url().endsWith('/api/tenant/invoices/1'))
-  await invoiceCard.getByRole('button', { name: /^Xem nội dung/ }).click()
+  await invoiceCard.getByRole('button', { name: /^Xem hóa đơn:/ }).click()
   expect((await freshInvoice).status()).toBe(200)
   await expect(page.getByRole('dialog').getByText('HD-E2E-2026-10-A101', { exact: true })).toBeVisible()
   await page.keyboard.press('Escape')
 
+  await openMoreFilters(page)
   await page.getByLabel('Loại thông báo', { exact: true }).selectOption('maintenance_updated')
   await expect(page.getByRole('navigation', { name: 'Phân trang thông báo' })).toContainText('16 thông báo')
   const reportResponse = page.waitForResponse((response) => response.url().endsWith('/api/tenant/maintenance-requests/1'))
-  await page.getByRole('article').filter({ hasText: 'Cập nhật sửa chữa 16' }).getByRole('button', { name: /^Xem nội dung/ }).click()
+  await page.getByRole('article').filter({ hasText: 'Cập nhật sửa chữa 16' }).getByRole('button', { name: /^Xem báo hỏng:/ }).click()
   expect((await reportResponse).status()).toBe(200)
   await expect(page.getByRole('dialog').getByText('Vòi nước phòng A101 bị rò', { exact: true })).toBeVisible()
   await expect(page.getByRole('dialog')).toContainText('Thợ sẽ đến kiểm tra chiều nay.')
@@ -137,7 +146,7 @@ test('a CSRF failure never retries a read mutation automatically and allows an e
   expect(writeAttempts).toBe(1)
 
   await card.getByRole('button', { name: /^Đánh dấu đã đọc:/ }).click()
-  await expect(card.getByText('Đã đọc', { exact: true })).toBeVisible()
+  await expect(card.getByRole('button', { name: /^Đánh dấu đã đọc:/ })).toHaveCount(0)
   expect(writeAttempts).toBe(2)
   expect(await unreadCount(page)).toBe(before - 1)
 })
@@ -155,7 +164,7 @@ test('mark all read persists and remains scoped to the tenant account', async ({
   expect(await unreadCount(ownerPage)).toBe(ownerUnread)
   await page.reload()
   await expect(page.getByText('Bạn đã đọc hết các thông báo.', { exact: true })).toBeVisible()
-  await page.getByRole('checkbox', { name: 'Chỉ xem chưa đọc', exact: true }).check()
+  await page.getByRole('button', { name: 'Chưa đọc', exact: true }).click()
   await expect(page.getByText('Không có thông báo chưa đọc', { exact: true })).toBeVisible()
   await expect(page.getByRole('article')).toHaveCount(0)
   await ownerContext.close()
@@ -166,15 +175,15 @@ test('owner marks one notice, sees the changed badge after reload and opens curr
   const before = await unreadCount(page)
   const card = page.getByRole('article').filter({ hasText: 'Báo hỏng cần xem 17' })
   await card.getByRole('button', { name: /^Đánh dấu đã đọc:/ }).click()
-  await expect(card.getByText('Đã đọc', { exact: true })).toBeVisible()
+  await expect(card.getByRole('button', { name: /^Đánh dấu đã đọc:/ })).toHaveCount(0)
   expect(await unreadCount(page)).toBe(before - 1)
   await page.reload()
   await expect(page.getByText(`Bạn có ${before - 1} thông báo chưa đọc.`, { exact: true })).toBeVisible()
-  await expect(card.getByText('Đã đọc', { exact: true })).toBeVisible()
+  await expect(card.getByRole('button', { name: /^Đánh dấu đã đọc:/ })).toHaveCount(0)
   await expect(page.getByRole('link', { name: /^Thông báo(?:,|$)/ })).toContainText(String(before - 1))
 
   const response = page.waitForResponse((result) => result.url().endsWith('/api/owner/maintenance-requests/1'))
-  await card.getByRole('button', { name: /^Xem nội dung/ }).click()
+  await card.getByRole('button', { name: /^Xem báo hỏng:/ }).click()
   expect((await response).status()).toBe(200)
   await expect(page.getByRole('dialog').getByText('Vòi nước phòng A101 bị rò', { exact: true })).toBeVisible()
   await expect(page.getByRole('dialog')).toContainText('Nước rỉ ở van dưới bồn rửa.')
@@ -200,6 +209,7 @@ test('failed refresh hides old private cards and an explicit retry loads real da
   await openInbox(page, 'e2e_notify_owner')
   await expect(page.getByRole('article')).toHaveCount(15)
   await page.route(listUrl, (route) => route.abort('failed'))
+  await openMoreFilters(page)
   await page.getByRole('button', { name: 'Làm mới', exact: true }).click()
   await expect(page.getByText('Chưa tải được thông báo', { exact: true })).toBeVisible()
   await expect(page.getByRole('article')).toHaveCount(0)
@@ -213,15 +223,16 @@ test('failed refresh hides old private cards and an explicit retry loads real da
 
 test('a subject that loses permission shows an unavailable state without cached invoice details', async ({ page }) => {
   await openInbox(page, 'e2e_notify_tenant')
+  await openMoreFilters(page)
   await page.getByLabel('Loại thông báo', { exact: true }).selectOption('invoice_reminder')
   await expect(page.getByRole('article')).toHaveCount(2)
   const card = page.getByRole('article').filter({ hasText: 'Nhắc thanh toán hóa đơn 02' })
-  await card.getByRole('button', { name: /^Xem nội dung/ }).click()
+  await card.getByRole('button', { name: /^Xem hóa đơn:/ }).click()
   await expect(page.getByRole('dialog').getByText('HD-E2E-2026-10-A101', { exact: true })).toBeVisible()
   await page.keyboard.press('Escape')
 
   await page.route('**/api/tenant/invoices/1', (route) => route.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ message: 'Không tìm thấy nội dung.' }) }))
-  await card.getByRole('button', { name: /^Xem nội dung/ }).click()
+  await card.getByRole('button', { name: /^Xem hóa đơn:/ }).click()
   await expect(page.getByRole('dialog').getByText('Nội dung không còn khả dụng', { exact: true })).toBeVisible()
   await expect(page.getByRole('dialog').getByText('HD-E2E-2026-10-A101', { exact: true })).toHaveCount(0)
 })
@@ -233,6 +244,7 @@ test('real session expiry clears the inbox before another account signs in', asy
   const token = (await context.cookies()).find((cookie) => cookie.name === 'XSRF-TOKEN')
   expect(token).toBeDefined()
   expect((await page.request.post('/api/auth/logout', { headers: { 'X-XSRF-TOKEN': decodeURIComponent(token!.value) } })).status()).toBe(200)
+  await openMoreFilters(page)
   await page.getByRole('button', { name: 'Làm mới', exact: true }).click()
   await expect(page).toHaveURL(/\/login(?:\?|$)/)
   await expect(page.getByText('Báo hỏng cần xem 18', { exact: true })).toHaveCount(0)
@@ -282,12 +294,12 @@ test('reading the last item on an unread page normalizes pagination and the URL'
   await expect(page.getByRole('navigation', { name: 'Phân trang thông báo' })).toContainText('Trang 2 / 2')
   await page.getByRole('article').getByRole('button', { name: /^Đánh dấu đã đọc:/ }).click()
   await expect(page.getByRole('article')).toHaveCount(15)
-  await expect(page.getByRole('navigation', { name: 'Phân trang thông báo' })).toContainText('Trang 1 / 1')
+  await expect(page.getByRole('navigation', { name: 'Phân trang thông báo' })).toHaveCount(0)
   await expect.poll(() => new URL(page.url()).searchParams.get('page')).toBeNull()
   expect(new URL(page.url()).searchParams.get('unread')).toBe('1')
   await page.reload()
   await expect(page.getByRole('article')).toHaveCount(15)
-  await expect(page.getByRole('navigation', { name: 'Phân trang thông báo' })).toContainText('Trang 1 / 1')
+  await expect(page.getByRole('navigation', { name: 'Phân trang thông báo' })).toHaveCount(0)
 })
 
 test('login preserves an allowed shared notification deep link and its filters', async ({ page }) => {
@@ -301,7 +313,7 @@ test('login preserves an allowed shared notification deep link and its filters',
   await expect(page).toHaveURL(target)
   await expect(page.getByRole('heading', { name: 'Thông báo', exact: true })).toBeVisible()
   await expect(page.getByLabel('Loại thông báo', { exact: true })).toHaveValue('invoice_reminder')
-  await expect(page.getByRole('checkbox', { name: 'Chỉ xem chưa đọc', exact: true })).toBeChecked()
+  await expect(page.getByRole('button', { name: 'Chưa đọc', exact: true })).toHaveAttribute('aria-pressed', 'true')
   await expect(page.getByText('Không có thông báo chưa đọc', { exact: true })).toBeVisible()
 })
 

@@ -49,7 +49,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; }
+body { margin: 0; min-width: 320px; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
 button, input, select, textarea { font: inherit; }
 button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; }
@@ -73,6 +73,9 @@ textarea:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--colo
 .ui-input:focus, .ui-select:focus, .ui-textarea:focus { border-color: var(--color-primary); }
 .ui-input[aria-invalid='true'], .ui-textarea[aria-invalid='true'] { border-color: var(--color-danger); }
 .ui-input:disabled, .ui-select:disabled, .ui-textarea:disabled { background: #f0f2ee; color: var(--color-text-secondary); }
+input, textarea, select { scroll-margin-block: calc(var(--pwa-notice-height, 0px) + 96px) 96px; }
+.keyboard-open .tenant-bottom-navigation { display: none !important; }
+.keyboard-open .ui-dialog[open] { position: fixed; inset: calc(var(--visual-top, 0px) + 12px) 0 auto; margin: 0 auto; max-height: calc(var(--app-viewport-height, 100dvh) - 24px); }
 .ui-textarea { min-height: 112px; resize: vertical; }
 .ui-checkbox { width: 20px; height: 20px; accent-color: var(--color-primary); }
 .ui-card { padding: var(--space-6); border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface); }

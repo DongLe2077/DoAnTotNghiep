@@ -1,5 +1,15 @@
 # Authentication, shared screens and owner CT1–CT8 browser checks
 
+## Chrome mobile review
+
+Acceptance on 6 November 2026: 41 selected scenarios passed after targeted test-harness corrections/rechecks; 61 readonly online checks and 31 built-PWA runtime checks passed. See the [Vietnamese acceptance report](../../../docs/chrome-mobile-acceptance-2026-11-06.md) for scope, original failures and final per-scenario results.
+
+Run `npm run test:e2e:mobile` for the selected 41 critical workflows in installed Google Chrome, starting with a 390×844 Pixel 7 browser profile. The responsive cases additionally exercise 320px, tablet, landscape and desktop sizes. This is desktop Chrome emulation, not proof of installation or camera behavior on Android hardware. No Android emulator is required.
+
+The command uses the same guarded disposable SQLite fixture as the ordinary E2E suite. Reports are in `.cache/mobile-review/`; set `MOBILE_REVIEW_OUTPUT` to retain a separately named run. Do not run another fixture-resetting E2E or PWA-runtime process concurrently against the same `auth.sqlite` file.
+
+`node scripts/review-online-mobile.mjs` separately reviews the public hosting with the requested demo accounts. Its request guard permits GET/HEAD/OPTIONS and auth login/logout only; all other API writes are blocked. Results and screenshots are saved under `.cache/mobile-review-20261106/online/`. The review does not change live invoices, payments, residents, notifications or incident photos.
+
 `ui-polish.spec.ts` adds six real-backend browser cases for native dialog focus/close/reopen in ordinary and reduced-motion modes, dashboard skeleton/error/manual retry, owner unsaved-change cancellation/discard, clean navigation after saving, logout from a dirty form and tenant draft retention at 390px. It uses only the normal isolated E2E database. The separate `npm run presentation` mode uses `.cache/presentation/owner-demo.sqlite`, its own cookie/storage and ports 5175/18002; it persists manual edits and never resets the E2E or old manual-demo databases. [Presentation and checkpoint instructions](../../docs/presentation-guide.md), [acceptance record](../../docs/presentation-polish-acceptance.md).
 
 Latest full Chrome run on 30 October 2026 after presentation/UI work: **94/94 passed in one 27.0-minute run**, one worker and zero retries. Frontend unit checks passed 131/131 and the production build passed. The presentation-only review passed 30 readonly checks/10 screenshots, followed by 15 rehearsal checks with writes to its own synthetic data; restoring the checkpoint matched all records, invoice balances and private photos.

@@ -3,18 +3,26 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "engines": { "node": ">=22.12.0" },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "demo": "node scripts/demo.mjs",
     "presentation": "node scripts/presentation.mjs",
     "presentation:checkpoint": "node scripts/presentation-checkpoint.mjs",
     "presentation:restore": "node scripts/restore-presentation.mjs",
+    "mobile:https:setup": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/setup-mobile-tunnel.ps1",
+    "mobile:https": "node scripts/mobile-https.mjs",
+    "mobile:https:passwords": "php tests/e2e/support/set-mobile-demo-passwords.php",
+    "mobile:checkpoint": "node scripts/presentation-checkpoint.mjs --mobile",
     "build": "vue-tsc --noEmit && vite build",
+    "hosting:build": "node scripts/build-hosting.mjs",
     "typecheck": "vue-tsc --noEmit",
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:mobile": "playwright test --config playwright.mobile.config.ts"
   },
   "dependencies": {
     "axios": "^1.20.0",
@@ -22,13 +30,19 @@
     "vue": "^3.5.44",
     "vue-router": "^4.6.4"
   },
+  "overrides": { "workbox-build": { "glob": "14.0.3" } },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
     "@types/node": "^22.0.0",
     "@vitejs/plugin-vue": "^6.0.10",
     "typescript": "~5.9.3",
     "vite": "^8.3.4",
+    "vite-plugin-pwa": "2.0.0",
     "vitest": "^5.0.5",
-    "vue-tsc": "^3.3.13"
+    "vue-tsc": "^3.3.13",
+    "workbox-core": "7.4.1",
+    "workbox-precaching": "7.4.1",
+    "workbox-routing": "7.4.1",
+    "workbox-window": "7.4.1"
   }
 }

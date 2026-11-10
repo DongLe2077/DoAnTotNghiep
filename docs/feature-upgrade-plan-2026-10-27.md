@@ -1,5 +1,6 @@
 # Kế hoạch bổ sung và nâng cấp chức năng — 27/10/2026
 
+**Cập nhật phạm vi ngày 30/10:** người dùng xác nhận khóa luận không làm quản lý hợp đồng; phần đề xuất đó đã được loại. [Các đề xuất mới](additional-feature-ideas-2026-10-30.md).
 **Cập nhật sản phẩm 27/10/2026:** theo lựa chọn tiếp theo của người dùng, đã bổ sung [chi phí sửa chữa](../frontend/docs/repair-expenses-self-test.md) và [sửa sai phiếu thu](../frontend/docs/payment-corrections-self-test.md). Các đề xuất chưa làm như PDF/Excel và hoàn tiền thực tế vẫn là phần chọn riêng. Những mốc/kết quả ban đầu bên dưới được giữ theo thời điểm lập kế hoạch.
 
 Đề xuất dựa trên mã nguồn hiện tại. Lần này chỉ lập kế hoạch, chưa triển khai chức năng mới. Bản nền đã lên GitHub tại commit `fca6bff`; lượt kiểm tra ngày 27/10 đạt 336 kiểm thử backend, 119 frontend và đóng gói giao diện thành công.
@@ -33,7 +34,6 @@ Backend hiện dùng Laravel/PHP/MySQL; frontend Vue/TypeScript/Vite. Các đề
 | 3 | Liên kết chi phí sửa chữa với khoản chi | Theo dõi sửa gì, tốn bao nhiêu, tiền được tính một lần | Vừa; tăng chiều sâu cho nghiệp vụ đã có |
 | 4 | Sửa sai phiếu thu và hoàn tiền có đối chiếu | Xử lý trường hợp nhập nhầm/hoàn tiền mà vẫn giữ lịch sử | Lớn; đưa lên trước PDF/Excel nếu bắt đầu dùng tiền thật thường xuyên |
 | 5 | Ảnh đồng hồ và bảng nhập chỉ số nhiều phòng | Có căn cứ chỉ số, giảm thao tác cuối tháng | Vừa đến lớn; ảnh trước, nhập nhiều phòng sau |
-| 6 | Hợp đồng, tiền cọc và quyết toán trả phòng | Hoàn thiện vòng đời thuê và bàn giao | Rất lớn; tách thành nhiều đợt, chỉ chọn khi thuộc phạm vi đề tài |
 | 7 | QR chuyển khoản, hỗ trợ sử dụng và tiện ích nhỏ | Thuận tiện cho người dùng sau khi các luồng chính ổn định | Tùy chọn; QR không tự xác nhận đã nhận tiền |
 
 **Gói nên chọn đầu tiên: PDF → Excel → liên kết chi phí sửa chữa.** Nếu chỉ chọn một chức năng, chọn PDF. Nếu giảng viên yêu cầu chiều sâu nghiệp vụ hơn chứng từ, ưu tiên liên kết chi phí sửa chữa sau PDF và dời Excel lại.
@@ -90,16 +90,6 @@ Hai trường hợp khác nhau: **ghi nhầm dữ liệu** và **thực tế tr�
 - Xác định ngày đối chiếu, số tiền còn được xử lý và quy tắc báo cáo; chặn xử lý vượt hoặc xử lý cùng phần tiền hai lần.
 - Cập nhật đồng bộ dư nợ, sổ tiền, tổng quan, chứng từ và lịch sử hai vai trò; kiểm thử mất phản hồi/gửi trùng/xung đột.
 - Cần mở lại nhóm PDF/Excel để phản ánh bản ghi xử lý nếu hai phần này đã triển khai. Vì có phụ thuộc này, nếu chọn sửa sai tiền cho đợt tới thì chốt quy tắc ngay từ đầu.
-
-### Hợp đồng, tiền cọc, quyết toán
-
-Tách thành ba đợt thay vì một màn hình lớn:
-
-1. **Hợp đồng:** gắn nhóm/đợt thuê, ngày bắt đầu/kết thúc, thông tin và phiên bản; gia hạn và nhắc sắp hết hạn. Mẫu nội dung cần được thống nhất riêng, không tự sinh điều khoản.
-2. **Tiền cọc:** sổ các lần nhận/khấu trừ/hoàn, số dư và lý do; xác định rõ cách đối chiếu với dòng tiền, tách khỏi doanh thu tiền thuê.
-3. **Quyết toán:** chốt chỉ số cuối, công nợ còn lại, khoản khấu trừ/hoàn và bàn giao; xem trước/xác nhận, giữ lịch sử. Trả phòng không tự xóa nợ.
-
-Chỉ triển khai khi có đủ thời gian kiểm thử toàn bộ nhận → ở → trả phòng và người dùng/giảng viên chọn vào phạm vi.
 
 ## 8. Nâng cấp thao tác điện nước và giao diện
 

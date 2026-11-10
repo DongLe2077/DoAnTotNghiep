@@ -39,6 +39,7 @@ async function cash(page: Page, tag: string, amount = '125000.50') {
   return write(page.request, '/owner/cash-transactions', { transaction_type: 'expense', amount, occurred_at: '2026-01-15 09:00:00', description: `Chi sửa chữa ${tag}`, reason: 'Dữ liệu riêng của kiểm thử', idempotency_key: crypto.randomUUID() })
 }
 function expenses(page: Page) { return page.getByRole('region', { name: 'Chi phí sửa chữa', exact: true }) }
+async function openExpenses(page: Page) { await page.getByText('Chi phí sửa chữa', { exact: true }).click() }
 async function choose(page: Page, description: string, reason: string) {
   await expenses(page).getByRole('button', { name: 'Liên kết khoản chi', exact: true }).click()
   const dialog = page.getByRole('dialog', { name: 'Chọn khoản chi sửa chữa', exact: true })
@@ -61,7 +62,9 @@ test('repair expense links existing cash once and follows edit/delete/restore/un
   await login(page)
   const f = await fixture(page, browser, baseURL, 'COST-LINK'), entry = await cash(page, 'COST-LINK')
   try {
-    await page.goto(`/owner/maintenance/${f.report.id}`); await total(page, '0 ₫')
+    await page.goto(`/owner/maintenance/${f.report.id}`)
+    await expect(expenses(page)).toHaveCount(0)
+    await openExpenses(page); await total(page, '0 ₫')
     await choose(page, entry.description, 'Đối chiếu khoản thay van nước'); await confirmLink(page)
     await total(page, '125.000,50 ₫')
     await expenses(page).getByRole('button', { name: `Xem khoản chi ${entry.id}`, exact: true }).click()
@@ -115,6 +118,7 @@ test('repair link retries the identical durable request after committed response
   const f = await fixture(page, browser, baseURL, 'COST-REPLAY'), entry = await cash(page, 'COST-REPLAY', '330000.25'), payloads: unknown[] = []
   try {
     await page.goto(`/owner/maintenance/${f.report.id}`)
+    await openExpenses(page)
     await page.route(`**/api/owner/maintenance-requests/${f.report.id}/expenses`, async route => {
       if (route.request().method() !== 'POST') return route.continue()
       payloads.push(route.request().postDataJSON())
@@ -143,6 +147,7 @@ test('new expense requires explicit linking and internal costs stay private from
   const f = await fixture(page, browser, baseURL, 'COST-CREATE'), description = 'Vật tư riêng COST-CREATE'
   try {
     await page.goto(`/owner/maintenance/${f.report.id}`)
+    await openExpenses(page)
     await expenses(page).getByRole('button', { name: 'Liên kết khoản chi', exact: true }).click()
     await page.getByRole('dialog').getByRole('button', { name: 'Tạo khoản chi mới', exact: true }).click()
     let dialog = page.getByRole('dialog', { name: 'Thêm khoản thu chi', exact: true })
@@ -166,7 +171,7 @@ test('new expense requires explicit linking and internal costs stay private from
     await expect(f.tenant.getByText(description, { exact: false })).toHaveCount(0)
     for (const path of [`/api/owner/maintenance-requests/${f.report.id}/expenses`, `/api/owner/maintenance-requests/${f.report.id}/expenses/history`, `/api/owner/cash-transactions/${list[0].id}/maintenance-link`]) expect((await f.tenant.request.get(path)).status()).toBe(403)
     expect((await f.tenant.request.get(`/api/tenant/maintenance-requests/${f.report.id}/expenses`)).status()).toBe(404)
-    await page.setViewportSize({ width: 320, height: 740 }); await page.reload(); await total(page, '120.500,30 ₫'); await overflow(page)
+    await page.setViewportSize({ width: 320, height: 740 }); await page.reload(); await openExpenses(page); await total(page, '120.500,30 ₫'); await overflow(page)
     await expenses(page).scrollIntoViewIfNeeded(); await page.evaluate(() => (document.activeElement as HTMLElement)?.blur())
     await page.screenshot({ path: resolve(screenshots, 'repair-costs-owner-mobile.png'), animations: 'disabled' })
     await f.tenant.setViewportSize({ width: 320, height: 740 }); await f.tenant.reload(); await expect(f.tenant.getByRole('heading', { name: f.report.title, exact: true })).toBeVisible(); await overflow(f.tenant)

@@ -3,9 +3,11 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MaintenancePhotoController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PayosWebhookController;
 use App\Http\Controllers\RoleAccessController;
 use App\Http\Controllers\Tenant\AnnouncementController;
 use App\Http\Controllers\Tenant\InvoiceController;
+use App\Http\Controllers\Tenant\InvoicePayosController;
 use App\Http\Controllers\Tenant\MaintenanceRequestController;
 use App\Http\Controllers\Tenant\PdfDocumentController;
 use App\Http\Controllers\Tenant\ProfileController;
@@ -14,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 // Loaded through the web group to keep session cookies and CSRF protection.
 Route::prefix('api')->name('api.')->group(function () {
+    Route::post('webhooks/payos', PayosWebhookController::class)->name('webhooks.payos');
     Route::get('auth/csrf-cookie', [AuthController::class, 'csrfCookie'])->name('auth.csrf-cookie');
     Route::post('auth/login', [AuthController::class, 'login'])
         ->middleware('throttle:auth-login-ip')->name('auth.login');
@@ -44,6 +47,8 @@ Route::prefix('api')->name('api.')->group(function () {
                 Route::get('invoices/{invoice}/pdf', [PdfDocumentController::class, 'invoice'])->whereNumber('invoice')->name('invoices.pdf');
                 Route::get('invoices/{invoice}/payments/{payment}/pdf', [PdfDocumentController::class, 'receipt'])->whereNumber(['invoice', 'payment'])->name('payments.pdf');
                 Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
+                Route::get('invoices/{invoice}/payos', [InvoicePayosController::class, 'show'])->whereNumber('invoice')->middleware('throttle:60,1,payos-status')->name('invoices.payos.show');
+                Route::post('invoices/{invoice}/payos', [InvoicePayosController::class, 'store'])->whereNumber('invoice')->middleware('throttle:10,1,payos-start')->name('invoices.payos.store');
                 Route::get('maintenance-requests/eligible-occupancies', [MaintenanceRequestController::class, 'eligibleOccupancies'])->name('maintenance-requests.eligible-occupancies');
                 Route::get('maintenance-requests', [MaintenanceRequestController::class, 'index'])->name('maintenance-requests.index');
                 Route::get('maintenance-requests/{maintenanceRequest}/history', [MaintenanceRequestController::class, 'history'])->name('maintenance-requests.history');

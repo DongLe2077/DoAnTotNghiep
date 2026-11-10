@@ -67,12 +67,14 @@ test('owner and authorized tenant download actual invoice and voided receipt PDF
   await login(page); const f = await fixture(page, 'PDF-DOWNLOAD')
   await write(page, `/payments/${f.payment.id}/corrections`, { action: 'void', reason: 'Đối chiếu phiếu ghi nhận nhầm để kiểm tra PDF', version_token: f.payment.version_token, idempotency_key: crypto.randomUUID() })
   await page.goto(`/owner/invoices/${f.invoice.id}`)
+  await page.getByText('Chi tiết các khoản và PDF hóa đơn', { exact: true }).click()
   let download = page.waitForEvent('download'); await page.getByRole('button', { name: 'Tải PDF hóa đơn', exact: true }).click(); await checkDownload(await download, `hoa-don-${f.invoice.id}.pdf`)
   await page.getByRole('button', { name: `Xem lần thu PT-${f.payment.id}`, exact: true }).click()
   download = page.waitForEvent('download'); await page.getByRole('button', { name: 'Tải PDF phiếu thu', exact: true }).click(); await checkDownload(await download, `phieu-thu-${f.payment.id}.pdf`)
   const context = await browser.newContext({ baseURL }), tenantPage = await context.newPage()
   try {
     await login(tenantPage, f.username); await tenantPage.goto(`/tenant/invoices/${f.invoice.id}`)
+    await tenantPage.getByText('Chi tiết các khoản và PDF hóa đơn', { exact: true }).click()
     download = tenantPage.waitForEvent('download'); await tenantPage.getByRole('button', { name: 'Tải PDF hóa đơn', exact: true }).click(); await checkDownload(await download, `hoa-don-${f.invoice.id}.pdf`)
     download = tenantPage.waitForEvent('download'); await tenantPage.getByRole('button', { name: `Tải PDF phiếu PT-${f.payment.id}`, exact: true }).click(); await checkDownload(await download, `phieu-thu-${f.payment.id}.pdf`)
     const response = await tenantPage.request.get(`/api/tenant/invoices/${f.invoice.id}/pdf`)
@@ -91,6 +93,7 @@ test('owner and authorized tenant download actual invoice and voided receipt PDF
 
 test('a failed download is retryable and an old account response cannot start a download after logout', async ({ page }) => {
   await login(page); const f = await fixture(page, 'PDF-SESSION'); await page.goto(`/owner/invoices/${f.invoice.id}`)
+  await page.getByText('Chi tiết các khoản và PDF hóa đơn', { exact: true }).click()
   await page.route(`**/api/owner/invoices/${f.invoice.id}/pdf`, route => route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ message: 'fixture' }) }), { times: 1 })
   await page.getByRole('button', { name: 'Tải PDF hóa đơn', exact: true }).click(); await expect(page.getByRole('alert')).toContainText('Máy chủ')
   const retry = page.waitForEvent('download'); await page.getByRole('button', { name: 'Tải PDF hóa đơn', exact: true }).click(); await checkDownload(await retry, `hoa-don-${f.invoice.id}.pdf`)

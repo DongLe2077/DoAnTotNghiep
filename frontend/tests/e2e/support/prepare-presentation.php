@@ -27,7 +27,8 @@ use Illuminate\Support\Facades\Schema;
 
 $frontend = dirname(__DIR__, 3);
 $backend = dirname($frontend).DIRECTORY_SEPARATOR.'backend';
-$root = $frontend.DIRECTORY_SEPARATOR.'.cache'.DIRECTORY_SEPARATOR.'presentation';
+$mobileMode = getenv('E2E_MOBILE') === '1';
+$root = $frontend.DIRECTORY_SEPARATOR.'.cache'.DIRECTORY_SEPARATOR.($mobileMode ? 'mobile-https' : 'presentation');
 $database = $root.DIRECTORY_SEPARATOR.'owner-demo.sqlite';
 $runId = getenv('E2E_RUN_ID');
 $storage = $root.DIRECTORY_SEPARATOR.'runs'.DIRECTORY_SEPARATOR.$runId.DIRECTORY_SEPARATOR.'storage';

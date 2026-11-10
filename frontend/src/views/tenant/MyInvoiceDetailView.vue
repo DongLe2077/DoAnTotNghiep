@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import PdfDownloadButton from '@/components/billing/PdfDownloadButton.vue'
+import PayosInvoiceCheckout from '@/components/billing/PayosInvoiceCheckout.vue'
+import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
 import UiPageState from '@/components/ui/UiPageState.vue'
-import UiNotice from '@/components/ui/UiNotice.vue'
 import InvoiceLines from '@/components/billing/InvoiceLines.vue'
 import InvoiceHistory from '@/components/billing/InvoiceHistory.vue'
 import PaymentReceiptSummary from '@/components/billing/PaymentReceiptSummary.vue'
@@ -12,15 +13,96 @@ import { dueDateText, dueStatusLabel } from '@/lib/invoice-controls'
 import { useTenantResource } from '@/composables/useTenantApi'
 import { formatMoney } from '@/lib/format'
 import { formatDateTime } from '@/lib/notifications'
-import { tenantPaymentLabel as paymentStatusLabel } from '@/types/tenant'
+import { tenantHasBalance, tenantPaymentLabel, tenantPaymentTone } from '@/types/tenant'
+import { useNotificationsStore } from '@/stores/notifications'
 import type { Invoice } from '@/types/billing'
 const route = useRoute()
+const notifications = useNotificationsStore()
 const { data: invoice, loading, error, status, load } = useTenantResource<Invoice>(() => `/invoices/${route.params.id}`)
-void load()
+const hasBalance = computed(() => invoice.value ? tenantHasBalance(invoice.value.payment_status) : false)
+const paidReceipts = computed(() => invoice.value?.payment_status === 'paid'
+  ? invoice.value.payments?.filter(payment => payment.status !== 'voided') ?? [] : [])
+const confirmedPayment = computed(() => paidReceipts.value.filter(payment => payment.source === 'payos').at(-1))
+const mainReceipt = computed(() => paidReceipts.value.at(-1))
+watch(() => route.params.id, () => void load(), { immediate: true })
+watch(confirmedPayment, payment => { if (payment) void notifications.refreshCount(true) })
 </script>
-<template><section class="management-page tenant-page"><RouterLink class="back-link" to="/tenant/invoices">← Hóa đơn của tôi</RouterLink><UiPageState v-if="loading" kind="loading" /><UiPageState v-else-if="error" :kind="status === 403 || status === 404 ? 'not-found' : 'error'" :title="status === 403 || status === 404 ? 'Hóa đơn không còn khả dụng' : 'Chưa tải được hóa đơn'" :description="status === 403 || status === 404 ? 'Hóa đơn không tồn tại hoặc chủ trọ đã thu hồi quyền xem của bạn.' : error"><UiButton @click="load">Thử lại</UiButton></UiPageState>
-  <template v-else-if="invoice"><header class="management-header"><div><span class="eyebrow">{{ invoice.invoice_number }}</span><h1>Hóa đơn phòng {{ invoice.room.room_number }}</h1><p>Tháng {{ invoice.billing_month.slice(5) }}/{{ invoice.billing_month.slice(0, 4) }} · Nhóm {{ invoice.group.group_code }}</p></div><div class="button-row"><PdfDownloadButton :path="`/tenant/invoices/${invoice.id}/pdf`" :filename="`hoa-don-${invoice.id}.pdf`" label="Tải PDF hóa đơn" /><UiButton variant="secondary" :loading="loading" @click="load">Cập nhật thanh toán</UiButton></div></header>
-    <article class="record-card"><UiBadge :tone="invoice.payment_status === 'paid' ? 'success' : invoice.payment_status === 'inconsistent' ? 'danger' : 'warning'">{{ paymentStatusLabel(invoice.payment_status) }}</UiBadge><dl class="record-facts"><div><dt>Tổng hóa đơn</dt><dd>{{ formatMoney(invoice.total_amount) }}</dd></div><div><dt>Đã thanh toán</dt><dd>{{ formatMoney(invoice.paid_amount) }}</dd></div><div><dt>Còn cần thanh toán</dt><dd class="tenant-total">{{ formatMoney(invoice.outstanding_amount) }}</dd></div><div><dt>Hạn thanh toán</dt><dd>{{ dueDateText(invoice.due_date) }}<template v-if="invoice.due_date"> · {{ dueStatusLabel(invoice) }}</template></dd></div><div><dt>Phát hành</dt><dd>{{ formatDateTime(invoice.issued_at) }}</dd></div></dl></article>
-    <UiNotice v-if="invoice.payment_status === 'cancelled'" tone="warning">Chủ trọ đã hủy hóa đơn này. Bạn không cần thanh toán; các khoản gốc được giữ để đối chiếu.</UiNotice><UiNotice v-else-if="invoice.due_status === 'overdue'" tone="warning">Hóa đơn đã quá hạn {{ invoice.overdue_days }} ngày. Hãy liên hệ chủ trọ nếu cần đối chiếu hoặc gia hạn.</UiNotice><UiNotice v-if="invoice.payment_status === 'inconsistent'" tone="warning">Hóa đơn cần được đối chiếu. Hãy liên hệ chủ trọ để kiểm tra số tiền và các lần ghi nhận.</UiNotice>
-    <div class="detail-sections dashboard-section"><InvoiceHistory :invoice="invoice" /><article class="record-card"><h2>Chi tiết các khoản</h2><InvoiceLines :items="invoice.items ?? []" /></article><article class="record-card"><h2>Lịch sử thanh toán</h2><p v-if="!invoice.payments?.length" class="help-text">Chưa có khoản thanh toán được chủ trọ ghi nhận.</p><ul v-else class="detail-items"><li v-for="payment in invoice.payments" :key="payment.id"><PaymentReceiptSummary :payment="payment" :pdf-path="`/tenant/invoices/${invoice.id}/payments/${payment.id}/pdf`" /></li></ul><p class="help-text">Lịch sử giữ cả phiếu đã hủy ghi nhận và phiếu thay thế. Chỉ phiếu có hiệu lực được cộng vào số đã thanh toán. Nếu vừa trả tiền, bấm Cập nhật thanh toán để kiểm tra.</p></article></div><UiNotice tone="info">Nếu cần đối chiếu hoặc chưa thấy khoản đã trả, hãy liên hệ chủ trọ. Giao diện này không có thanh toán trực tuyến hoặc tự xác nhận đã trả tiền.</UiNotice>
-  </template></section></template>
+<template>
+  <section class="management-page tenant-page">
+    <RouterLink class="back-link" to="/tenant/invoices">← Hóa đơn của tôi</RouterLink>
+    <UiPageState v-if="loading" kind="loading" />
+    <UiPageState v-else-if="error" :kind="status === 403 || status === 404 ? 'not-found' : 'error'" :title="status === 403 || status === 404 ? 'Hóa đơn không còn khả dụng' : 'Chưa tải được hóa đơn'" :description="status === 403 || status === 404 ? 'Hóa đơn không tồn tại hoặc chủ trọ đã thu hồi quyền xem của bạn.' : error"><UiButton @click="load">Thử lại</UiButton></UiPageState>
+    <template v-else-if="invoice">
+      <header class="management-header workflow-header">
+        <div><h1>Hóa đơn phòng {{ invoice.room.room_number }}</h1><p>Tháng {{ invoice.billing_month.slice(5) }}/{{ invoice.billing_month.slice(0, 4) }} · {{ invoice.invoice_number }}</p></div>
+      </header>
+
+      <div class="detail-sections workflow-sections">
+        <article class="record-card workflow-summary">
+          <header>
+            <div v-if="hasBalance">
+              <h2 class="workflow-caption">Còn cần thanh toán</h2>
+              <strong class="workflow-amount">{{ formatMoney(invoice.outstanding_amount) }}</strong>
+            </div>
+            <h2 v-else class="workflow-caption">Tình trạng thanh toán</h2>
+            <UiBadge :tone="tenantPaymentTone(invoice.payment_status)">{{ tenantPaymentLabel(invoice.payment_status) }}</UiBadge>
+          </header>
+          <p v-if="hasBalance" class="workflow-deadline">
+            <strong>{{ invoice.due_date ? `Hạn thanh toán ${dueDateText(invoice.due_date)}` : 'Chưa đặt hạn thanh toán' }}</strong>
+            <span v-if="invoice.due_status === 'overdue'">{{ dueStatusLabel(invoice) }}</span>
+          </p>
+          <p v-else-if="invoice.payment_status === 'cancelled'">Chủ trọ đã hủy hóa đơn này. Bạn không cần thanh toán.</p>
+          <p v-else-if="invoice.payment_status === 'inconsistent'">Hãy liên hệ chủ trọ để xác nhận số tiền trước khi thanh toán.</p>
+          <p v-else><strong class="workflow-amount">{{ formatMoney(invoice.paid_amount) }}</strong></p>
+          <p v-if="confirmedPayment" class="payment-confirmation" role="status"><strong>Thanh toán thành công</strong> · Đã nhận {{ formatMoney(confirmedPayment.amount) }} qua payOS.</p>
+          <div v-if="(invoice.payos_configured && hasBalance) || mainReceipt" class="workflow-actions">
+            <PayosInvoiceCheckout v-if="invoice.payos_configured && hasBalance" :key="invoice.id"
+              :invoice="invoice" :returning="route.query.payos === 'return'" @confirmed="load" />
+            <PdfDownloadButton v-if="mainReceipt" :path="`/tenant/invoices/${invoice.id}/payments/${mainReceipt.id}/pdf`" :filename="`phieu-thu-${mainReceipt.id}.pdf`" label="Tải phiếu thu" primary />
+          </div>
+          <details v-if="hasBalance" class="workflow-disclosure workflow-actions" :open="!invoice.payos_configured">
+            <summary>Trả trực tiếp cho chủ trọ</summary>
+            <div class="workflow-disclosure-body">
+              <p class="help-text">Trả tiền mặt hoặc chuyển khoản theo thông tin trong PDF hóa đơn.</p>
+              <p class="help-text"><strong>Khi chuyển khoản,</strong> ghi mã <strong>{{ invoice.invoice_number }}</strong> trong nội dung.</p>
+            </div>
+          </details>
+        </article>
+
+        <article class="record-card">
+          <h2>Lịch sử thanh toán</h2>
+          <p v-if="!invoice.payments?.length" class="help-text">Chưa có khoản thanh toán được ghi nhận.</p>
+          <ul v-else class="detail-items">
+            <li v-for="payment in invoice.payments" :key="payment.id">
+              <PaymentReceiptSummary :payment="payment" :pdf-path="payment.id === mainReceipt?.id ? undefined : `/tenant/invoices/${invoice.id}/payments/${payment.id}/pdf`" />
+            </li>
+          </ul>
+          <div class="button-row">
+            <UiButton variant="ghost" :loading="loading" @click="load">Cập nhật thanh toán</UiButton>
+          </div>
+        </article>
+
+        <details class="workflow-disclosure wide">
+          <summary>Chi tiết các khoản và PDF hóa đơn</summary>
+          <div class="workflow-disclosure-body">
+            <dl class="record-facts">
+              <div><dt>Tổng hóa đơn</dt><dd>{{ formatMoney(invoice.total_amount) }}</dd></div>
+              <div><dt>Đã thanh toán</dt><dd>{{ formatMoney(invoice.paid_amount) }}</dd></div>
+            </dl>
+            <InvoiceLines :items="invoice.items ?? []" />
+            <p class="help-text">Nhóm {{ invoice.group.group_code }} · Phát hành {{ formatDateTime(invoice.issued_at) }}</p>
+            <PdfDownloadButton :path="`/tenant/invoices/${invoice.id}/pdf`" :filename="`hoa-don-${invoice.id}.pdf`" label="Tải PDF hóa đơn" />
+          </div>
+        </details>
+        <details class="workflow-disclosure wide">
+          <summary>Lịch sử điều chỉnh</summary>
+          <div class="workflow-disclosure-body"><InvoiceHistory :invoice="invoice" /></div>
+        </details>
+      </div>
+    </template>
+  </section>
+</template>
+
+<style scoped>
+.payment-confirmation { color: var(--color-primary); font-size: 14px; }
+</style>

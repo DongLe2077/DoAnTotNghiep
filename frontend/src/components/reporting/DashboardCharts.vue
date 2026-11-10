@@ -12,18 +12,25 @@ const rooms = computed(() => [
 ])
 </script>
 <template>
-  <section class="dashboard-section dashboard-charts" aria-labelledby="charts-title"><div class="dashboard-section-heading"><h2 id="charts-title">Thống kê trực quan</h2><p class="help-text">Chạm vào biểu đồ để xem thêm</p></div>
-    <div class="chart-grid"><DashboardInvoiceChart :month="data.month" :summary="data.invoices" /><DashboardTrendChart :month="data.month" :series="data.monthly_series ?? []" /></div>
-    <article class="record-card room-chart" aria-labelledby="room-chart-title">
+  <section class="dashboard-section dashboard-charts" aria-labelledby="charts-title">
+    <h2 id="charts-title">Thống kê trực quan</h2>
+    <DashboardInvoiceChart :month="data.month" :summary="data.invoices" />
+    <details class="workflow-disclosure more-charts">
+      <summary>Xem thêm thống kê</summary>
+      <div class="workflow-disclosure-body">
+        <DashboardTrendChart :month="data.month" :series="data.monthly_series ?? []" />
+        <article class="record-card room-chart" aria-labelledby="room-chart-title">
       <div class="room-chart-title"><div><h3 id="room-chart-title">Tình trạng phòng hiện tại</h3><p class="help-text">{{ data.rooms.total_count }} phòng trong nhà trọ</p></div><RouterLink class="record-link" to="/owner/rooms">Quản lý phòng →</RouterLink></div>
       <div class="room-bar" role="img" :aria-label="rooms.map(item => `${item.label}: ${item.count} phòng`).join(', ')"><span v-for="item in rooms" :key="item.label" :style="{ width: `${chartPercent(BigInt(item.count), BigInt(data.rooms.total_count))}%`, background: item.color }" /></div>
       <ul class="room-legend"><li v-for="item in rooms" :key="item.label"><i :style="{ background: item.color }" aria-hidden="true" />{{ item.label }} <strong>{{ item.count }}</strong></li></ul>
       <p v-if="!data.rooms.total_count" class="help-text">Chưa có phòng để thống kê.</p><p class="room-note">Phòng bảo trì được tính riêng, kể cả khi còn người cư trú. Trạng thái này luôn phản ánh hiện tại.</p>
-    </article>
+        </article>
+      </div>
+    </details>
   </section>
 </template>
 <style scoped>
-.chart-grid { display: grid; grid-template-columns: minmax(260px, .85fr) minmax(0, 1.45fr); gap: 20px; align-items: stretch; margin-top: 20px; }
+.more-charts { margin-top: 12px; }
 .room-chart { margin-top: 20px; }
 .room-chart-title { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .room-bar { display: flex; overflow: hidden; height: 14px; border-radius: 7px; background: var(--color-border); margin: 18px 0; }
@@ -33,6 +40,4 @@ const rooms = computed(() => [
 .room-legend i { width: 10px; height: 10px; border-radius: 3px; }
 .room-legend strong { margin-left: 6px; color: var(--color-text); }
 .room-note { margin: 16px 0 0; font-size: 12px; line-height: 1.7; color: var(--color-text-secondary); }
-@media (max-width: 1100px) { .chart-grid { grid-template-columns: minmax(240px, 1fr) minmax(0, 1.35fr); } }
-@media (max-width: 800px) { .chart-grid { grid-template-columns: 1fr; } }
 </style>

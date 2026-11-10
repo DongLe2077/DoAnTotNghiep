@@ -97,6 +97,7 @@ test('voiding a mistaken receipt reopens debt, preserves history and enables inv
   dialog = await review(page); await dialog.getByRole('button', { name: 'Xác nhận sửa sai phiếu thu', exact: true }).click()
   await expect(page.getByRole('dialog', { name: 'Chi tiết lần thu', exact: true }).getByText('Đã hủy ghi nhận', { exact: true })).toBeVisible()
   await page.getByRole('dialog').getByRole('button', { name: 'Đóng hộp thoại', exact: true }).click()
+  await page.getByText('Điều chỉnh, hạn thanh toán và lịch sử', { exact: true }).click()
   await expect(page.getByRole('button', { name: 'Hủy hóa đơn', exact: true })).toBeVisible()
   const data = await state(page, invoice.id)
   expect(data.paid_amount).toBe('0.00'); expect(data.outstanding_amount).toBe(invoice.total_amount); expect(data.payments).toHaveLength(1)

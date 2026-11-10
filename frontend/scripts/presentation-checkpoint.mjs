@@ -6,9 +6,10 @@ import { dirname, isAbsolute, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const frontend = resolve(dirname(fileURLToPath(import.meta.url)), '..'), workspace = resolve(frontend, '..')
-const source = resolve(frontend, '.cache/presentation'), checkpoints = resolve(frontend, '.cache/presentation-checkpoints')
-if (process.argv.length > 2) throw new Error('Lệnh này tạo bản sao và kiểm tra khôi phục vào thư mục mới, không nhận đường dẫn ghi đè.')
-for (const port of [5175, 18002]) {
+const mobile = process.argv.length === 3 && process.argv[2] === '--mobile'
+const source = resolve(frontend, mobile ? '.cache/mobile-https' : '.cache/presentation'), checkpoints = resolve(frontend, mobile ? '.cache/mobile-checkpoints' : '.cache/presentation-checkpoints')
+if (process.argv.length > 2 && !mobile) throw new Error('Chỉ nhận tùy chọn --mobile; không nhận đường dẫn ghi đè.')
+for (const port of mobile ? [5176, 18003] : [5175, 18002]) {
   await new Promise((resolve, reject) => {
     const probe = createServer()
     probe.once('error', () => reject(new Error(`Hãy dừng bản trình cổng ${port} trước khi sao lưu để giữ CSDL và ảnh cùng thời điểm.`)))
@@ -24,11 +25,13 @@ const destination = resolve(checkpoints, id)
 if (realpathSync(source) !== source || existsSync(checkpoints) && realpathSync(checkpoints) !== checkpoints) throw new Error('Unexpected presentation snapshot paths.')
 mkdirSync(destination, { recursive: true })
 const php = process.env.PHP_BINARY || 'php'
-const snapshot = spawnSync(php, [resolve(frontend, 'tests/e2e/support/snapshot-presentation.php'), destination], { cwd: frontend, encoding: 'utf8', windowsHide: true })
+const snapshotEnv = { ...process.env, PRESENTATION_SNAPSHOT_MOBILE: mobile ? '1' : '0' }
+const snapshot = spawnSync(php, [resolve(frontend, 'tests/e2e/support/snapshot-presentation.php'), destination], { cwd: frontend, env: snapshotEnv, encoding: 'utf8', windowsHide: true })
 if (snapshot.error) throw snapshot.error
 if (snapshot.status !== 0) throw new Error(snapshot.stderr || snapshot.stdout)
 cpSync(storage, resolve(destination, 'photos'), { recursive: true, errorOnExist: true, force: false })
 cpSync(resolve(source, 'scenario.json'), resolve(destination, 'scenario.json'), { errorOnExist: true, force: false })
+if (mobile) cpSync(resolve(source, 'access.json'), resolve(destination, 'access.json'), { errorOnExist: true, force: false })
 
 function safeFile(root, path) {
   const absolute = resolve(root, path), rel = relative(root, absolute)
@@ -64,19 +67,20 @@ for (const path of [...new Set(sourceFiles)].sort()) {
   cpSync(input, output, { errorOnExist: true, force: false })
   sourceHashes[path] = hash(output)
 }
-if (existsSync(resolve(frontend, 'dist'))) cpSync(resolve(frontend, 'dist'), resolve(destination, 'frontend-dist'), { recursive: true })
+const built = mobile ? resolve(source, 'dist') : resolve(frontend, 'dist')
+if (existsSync(built)) cpSync(built, resolve(destination, 'frontend-dist'), { recursive: true })
 const photoHashes = Object.fromEntries(files(resolve(destination, 'photos')).map(path => [path, hash(safeFile(resolve(destination, 'photos'), path))]))
 const restored = resolve(destination, 'restored')
 mkdirSync(restored)
 cpSync(resolve(destination, 'database.sqlite'), resolve(restored, 'database.sqlite'), { errorOnExist: true, force: false })
 cpSync(resolve(destination, 'photos'), resolve(restored, 'photos'), { recursive: true, errorOnExist: true, force: false })
-const verified = spawnSync(php, [resolve(frontend, 'tests/e2e/support/snapshot-presentation.php'), destination, 'verify'], { cwd: frontend, encoding: 'utf8', windowsHide: true })
+const verified = spawnSync(php, [resolve(frontend, 'tests/e2e/support/snapshot-presentation.php'), destination, 'verify'], { cwd: frontend, env: snapshotEnv, encoding: 'utf8', windowsHide: true })
 if (verified.error) throw verified.error
 if (verified.status !== 0) throw new Error(verified.stderr || verified.stdout)
 const verification = JSON.parse(verified.stdout)
 for (const [path, expected] of Object.entries(photoHashes)) if (hash(safeFile(resolve(restored, 'photos'), path)) !== expected) throw new Error('Restored photo differs from the backup.')
 const manifest = { version: 1, createdAt: new Date().toISOString(), gitHead: git('rev-parse', 'HEAD').trim(), sourceFiles: sourceHashes,
   databaseSha256: hash(resolve(destination, 'database.sqlite')), photos: photoHashes,
-  restoreVerification: verification, location: destination, syntheticDataOnly: true }
+  restoreVerification: verification, location: destination, syntheticDataOnly: true, mode: mobile ? 'mobile' : 'presentation' }
 writeFileSync(resolve(destination, 'manifest.json'), JSON.stringify(manifest, null, 2))
 process.stdout.write(`Bản sao: ${destination}\nĐã khôi phục thử vào thư mục restored riêng: ${Object.keys(sourceHashes).length} tệp mã nguồn, ${Object.keys(photoHashes).length} ảnh; CSDL và dữ liệu đối chiếu đạt.\nCSDL MySQL và bản trình đang dùng được giữ nguyên.\n`)

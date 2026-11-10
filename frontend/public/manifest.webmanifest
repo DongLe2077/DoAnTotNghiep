@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "Nhà Trọ",
+  "short_name": "Nhà Trọ",
+  "description": "Quản lý phòng trọ, hóa đơn và sửa chữa dành cho chủ trọ và người thuê.",
+  "lang": "vi",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#235c4b",
+  "background_color": "#f7f8f5",
+  "prefer_related_applications": false,
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

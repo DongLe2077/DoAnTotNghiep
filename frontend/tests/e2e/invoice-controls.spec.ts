@@ -35,7 +35,7 @@ async function confirm(page: Page) { const dialog = await review(page); await di
 
 test('invoice adjustment lost response survives reload, replays once, and tenant sees readonly audit', async ({ page }) => {
   await login(page); const { invoice, username } = await fixture(page, 'CONTROL-RETRY')
-  await page.goto(`/owner/invoices/${invoice.id}`); await page.getByRole('button', { name: 'Điều chỉnh số tiền', exact: true }).click()
+  await page.goto(`/owner/invoices/${invoice.id}`); await page.getByText('Điều chỉnh, hạn thanh toán và lịch sử', { exact: true }).click(); await page.getByRole('button', { name: 'Điều chỉnh số tiền', exact: true }).click()
   await page.getByLabel('Khoản điều chỉnh tăng / giảm (bắt buộc)').fill('-50000.25'); await page.getByLabel('Lý do thay đổi (bắt buộc)').fill('Giảm phí sau đối chiếu điện nước')
   const dialog = await review(page); let sent: unknown
   await page.route(`**/api/owner/invoices/${invoice.id}/changes`, async route => { sent = route.request().postDataJSON(); const response = await route.fetch(); expect(response.ok()).toBe(true); await route.abort('failed') }, { times: 1 })
@@ -50,6 +50,7 @@ test('invoice adjustment lost response survives reload, replays once, and tenant
   await page.getByRole('button', { name: 'Đặt / đổi hạn thanh toán', exact: true }).click(); await page.getByLabel('Hạn thanh toán mới (bắt buộc)').fill('2030-12-31'); await page.getByLabel('Lý do thay đổi (bắt buộc)').fill('Thống nhất hạn đóng với người thuê'); await confirm(page)
   await page.screenshot({ path: resolve(shots, 'invoice-control-owner.png'), fullPage: true })
   await page.context().clearCookies(); await login(page, username); await page.goto(`/tenant/invoices/${invoice.id}`)
+  await page.getByText('Lịch sử điều chỉnh', { exact: true }).click()
   await expect(page.getByText('Giảm phí sau đối chiếu điện nước', { exact: true })).toBeVisible(); await expect(page.getByText('31/12/2030', { exact: false }).first()).toBeVisible()
   await expect(page.getByRole('button', { name: 'Điều chỉnh số tiền', exact: true })).toHaveCount(0)
   await page.setViewportSize({ width: 390, height: 844 }); await page.reload()
@@ -63,11 +64,11 @@ test('invoice adjustment lost response survives reload, replays once, and tenant
 
 test('owner can cancel and restore unpaid invoice, while a receipt blocks cancellation and reduction below paid amount', async ({ page }) => {
   await login(page); const { invoice } = await fixture(page, 'CONTROL-CANCEL')
-  await page.goto(`/owner/invoices/${invoice.id}`); await page.getByRole('button', { name: 'Hủy hóa đơn', exact: true }).click(); await page.getByLabel('Lý do thay đổi (bắt buộc)').fill('Ngừng thu kỳ này sau đối chiếu'); await confirm(page)
+  await page.goto(`/owner/invoices/${invoice.id}`); await page.getByText('Điều chỉnh, hạn thanh toán và lịch sử', { exact: true }).click(); await page.getByRole('button', { name: 'Hủy hóa đơn', exact: true }).click(); await page.getByLabel('Lý do thay đổi (bắt buộc)').fill('Ngừng thu kỳ này sau đối chiếu'); await confirm(page)
   await expect(page.getByRole('button', { name: 'Ghi nhận thu tiền', exact: true })).toHaveCount(0)
   await page.getByRole('button', { name: 'Khôi phục hóa đơn', exact: true }).click(); await page.getByLabel('Lý do thay đổi (bắt buộc)').fill('Khôi phục theo thỏa thuận mới'); await confirm(page)
   await write(page, `/invoices/${invoice.id}/payments`, { amount: '1000000', paid_at: invoice.issued_at, payment_method: 'cash', idempotency_key: crypto.randomUUID() })
-  await page.reload(); await expect(page.getByRole('button', { name: 'Hủy hóa đơn', exact: true })).toHaveCount(0)
+  await page.reload(); await page.getByText('Điều chỉnh, hạn thanh toán và lịch sử', { exact: true }).click(); await expect(page.getByRole('button', { name: 'Hủy hóa đơn', exact: true })).toHaveCount(0)
   await page.getByRole('button', { name: 'Điều chỉnh số tiền', exact: true }).click(); await page.getByLabel('Khoản điều chỉnh tăng / giảm (bắt buộc)').fill('-99999999'); await page.getByLabel('Lý do thay đổi (bắt buộc)').fill('Thử giảm vượt số đã thu')
   const dialog = await review(page); await dialog.getByRole('button', { name: 'Xác nhận thay đổi', exact: true }).click(); await expect(dialog.getByRole('alert')).toContainText('thấp hơn số tiền đã thu')
   const data = (await (await page.request.get(`/api/owner/invoices/${invoice.id}`)).json()).data; expect(data.changes).toHaveLength(2); expect(data.paid_amount).toBe('1000000.00')
@@ -76,9 +77,10 @@ test('owner can cancel and restore unpaid invoice, while a receipt blocks cancel
 test('overdue filter and grouped summary agree, tenant sees days late, and owner can extend deadline', async ({ page }) => {
   await login(page); await page.goto('/owner/receivables?due_status=overdue')
   await expect(page.getByLabel('Hạn thanh toán')).toHaveValue('overdue'); await expect(page.getByText('Quá hạn 2 ngày', { exact: false }).first()).toBeVisible()
+  await page.getByText(/^Bộ lọc thêm/).click()
   await page.getByLabel('Cách xem').selectOption('room'); await page.getByRole('button', { name: 'Áp dụng bộ lọc', exact: true }).click(); await expect(page.getByText('Phòng A101', { exact: true })).toBeVisible()
   await page.screenshot({ path: resolve(shots, 'invoice-overdue-receivables.png'), fullPage: true })
-  await page.context().clearCookies(); await login(page, 'e2e_notify_tenant'); await page.goto('/tenant/invoices/1'); await expect(page.getByText('Hóa đơn đã quá hạn 2 ngày.', { exact: false })).toBeVisible()
+  await page.context().clearCookies(); await login(page, 'e2e_notify_tenant'); await page.goto('/tenant/invoices/1'); await expect(page.getByText('Quá hạn 2 ngày', { exact: true })).toBeVisible()
   await page.goto('/tenant/invoices?due_status=overdue'); await expect(page.getByLabel('Hạn thanh toán')).toHaveValue('overdue'); await expect(page.getByRole('article')).toHaveCount(1)
 })
 

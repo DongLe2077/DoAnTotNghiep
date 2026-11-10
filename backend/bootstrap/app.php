@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->validateCsrfTokens(except: ['api/webhooks/payos']);
         $middleware->redirectGuestsTo(fn (Request $request) => $request->is('api/*') ? null : '/');
         $middleware->prepend(PrepareApiResponse::class);
         $middleware->alias([
@@ -26,5 +27,5 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToPriorityList(EnsureRole::class, EnsureActiveUser::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->shouldRenderJsonWhen(fn (Request $request, Throwable $exception) => $request->is('api/*') || $request->expectsJson());
+        $exceptions->shouldRenderJsonWhen(fn (Request $request, Throwable $exception) => $request->is('api', 'api/*') || $request->expectsJson());
     })->create();

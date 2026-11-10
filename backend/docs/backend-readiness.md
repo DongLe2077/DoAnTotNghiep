@@ -1,5 +1,7 @@
 # Backend đã có và việc còn lại
 
+**Phạm vi khóa luận:** không triển khai quản lý hợp đồng. [Đề xuất nghiệp vụ mới theo phạm vi](../../docs/additional-feature-ideas-2026-10-30.md).
+
 [Kết quả nghiệm thu thông tin nhà trọ, PDF và nhập nhiều phòng ngày 30/10](../../frontend/docs/property-pdf-bulk-acceptance.md).
 
 Cập nhật ngày 30/10/2026.
@@ -11,7 +13,7 @@ Cập nhật ngày 30/10/2026.
 - **Nhập chỉ số nhiều phòng:** từng dòng theo đợt thuê/khoảng giá, tối đa 100 dòng mỗi lượt xác nhận; giao dịch và kết quả riêng từng dòng, chống trùng và phục hồi thủ công sau mất phản hồi. Chặn bỏ qua khoảng giá liền trước chưa đủ chỉ số. [Quy tắc/API](bulk-meter-readings.md).
 - **Kiểm tra đã chạy:** toàn bộ backend 399 kiểm thử/4.145 assertions; frontend 131 kiểm thử; bản đóng gói đạt. PDF chạy lại sau chỉnh font cuối đạt 10/10 ca, 97 assertions. Chrome cuối đạt 14/14 ca trong 4,1 phút, gồm điện nước/hóa đơn, nghiệm thu giao diện, nhập nhiều phòng và thông tin nhà trọ/PDF; ảnh desktop và 320px đã được xem.
 - **MySQL và PDF:** xác minh 28 bảng nghiệp vụ/100 quan hệ/3 view; 53 kiểm tra đồng thời trong 6 tình huống trên CSDL riêng đạt, CSDL tạm đã dọn và không ghi nghiệp vụ thử vào dữ liệu thật. Năm PDF mẫu giả gồm 31 trang đã được đối chiếu hình ảnh; kiểm tra không thấy chữ tràn trang hoặc ký tự thay thế.
-- Excel, ảnh chỉ số điện/nước, hợp đồng/cọc/quyết toán, hoàn tiền thực tế và hosting chưa triển khai. Các kết quả cục bộ không thay thế nghiệm thu máy cài mới/điện thoại thật/hosting.
+- Excel, ảnh chỉ số điện/nước, hoàn tiền thực tế và hosting chưa triển khai. Các kết quả cục bộ không thay thế nghiệm thu máy cài mới/điện thoại thật/hosting.
 
 ## Các đợt đã kiểm tra trước
 
@@ -60,4 +62,3 @@ Hai vai trò đã có giao diện kết nối backend. Tiếp tục tự thử t
 - Phân công thợ, thông báo ngoài ứng dụng qua email/SMS/Zalo hoặc đẩy thời gian thực. Nhắc hóa đơn đã có lịch 08:00, cần tiến trình lập lịch Laravel hoạt động để chạy tự động.
 - Đối soát ngân hàng/thanh toán trực tuyến; hiện chuyển khoản do chủ trọ xác nhận thủ công.
 - Quên mật khẩu tự phục vụ: hiện tự đổi khi biết mật khẩu cũ; chủ trọ đặt lại tài khoản người thuê qua chức năng quản lý tài khoản. Chưa có kênh email/SMS khôi phục, bảng users hiện không có email.
-- Hợp đồng và tiền cọc nếu đề tài yêu cầu; hạn thanh toán đã có.

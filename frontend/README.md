@@ -101,6 +101,8 @@ Phục vụ `dist/` trên cùng tên miền HTTPS với Laravel; `/api/*` phải
 
 Thiết lập APP_URL, cookie Secure/HTTPS và proxy tin cậy ở backend theo môi trường. Vite preview chỉ để kiểm tra bản build tại máy, không có cấu hình proxy production. Không cần máy chủ Node thường trực để phục vụ bản Vue tĩnh này.
 
+Với PWA, phục vụ `/sw.js` bằng MIME JavaScript và `Cache-Control: no-cache`, scope `/`; manifest cũng cần revalidate, HTML không lưu cố định. Worker/index/asset là tệp công khai; `/api` và ảnh/PDF riêng tư giữ `no-store` và quyền Laravel. Khi thay phiên bản, giữ các asset mang hash của bản cũ trong giai đoạn chuyển tiếp; không đưa thư mục `.cache`/CSDL/bản sao vào web root. Không bật cơ chế tự tải lại ngoài luồng xác nhận cập nhật đã có.
+
 Kế hoạch tiếp theo: [chủ trọ CT1–CT8](../backend/docs/frontend-owner-plan.md), [người thuê NT1–NT4](../backend/docs/frontend-tenant-plan.md), [kế hoạch phối hợp](../backend/docs/frontend-plan.md).
 
 Hạn thanh toán và điều chỉnh/hủy hóa đơn đã nối cho hai vai trò. Xem [hướng dẫn tự kiểm tra](docs/invoice-controls-self-test.md) và [biên bản nghiệm thu](docs/business-acceptance.md).
@@ -110,6 +112,14 @@ Ngày 27/10/2026 bổ sung [chi phí sửa chữa](docs/repair-expenses-self-tes
 Tài khoản tự test ngày 24/10/2026: **admin / 123** (chủ trọ) và **user / 123** (người thuê, phòng TEST-USER). [Thứ tự hoàn thiện và nâng cấp](docs/next-steps.md).
 
 Hoàn thiện ngày 30/10/2026: chủ trọ có **Thông tin nhà trọ** và **Điện nước → Nhập nhiều phòng**; hai vai trò tải PDF hóa đơn/phiếu thu theo quyền. [Tự thử thông tin/PDF](docs/property-pdf-self-test.md), [tự thử nhập nhiều phòng](docs/bulk-meters-self-test.md).
+
+Bước 1 mobile đã có `npm run mobile:https:setup` và `npm run mobile:https`: phục vụ bản build qua Cloudflare HTTPS tạm, Laravel/SQLite/ảnh/phiên riêng, bản sao khôi phục được kiểm tra. Theo yêu cầu, tài khoản mẫu mobile là admin / 123 và user / 123. [Chạy CMD, tự thử và cách dừng](docs/mobile-https-self-test.md).
+
+Bước 2 đã thêm **Nhà Trọ** với manifest, icon thường/maskable/iPhone, nút cài ở đăng nhập/thanh trên của hai vai trò và hướng dẫn cài. Ngày 01/11 tiếp tục hoàn thiện khung mở lại offline, trạng thái kết nối, cập nhật có xác nhận giữa các tab, camera và bàn phím/vùng an toàn. **31 bước PWA runtime**, 29 bước cài, 69 bước HTTPS, 4 nhóm gateway, 131 unit và lượt 94/94 kịch bản Chrome đạt. [Cài Android](docs/mobile-android-guide.md), [nghiệm thu/bàn giao bước 3–6](docs/pwa-mobile-acceptance-2026-11-01.md). Cài/camera trên thiết bị thật chờ người dùng đối chiếu; không cache API hoặc tự gửi lại giao dịch.
+
+Khi bản mobile đã dừng, `npm run mobile:checkpoint` lưu mã nguồn/build/CSDL/ảnh và kiểm tra khôi phục riêng tại `.cache/mobile-checkpoints/`. Bản trình 5175 tiếp tục dùng lệnh checkpoint hiện có.
+
+Nghiệm thu HTTPS: 39 bước qua URL công khai, 3 nhóm thử gateway, 14 kịch bản Chrome đăng nhập/PDF ở môi trường cũ đạt; build và PHP style đạt. [Kết quả, dữ liệu và giới hạn](docs/mobile-https-acceptance.md).
 
 Đã bổ sung bản trình riêng qua `npm run presentation`, cổng **5175** (Laravel 18002), CSDL/ảnh/phiên tách MySQL và bản demo cũ. Có dữ liệu một/nhiều người, hóa đơn/thu tiền/quá hạn, ảnh/lịch sử/chi phí sửa chữa; giữ trạng thái sau khởi động lại. `npm run presentation:checkpoint` lưu mã nguồn và dữ liệu, kiểm tra khôi phục riêng; `npm run presentation:restore -- MA_BAN_SAO` đưa dữ liệu trình về mốc đã lưu khi đã dừng máy chủ. [Cách chạy CMD, tài khoản và kịch bản trình](docs/presentation-guide.md).
 

@@ -4,8 +4,10 @@ import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { getRoleHome } from '@/router/navigation'
 import NotificationBell from '@/components/notifications/NotificationBell.vue'
+import PwaInstallButton from '@/components/pwa/PwaInstallButton.vue'
 
 type NavigationItem = { label: string; to: string; icon: string }
+type NavigationSection = { label: string; items: NavigationItem[] }
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -34,19 +36,25 @@ const icons = {
   account: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6m8-3 2-1-2-4-2 1-2-1V4H8v3L6 8 4 7l-2 4 2 1v2l-2 1 2 4 2-1 2 1v3h8v-3l2-1 2 1 2-4-2-1v-2Z',
 }
 
-const ownerNavigation: NavigationItem[] = [
-  { label: 'Tổng quan', to: '/owner', icon: icons.home },
-  { label: 'Phòng', to: '/owner/rooms', icon: icons.rooms },
-  { label: 'Dịch vụ', to: '/owner/services', icon: icons.services },
-  { label: 'Người thuê', to: '/owner/tenants', icon: icons.tenants },
-  { label: 'Quá trình thuê', to: '/owner/stays', icon: icons.stays },
-  { label: 'Điện nước', to: '/owner/meters', icon: icons.meters },
-  { label: 'Hóa đơn', to: '/owner/invoices', icon: icons.invoices },
-  { label: 'Công nợ', to: '/owner/receivables', icon: icons.receivables },
-  { label: 'Thu chi', to: '/owner/cash', icon: icons.cash },
-  { label: 'Sửa chữa', to: '/owner/maintenance', icon: icons.maintenance },
-  { label: 'Thông báo chung', to: '/owner/announcements', icon: 'M3 10v4h4l10 5V5L7 10H3Zm4 4 2 7h3l-2-6m10-7v8' },
-  { label: 'Thông tin nhà trọ', to: '/owner/property', icon: icons.account },
+const ownerNavigation: NavigationSection[] = [
+  { label: '', items: [{ label: 'Tổng quan', to: '/owner', icon: icons.home }] },
+  { label: 'Quản lý thuê', items: [
+    { label: 'Phòng', to: '/owner/rooms', icon: icons.rooms },
+    { label: 'Người thuê', to: '/owner/tenants', icon: icons.tenants },
+    { label: 'Quá trình thuê', to: '/owner/stays', icon: icons.stays },
+  ] },
+  { label: 'Tài chính', items: [
+    { label: 'Hóa đơn', to: '/owner/invoices', icon: icons.invoices },
+    { label: 'Công nợ', to: '/owner/receivables', icon: icons.receivables },
+    { label: 'Thu chi', to: '/owner/cash', icon: icons.cash },
+  ] },
+  { label: 'Vận hành', items: [
+    { label: 'Điện nước', to: '/owner/meters', icon: icons.meters },
+    { label: 'Dịch vụ', to: '/owner/services', icon: icons.services },
+    { label: 'Sửa chữa', to: '/owner/maintenance', icon: icons.maintenance },
+    { label: 'Thông báo chung', to: '/owner/announcements', icon: 'M3 10v4h4l10 5V5L7 10H3Zm4 4 2 7h3l-2-6m10-7v8' },
+    { label: 'Thông tin nhà trọ', to: '/owner/property', icon: icons.account },
+  ] },
 ]
 
 const tenantNavigation: NavigationItem[] = [
@@ -65,7 +73,7 @@ const tenantBottomNavigation: NavigationItem[] = [
 function bottomActive(path: string) { return path === '/tenant/profile' ? ['/tenant/profile', '/tenant/stays', '/account'].includes(route.path) : path === '/tenant' ? route.path === path : route.path.startsWith(path) }
 
 const isOwner = computed(() => auth.user?.role === 'owner')
-const navigation = computed(() => isOwner.value ? ownerNavigation : tenantNavigation)
+const navigation = computed(() => isOwner.value ? ownerNavigation : [{ label: '', items: tenantNavigation }])
 const roleLabel = computed(() => isOwner.value ? 'Chủ trọ' : 'Người thuê')
 const home = computed(() => getRoleHome(auth.user?.role ?? 'tenant'))
 const title = computed(() => typeof route.meta.title === 'string' ? route.meta.title : 'Không gian của bạn')
@@ -162,13 +170,15 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="role-switch-label"><span class="role-dot" />{{ roleLabel }}</div>
-      <div class="navigation-label">Không gian của bạn</div>
       <nav class="main-navigation">
-        <RouterLink v-for="item in navigation" :key="item.to" :to="item.to" class="navigation-link" :class="{ 'is-active': isActive(item.to) }" :aria-current="isActive(item.to) ? 'page' : undefined">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path :d="item.icon" /></svg>
-          <span>{{ item.label }}</span>
-          <span v-if="isActive(item.to)" class="active-dot" aria-hidden="true" />
-        </RouterLink>
+        <div v-for="section in navigation" :key="section.label" class="navigation-section" :role="section.label ? 'group' : undefined" :aria-label="section.label || undefined">
+          <div v-if="section.label" class="navigation-label" aria-hidden="true">{{ section.label }}</div>
+          <RouterLink v-for="item in section.items" :key="item.to" :to="item.to" class="navigation-link" :class="{ 'is-active': isActive(item.to) }" :aria-current="isActive(item.to) ? 'page' : undefined">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path :d="item.icon" /></svg>
+            <span>{{ item.label }}</span>
+            <span v-if="isActive(item.to)" class="active-dot" aria-hidden="true" />
+          </RouterLink>
+        </div>
       </nav>
 
       <div class="sidebar-bottom">
@@ -193,10 +203,11 @@ onBeforeUnmount(() => {
           <div class="breadcrumb"><span>{{ roleLabel }}</span><span class="breadcrumb-separator" aria-hidden="true">/</span><strong>{{ title }}</strong></div>
         </div>
         <div class="topbar-actions">
+          <PwaInstallButton compact />
           <NotificationBell />
           <span v-if="auth.user" class="connection-status" :class="{ 'has-error': auth.status === 'error' }"><span />{{ auth.status === 'error' ? 'Gián đoạn kết nối' : auth.status === 'loading' ? 'Đang kiểm tra…' : 'Đã đăng nhập' }}</span>
           <span class="topbar-divider" aria-hidden="true" />
-          <button class="logout-button" :disabled="isLoggingOut" @click="logout">
+          <button class="logout-button" :aria-label="isLoggingOut ? 'Đang đăng xuất…' : 'Đăng xuất'" title="Đăng xuất" :disabled="isLoggingOut" @click="logout">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9" /></svg>
             <span>{{ isLoggingOut ? 'Đang đăng xuất…' : 'Đăng xuất' }}</span>
           </button>
@@ -208,7 +219,7 @@ onBeforeUnmount(() => {
         <button type="button" aria-label="Đóng thông báo lỗi" @click="logoutError = ''">×</button>
       </div>
 
-      <p v-if="isDemo" class="demo-banner" role="status">{{ isPresentation ? 'Bản trình đánh giá · Dữ liệu giả riêng, được giữ khi khởi động lại.' : 'Bản dùng thử · Dữ liệu mẫu được giữ khi khởi động lại.' }} Các tab cùng trình duyệt dùng chung tài khoản đăng nhập.</p>
+      <p v-if="isDemo" class="demo-banner" role="status">{{ isPresentation ? 'Bản trình đánh giá' : 'Bản dùng thử' }} · Dữ liệu mẫu</p>
       <main id="main-content" class="main-content" tabindex="-1"><RouterView :key="auth.user ? `${auth.user.id}:${auth.user.role}:${route.path}` : 'anonymous'" /></main>
       <footer class="app-footer"><span>Quản lý nhà trọ</span><span>Dữ liệu hiển thị theo quyền tài khoản</span></footer>
       <nav v-if="!isOwner && !isMenuOpen" class="tenant-bottom-navigation" aria-label="Điều hướng người thuê"><RouterLink v-for="item in tenantBottomNavigation" :key="item.to" :to="item.to" :class="{ 'is-active': bottomActive(item.to) }" :aria-current="bottomActive(item.to) ? 'page' : undefined"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="item.icon" /></svg><span>{{ item.label }}</span></RouterLink></nav>
@@ -218,7 +229,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .app-shell {
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--pwa-notice-height, 0px));
   color: var(--color-text);
   background: var(--color-bg);
 }
@@ -236,11 +247,11 @@ onBeforeUnmount(() => {
 .sidebar {
   position: fixed;
   z-index: 40;
-  inset: 0 auto 0 0;
+  inset: calc(var(--pwa-notice-height, 0px) + env(safe-area-inset-top, 0px)) auto 0 env(safe-area-inset-left, 0px);
   display: flex;
   flex-direction: column;
   width: 264px;
-  padding: 24px 16px 16px;
+  padding: 24px 16px calc(16px + env(safe-area-inset-bottom, 0px));
   border-right: 1px solid var(--color-border);
   background: var(--color-surface);
 }
@@ -293,8 +304,9 @@ onBeforeUnmount(() => {
   border-radius: 50%;
   background: var(--color-primary);
 }
-.navigation-label { padding: 0 16px 8px; color: var(--color-text-muted); font-size: 12px; font-weight: 600; line-height: 1.5; }
-.main-navigation { display: flex; flex: 1; flex-direction: column; gap: 4px; min-height: 0; overflow-y: auto; padding: 4px 0 8px; scrollbar-width: thin; }
+.navigation-label { padding: 4px 16px 2px; color: var(--color-text-secondary); font-size: 12px; font-weight: 650; line-height: 1.5; }
+.main-navigation { display: flex; flex: 1; flex-direction: column; gap: 6px; min-height: 0; overflow-y: auto; padding: 4px 0 8px; scrollbar-width: thin; }
+.navigation-section { flex: 0 0 auto; }
 .navigation-link {
   display: flex;
   flex: 0 0 auto;
@@ -321,12 +333,13 @@ onBeforeUnmount(() => {
 .account-summary strong { display: block; overflow: hidden; color: var(--color-text); font-size: 14px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .account-summary > span { display: block; margin-top: 4px; color: var(--color-text-secondary); font-size: 12px; line-height: 1.5; }
 .account-status { margin-left: auto; }
-.main-shell { display: flex; flex-direction: column; min-height: 100dvh; margin-left: 264px; }
+.main-shell { display: flex; flex-direction: column; min-width: 0; min-height: 100dvh; margin-left: 264px; }
 .tenant-bottom-navigation { display: none; }
-.demo-banner { margin: 0; padding: 12px 24px; border-bottom: 1px solid var(--color-border); color: var(--color-primary); background: var(--color-primary-soft); font-size: 13px; line-height: 1.7; }
-.topbar { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 80px; padding: 16px 40px; border-bottom: 1px solid var(--color-border); background: var(--color-surface); }
-.page-heading { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.demo-banner { margin: 0; padding: 6px 16px; border-bottom: 1px solid var(--color-border); color: var(--color-primary); background: var(--color-primary-soft); font-size: 12px; line-height: 1.5; }
+.topbar { position: sticky; top: calc(var(--pwa-notice-height, 0px) + env(safe-area-inset-top, 0px)); z-index: 30; display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 80px; padding: 16px 40px; border-bottom: 1px solid var(--color-border); background: var(--color-surface); }
+.page-heading { display: flex; flex: 1; align-items: center; gap: 16px; min-width: 0; }
 .breadcrumb { display: flex; align-items: center; gap: 12px; min-width: 0; color: var(--color-text-secondary); font-size: 14px; line-height: 1.5; }
+.breadcrumb > span { flex: 0 0 auto; white-space: nowrap; }
 .breadcrumb strong { overflow: hidden; color: var(--color-text); font-size: 14px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .breadcrumb-separator { color: var(--color-text-muted); }
 .topbar-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 16px; }
@@ -338,7 +351,7 @@ onBeforeUnmount(() => {
 .logout-button:hover { color: var(--color-text); background: var(--color-bg); border-color: var(--color-border); }
 .logout-button:disabled { opacity: .65; cursor: wait; }
 .logout-button svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.main-content { flex: 1; width: 100%; max-width: 1440px; margin: 0 auto; padding: 40px; outline: none; }
+.main-content { flex: 1; min-width: 0; width: 100%; max-width: 1440px; margin: 0 auto; padding: 40px; outline: none; scroll-margin-top: calc(var(--pwa-notice-height, 0px) + 96px); }
 .app-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 40px 24px; color: var(--color-text-muted); font-size: 12px; line-height: 1.6; }
 .logout-alert { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 16px 40px 0; padding: 8px 8px 8px 16px; border: 1px solid #e5beb8; border-radius: 12px; color: var(--color-danger); background: var(--color-danger-soft); font-size: 14px; line-height: 1.6; }
 .logout-alert button { flex: 0 0 auto; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 8px; color: inherit; background: transparent; font-size: 24px; cursor: pointer; }
@@ -378,7 +391,8 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--color-focus); o
   .breadcrumb strong { max-width: 135px; }
   .topbar-actions { gap: 0; }
   .connection-status, .topbar-divider { display: none; }
-  .logout-button { gap: 6px; padding-right: 0; padding-left: 8px; font-size: 12px; }
+  .logout-button { width: 44px; padding: 8px; }
+  .logout-button > span { display: none; }
   .logout-button svg { width: 18px; height: 18px; }
   .main-content { padding: 24px 16px; }
   .app-footer { flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 16px 24px; }

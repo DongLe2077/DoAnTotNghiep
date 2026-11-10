@@ -1,5 +1,9 @@
 # Kế hoạch hoàn thiện và nâng cấp tiếp theo — 30/10/2026
 
+**Cập nhật lựa chọn ngày 01/11:** [PWA](pwa-mobile-plan-2026-10-30.md) đã có phần mã và nghiệm thu tự động. Ưu tiên hiện tại là [hosting miễn phí để tắt máy Windows và hoàn thiện trang cài/QR/kiểm tra điện thoại thật](free-hosting-mobile-plan-2026-11-01.md), trước các đề xuất chưa được chọn ở dưới. Hosting mới đang ở bước kế hoạch, chưa có URL cố định được triển khai.
+
+**Phạm vi đã chốt:** không triển khai quản lý hợp đồng. [Các ý tưởng mới sau khi loại phần này](additional-feature-ideas-2026-10-30.md).
+
 **Cập nhật sau khi chọn mục 1 và 2:** đã tạo bản trình riêng với dữ liệu và công cụ sao lưu/khôi phục; đã nâng hiệu ứng/thành phần chờ/thông báo, cảnh báo bản nháp và tiến độ nhập chỉ số. [Cách chạy và tập trình](../frontend/docs/presentation-guide.md). Phần người dùng tập trình và thử điện thoại thật vẫn cần thực hiện; các mục Excel/ảnh đồng hồ/nghiệp vụ lớn bên dưới giữ ở mức đề xuất.
 
 Kế hoạch dựa trên sản phẩm hiện có và lịch giảng viên xem trong tuần đầu hoặc đầu tuần 2 tháng 11. Thứ tự đề xuất: **chốt bản trình → nâng giao diện → Excel báo cáo → ảnh đồng hồ → chọn nghiệp vụ lớn theo góp ý**. Trạng thái mục 1–2 đã được cập nhật ở trên; các phần Excel, ảnh đồng hồ và nghiệp vụ lớn tiếp tục là đề xuất.
@@ -20,7 +24,7 @@ Kế hoạch dựa trên sản phẩm hiện có và lịch giảng viên xem tr
 | P1 | Hoàn thiện thao tác và hiệu ứng giao diện | Nhận biết rõ đang tải/đã lưu/lỗi; màn hình ngăn nắp, chuyển động nhẹ | Một đợt nhỏ sau khi chốt bản trình; có thể chọn trước buổi xem nếu còn đủ thời gian kiểm tra |
 | P2 | Xuất Excel báo cáo | Chủ trọ tải công nợ, sổ thu chi và danh sách hóa đơn khớp bộ lọc | Sau nghiệm thu P1 hoặc theo góp ý giảng viên |
 | P3 | Ảnh đồng hồ điện/nước | Có căn cứ đối chiếu từng kỳ chỉ số, xem được theo đúng quyền | Sau Excel; có thể đổi lên trước nếu người dùng cần đối chiếu chỉ số thường xuyên |
-| P4 | Hợp đồng → tiền cọc → quyết toán | Hoàn thiện vòng đời thuê, giữ được lịch sử và đối chiếu dòng tiền | Chọn sau đánh giá, tách ba đợt |
+| P4 | Chọn nghiệp vụ mới phù hợp | Tài sản/thiết bị, cảnh báo tiêu thụ, lịch xem phòng hoặc đăng ký xe | Chọn một đợt sau đánh giá |
 | Điều kiện sử dụng từ xa | Hosting, lưu ảnh và khôi phục dữ liệu | Có bản chạy trực tuyến, ảnh bền vững và bản sao khôi phục được | Đưa lên ưu tiên trước P2–P4 nếu giảng viên cần truy cập từ xa |
 | Tùy chọn | QR chuyển khoản, trợ giúp theo màn hình, tiện ích tra cứu | Thuận tiện hơn trong thao tác hàng ngày | Sau các phần đã chọn ở trên |
 
@@ -76,17 +80,9 @@ Hiệu ứng bổ sung tuân theo lựa chọn giảm chuyển động của thi
 
 **Đạt khi:** ảnh gắn đúng kỳ, không lẫn phòng, còn sau khởi động/cập nhật và được bảo vệ bằng quyền xem; tải lại sau lỗi không nhân bản ảnh.
 
-## P4 — Hợp đồng, tiền cọc và quyết toán
+## P4 — Chọn nghiệp vụ mới theo phạm vi đã chốt
 
-Đây là gói nghiệp vụ lớn; cần thống nhất quy tắc bằng ví dụ trước khi thay đổi CSDL/dòng tiền.
-
-| Đợt | Chủ trọ | Người thuê | Điều kiện nghiệm thu |
-| --- | --- | --- | --- |
-| Hợp đồng | Gắn nhóm/đợt thuê, thời hạn, người đại diện, tệp/nội dung đã thống nhất; gia hạn có lịch sử | Xem/tải bản được cấp quyền, biết thời hạn | Không gán nhầm người/đợt thuê; giữ phiên bản cũ; nhắc hết hạn theo lịch thực chạy |
-| Tiền cọc | Ghi nhận từng lần nhận cọc, khấu trừ, hoàn và lý do; đối chiếu với dòng tiền | Xem số đã nộp, các thay đổi và số còn giữ | Cọc được theo dõi riêng; gửi lại không trùng; sửa sai giữ chứng từ gốc; tổng tiền khớp |
-| Quyết toán trả phòng | Xem trước tiền phòng/dịch vụ/chỉ số cuối/công nợ/cọc; xác nhận và bàn giao | Xem chi tiết quyết toán theo quyền | Thử nhận → gia hạn/chuyển → trả; nợ còn lại được giữ; tiền hoàn/khấu trừ chỉ ghi khi xác nhận đúng quy tắc |
-
-Các trường hợp cần chốt: một người hay nhiều thành viên; đổi đại diện; chuyển phòng; trả giữa tháng; còn nợ nhưng cọc chưa đủ; khấu trừ phí sửa chữa; hoàn một phần; sửa sai sau quyết toán. Mẫu điều khoản và cách tính phải được người dùng/giảng viên thống nhất trước.
+Ưu tiên cân nhắc tài sản/thiết bị và cảnh báo tiêu thụ tăng bất thường; các lựa chọn khác gồm lịch xem phòng, xe/chỗ đỗ, thay công tơ và khảo sát hài lòng. [Luồng, ví dụ và mức độ từng ý tưởng](additional-feature-ideas-2026-10-30.md). Chưa chọn triển khai các phần này.
 
 ## Hosting khi cần truy cập từ xa
 

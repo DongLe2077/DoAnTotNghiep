@@ -1,4 +1,7 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios'
+import { activeRequests, updateLocked } from '@/lib/reload-safety'
+import { reportApiConnection } from '@/lib/pwa-runtime'
+import { synchronizeServerClock } from '@/lib/server-clock'
 
 export class ApiError extends Error {
   constructor(
@@ -53,7 +56,7 @@ export const api = axios.create({
 
 type SessionListener = () => void
 const sessionListeners = new Set<SessionListener>()
-type SessionRequest = InternalAxiosRequestConfig & { sessionRevision?: number }
+type SessionRequest = InternalAxiosRequestConfig & { sessionRevision?: number; pwaTracked?: boolean }
 let sessionRevision = 0
 
 export function advanceSessionRevision() {
@@ -62,6 +65,10 @@ export function advanceSessionRevision() {
 
 api.interceptors.request.use(config => {
   const request = config as SessionRequest
+  if (updateLocked.value) throw new ApiError(0, 'Ứng dụng đang cập nhật. Vui lòng chờ mở lại.')
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) throw new ApiError(0, 'Thiết bị đang mất mạng. Vui lòng kết nối lại rồi kiểm tra trước khi gửi tiếp.')
+  request.pwaTracked = true
+  activeRequests.value++
   request.sessionRevision = sessionRevision
   return config
 })
@@ -71,9 +78,20 @@ export function onSessionExpired(listener: SessionListener) {
   return () => sessionListeners.delete(listener)
 }
 
-api.interceptors.response.use(response => response, error => {
+function finishRequest(config: SessionRequest | undefined) {
+  if (config?.pwaTracked) { config.pwaTracked = false; activeRequests.value = Math.max(0, activeRequests.value - 1) }
+}
+api.interceptors.response.use(response => {
+  synchronizeServerClock(response.headers.date)
+  finishRequest(response.config as SessionRequest)
+  reportApiConnection(true)
+  return response
+}, error => {
+  synchronizeServerClock(error.response?.headers?.date)
   const normalized = toApiError(error)
   const request = error.config as SessionRequest | undefined
+  finishRequest(request)
+  if (request && !axios.isCancel(error)) reportApiConnection(normalized.status > 0 && normalized.status < 500)
   if (normalized.status === 401 && request?.url !== '/auth/login' && request?.sessionRevision === sessionRevision) {
     for (const listener of sessionListeners) listener()
   }

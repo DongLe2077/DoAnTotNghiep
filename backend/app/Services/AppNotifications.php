@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceAccessGrant;
 use App\Models\InvoiceChange;
 use App\Models\MaintenanceRequest;
+use App\Models\Payment;
 use App\Models\PaymentCorrection;
 use App\Models\User;
 use Brick\Math\BigDecimal;
@@ -70,6 +71,15 @@ class AppNotifications
         if ($grant !== null) {
             $this->add($grant->user_id, 'invoice_updated', 'payment-correction:'.$correction->id,
                 ['title' => 'Phiếu thu hóa đơn được sửa sai', 'body' => 'Hóa đơn '.$invoice->invoice_number.' — '.mb_substr($correction->reason, 0, 400)], invoiceId: $invoice->id);
+        }
+    }
+
+    public function paymentConfirmed(Invoice $invoice, Payment $payment): void
+    {
+        $grant = InvoiceAccessGrant::query()->where('invoice_id', $invoice->id)->whereNull('revoked_at')->first();
+        if ($grant !== null) {
+            $this->add($grant->user_id, 'invoice_updated', 'payos-payment:'.$payment->id,
+                ['title' => 'Thanh toán thành công', 'body' => 'Hóa đơn '.$invoice->invoice_number.' đã được thanh toán. Phiếu thu PT-'.$payment->id.'.'], invoiceId: $invoice->id);
         }
     }
 

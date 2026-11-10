@@ -2,12 +2,19 @@
 .management-page h1 { margin: 8px 0; font-size: 30px; font-weight: 650; letter-spacing: -.6px; }
 .management-page h2 { margin: 0 0 16px; font-size: 20px; }
 .management-page h3 { margin: 0; font-size: 17px; }
-.management-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+.management-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+.management-header > div { min-width: 0; }
+.management-header h1 { overflow-wrap: anywhere; }
 .management-header p, .help-text { color: var(--color-text-secondary); font-size: 14px; margin: 8px 0; }
 .eyebrow { color: var(--color-primary); font-size: 13px; font-weight: 600; }
 .button-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.dashboard-period-filter { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px; flex: 0 1 360px; min-width: 0; }
+.dashboard-period-filter > label { min-width: 0; }
+.dashboard-period-filter .ui-input, .dashboard-period-filter > button.ui-button { min-height: 50px; height: 50px; }
 .management-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: 16px; padding: 20px; background: white; border: 1px solid var(--color-border); border-radius: 14px; margin-bottom: 24px; }
+.management-toolbar .ui-input, .management-toolbar .ui-select, .management-toolbar > button.ui-button { min-height: 50px; height: 50px; }
 .management-toolbar > label { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; font-size: 13px; flex: 1; min-width: min(180px, 100%); }
+.toolbar-help { flex-basis: 100%; margin: 0; color: var(--color-text-secondary); font-size: 13px; }
 .management-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .record-card { padding: 24px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); overflow-wrap: anywhere; }
 .record-card > header { display: flex; align-items: start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
@@ -35,6 +42,7 @@
 .remote-picker legend { padding: 0 4px; }
 .picker-search { display: flex; gap: 8px; }
 .picker-search input { min-width: 0; }
+.picker-search .ui-input, .picker-search > button.ui-button { min-height: 50px; height: 50px; }
 .picker-options { display: grid; gap: 4px; max-height: 220px; overflow-y: auto; margin-top: 12px; }
 .picker-options label { display: flex; gap: 12px; align-items: center; min-height: 44px; padding: 8px; font-size: 14px; border-radius: 8px; cursor: pointer; }
 .picker-options label:has(input:checked) { background: var(--color-primary-soft); }
@@ -61,3 +69,51 @@ a.stat-card:hover { border-color: var(--color-primary); background: var(--color-
 @media (max-width: 600px) { .dashboard-stats { grid-template-columns: 1fr; } .stat-card { padding: 20px; } .stat-card .stat-money { font-size: 23px; } }
 @media (min-width: 1100px) { .detail-sections { grid-template-columns: 1fr 1fr; align-items: start; } .detail-sections > .wide { grid-column: 1 / -1; } }
 @media (max-width: 700px) { .management-header { align-items: stretch; flex-direction: column; gap: 16px; } .management-header h1 { font-size: 26px; } .management-grid { grid-template-columns: 1fr; } .record-card { padding: 20px; } .management-toolbar { padding: 16px; } .owner-pagination { align-items: start; flex-direction: column; } }
+@media (max-width: 700px) { .dashboard-period-filter { flex-basis: auto; width: 100%; } }
+@media (max-width: 600px) { .dashboard-period-filter { grid-template-columns: minmax(0, 1fr); } }
+
+.management-header.workflow-header { gap: 12px 20px; margin-bottom: 16px; }
+.workflow-header p:last-child { margin-bottom: 0; }
+.workflow-sections, .workflow-grid { gap: 16px; }
+.workflow-summary { background: var(--color-primary-soft); }
+.workflow-summary > header, .workflow-list-card > header { flex-wrap: wrap; margin-bottom: 12px; }
+.workflow-caption, .management-page h2.workflow-caption { display: block; margin: 0 0 4px; color: var(--color-text-secondary); font-size: 14px; font-weight: 600; }
+.workflow-amount { display: block; color: var(--color-primary); font-size: clamp(24px, 5vw, 34px); line-height: 1.2; font-variant-numeric: tabular-nums; }
+.workflow-deadline { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; margin: 8px 0; font-size: 14px; }
+.workflow-deadline > span { color: var(--color-warning); font-weight: 600; }
+.workflow-facts { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--color-border); }
+.workflow-actions { margin-top: 12px; }
+.workflow-guide ol { display: grid; gap: 8px; padding-inline-start: 24px; margin: 0 0 16px; }
+.workflow-guide li { padding-inline-start: 4px; }
+.workflow-guide p, .workflow-summary p { line-height: 1.6; }
+.workflow-steps { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; padding: 0; margin: 0 0 16px; list-style: none; }
+.workflow-steps > li { min-width: 0; padding: 9px 6px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); color: var(--color-text-secondary); text-align: center; font-size: 14px; overflow-wrap: anywhere; }
+.workflow-steps > [aria-current] { background: var(--color-primary); border-color: var(--color-primary); color: white; font-weight: 650; }
+.workflow-update { margin: 14px 0; padding: 12px 16px; border-radius: 10px; background: var(--color-surface); }
+.workflow-update p { margin: 6px 0 0; }
+.workflow-filters { margin-bottom: 16px; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-surface); }
+.workflow-filters > summary { min-height: 44px; padding: 12px 16px; color: var(--color-primary); font-size: 14px; font-weight: 600; cursor: pointer; }
+.workflow-filters > summary span { margin-inline-start: 8px; font-weight: 400; }
+.workflow-filters > .management-toolbar { margin: 0; padding: 4px 16px 16px; border: 0; background: transparent; }
+.workflow-disclosure { min-width: 0; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-surface); }
+.workflow-disclosure > summary { min-height: 44px; padding: 12px 16px; color: var(--color-primary); font-size: 14px; font-weight: 650; cursor: pointer; overflow-wrap: anywhere; }
+.workflow-disclosure > summary:focus-visible { outline-offset: -3px; }
+.workflow-disclosure[open] > summary { border-bottom: 1px solid var(--color-border); }
+.workflow-disclosure-body { min-width: 0; padding: 16px; }
+.workflow-disclosure-body > .record-card { padding: 0; border: 0; }
+.workflow-disclosure-body > .record-card + .record-card { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--color-border); border-radius: 0; }
+.management-toolbar > .workflow-disclosure { flex: 1 1 100%; }
+.workflow-extra-fields { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
+.workflow-extra-fields > :is(label, .filter-field) { display: grid; grid-template-columns: minmax(0, 1fr); flex: 1; min-width: min(180px, 100%); gap: 8px; font-size: 13px; }
+.extra-pickers { flex: 1 1 100%; min-width: 0; }
+.maintenance-excerpt { display: -webkit-box; overflow: hidden; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.workflow-list-card { display: flex; flex-direction: column; }
+.workflow-list-card h2 { margin-bottom: 4px; }
+.workflow-list-card > footer { margin-top: auto; padding-top: 6px; align-items: center; justify-content: space-between; }
+.workflow-list-amount { margin-bottom: 12px; }
+.workflow-list-card > .workflow-deadline { margin-bottom: 12px; }
+.workflow-card-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-primary); font-size: 14px; font-weight: 650; }
+.workflow-form-title:focus { scroll-margin-top: 90px; }
+@media (max-width: 700px) {
+  .record-card.workflow-summary, .record-card.workflow-guide, .record-card.workflow-list-card { padding: 16px; }
+}

@@ -4,7 +4,7 @@ import UiButton from '@/components/ui/UiButton.vue'
 import { api, ApiError, toApiError } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
 
-const props = defineProps<{ path: string; filename: string; label: string }>()
+const props = defineProps<{ path: string; filename: string; label: string; primary?: boolean }>()
 const auth = useAuthStore(), busy = ref(false), error = ref('')
 let alive = true, sequence = 0, controller: AbortController | null = null
 function invalidate() { sequence++; controller?.abort(); controller = null; busy.value = false; error.value = '' }
@@ -23,11 +23,11 @@ async function download() {
     const url = URL.createObjectURL(result.data), link = document.createElement('a')
     link.href = url; link.download = props.filename.replace(/[^A-Za-z0-9._-]/g, '_'); link.style.display = 'none'
     document.body.appendChild(link); link.click(); link.remove()
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
   } catch (caught) { if (alive && current === sequence) error.value = toApiError(caught).message }
   finally { if (alive && current === sequence) { busy.value = false; controller = null } }
 }
 </script>
 
-<template><div class="pdf-download"><UiButton variant="secondary" :loading="busy" @click="download">{{ label }}</UiButton><p v-if="error" class="form-error" role="alert">{{ error }}</p></div></template>
+<template><div class="pdf-download"><UiButton :variant="primary ? 'primary' : 'secondary'" :loading="busy" @click="download">{{ label }}</UiButton><p v-if="error" class="form-error" role="alert">{{ error }}</p></div></template>
 <style scoped>.pdf-download { display: inline-grid; gap: 8px; min-width: 0; max-width: 100%; }.pdf-download p { margin: 0; max-width: 400px; font-size: 13px; }</style>

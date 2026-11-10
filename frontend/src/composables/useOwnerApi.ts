@@ -1,6 +1,7 @@
 import { onBeforeUnmount, ref, watch } from 'vue'
 import { api, ApiError, prepareCsrf, toApiError } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
+import { serverNow } from '@/lib/server-clock'
 import type { PageResult } from '@/types/owner'
 
 export function useOwnerApi() {
@@ -73,7 +74,7 @@ export function useOwnerList<T>(path: string, initial: Record<string, unknown> =
 }
 
 export function localEventTime() {
-  const parts = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).format(new Date())
+  const parts = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).format(serverNow())
   return parts.replace(' ', 'T')
 }
 export function eventPayload(value: string) { return value.replace('T', ' ').padEnd(19, ':00') }

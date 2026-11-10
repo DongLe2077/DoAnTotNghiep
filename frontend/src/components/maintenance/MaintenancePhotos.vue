@@ -55,13 +55,13 @@ onBeforeUnmount(() => { alive = false; clear() })
 
 <template>
   <section class="record-card maintenance-photos">
-    <header><div><h2>Ảnh người thuê gửi</h2><p class="help-text">Ảnh chỉ hiển thị cho người có quyền xem yêu cầu.</p></div><UiButton v-if="entries.some(entry => entry.error)" variant="ghost" @click="load">Tải lại ảnh</UiButton></header>
-    <p v-if="!entries.length" class="help-text">Người gửi chưa đính kèm ảnh.</p>
+    <header><h2>Ảnh sự cố<span v-if="entries.length"> · {{ entries.length }}</span></h2><UiButton v-if="entries.some(entry => entry.error)" variant="ghost" @click="load">Tải lại ảnh</UiButton></header>
+    <p v-if="!entries.length" class="help-text">Chưa có ảnh đính kèm.</p>
     <ul v-else class="photo-grid">
       <li v-for="(entry, index) in entries" :key="entry.id">
         <p v-if="entry.loading" class="photo-state" role="status">Đang tải ảnh {{ index + 1 }}…</p>
         <p v-else-if="entry.error" class="photo-state">{{ entry.error }}</p>
-        <button v-else class="photo-button" :aria-label="`Xem ảnh báo hỏng ${index + 1}`" @click="preview = entry"><img :src="entry.url" :alt="`Ảnh báo hỏng ${index + 1}`" /><span>Ảnh {{ index + 1 }} · Bấm để xem</span></button>
+        <button v-else class="photo-button" :aria-label="`Xem ảnh báo hỏng ${index + 1}`" @click="preview = entry"><img :src="entry.url" :alt="`Ảnh báo hỏng ${index + 1}`" /><span>Ảnh {{ index + 1 }}</span></button>
       </li>
     </ul>
     <UiDialog :open="!!preview" title="Ảnh báo hỏng" @update:open="value => { if (!value) preview = null }"><img v-if="preview?.url" class="photo-preview" :src="preview.url" alt="Ảnh báo hỏng phóng to" /><template #actions><UiButton variant="secondary" @click="preview = null">Đóng ảnh</UiButton></template></UiDialog>
@@ -69,10 +69,12 @@ onBeforeUnmount(() => { alive = false; clear() })
 </template>
 
 <style scoped>
-.photo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; list-style: none; margin: 0; padding: 0; }
+.maintenance-photos > header { align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+.maintenance-photos h2 { margin: 0; }
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(120px, 100%), 1fr)); gap: 12px; list-style: none; margin: 0; padding: 0; }
 .photo-button { width: 100%; padding: 0; overflow: hidden; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-bg); color: var(--color-primary); }
-.photo-button img { display: block; width: 100%; height: 160px; object-fit: cover; }
-.photo-button span { display: block; padding: 12px 8px; font-size: 13px; }
-.photo-state { display: grid; align-content: center; min-height: 160px; padding: 16px; background: var(--color-bg); border-radius: 12px; font-size: 13px; }
+.photo-button img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.photo-button span { display: block; padding: 8px; font-size: 13px; }
+.photo-state { display: grid; align-content: center; min-height: 94px; margin: 0; padding: 12px; background: var(--color-bg); border-radius: 12px; font-size: 13px; }
 .photo-preview { display: block; max-width: 100%; max-height: 60dvh; margin: 0 auto; object-fit: contain; }
 </style>

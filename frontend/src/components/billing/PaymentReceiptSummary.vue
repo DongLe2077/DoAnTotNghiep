@@ -10,7 +10,7 @@ defineProps<{ payment: InvoicePayment; showActor?: boolean; pdfPath?: string }>(
 <template>
   <div class="receipt-summary">
     <div class="receipt-heading"><h3>{{ payment.receipt_number ?? `PT-${payment.id}` }} · {{ formatMoney(payment.amount) }}</h3><UiBadge :tone="payment.status === 'voided' ? 'neutral' : 'success'">{{ payment.status === 'voided' ? 'Đã hủy ghi nhận' : 'Có hiệu lực' }}</UiBadge></div>
-    <p class="help-text">{{ formatDateTime(payment.paid_at) }} · {{ payment.payment_method === 'cash' ? 'Tiền mặt' : 'Chuyển khoản' }}</p>
+    <p class="help-text">{{ formatDateTime(payment.paid_at) }} · {{ payment.payment_method === 'cash' ? 'Tiền mặt' : 'Chuyển khoản' }}<template v-if="payment.source === 'payos'"> qua payOS</template></p>
     <p v-if="payment.replaces_payment_id" class="help-text">Phiếu thay thế cho PT-{{ payment.replaces_payment_id }}.</p>
     <div v-if="payment.correction" class="receipt-correction">
       <p>Đã sửa sai lúc {{ formatDateTime(payment.correction.created_at) }}<template v-if="showActor && payment.correction.performed_by"> · {{ payment.correction.performed_by.username }}</template>.</p>
