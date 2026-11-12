@@ -54,8 +54,8 @@ export const router = createRouter({
         { path: 'tenant', name: 'tenant-home', component: () => import('@/views/tenant/MyRoomView.vue'), meta: { title: 'Phòng của tôi', role: 'tenant' } },
         { path: 'tenant/profile', component: () => import('@/views/tenant/MyProfileView.vue'), meta: { title: 'Thông tin cá nhân', role: 'tenant' } },
         { path: 'tenant/stays', component: () => import('@/views/tenant/MyStaysView.vue'), meta: { title: 'Lịch sử cư trú', role: 'tenant' } },
-        { path: 'tenant/invoices', component: () => import('@/views/tenant/MyInvoicesView.vue'), meta: { title: 'Hóa đơn của tôi', role: 'tenant' } },
-        { path: 'tenant/invoices/:id(\\d+)', component: () => import('@/views/tenant/MyInvoiceDetailView.vue'), meta: { title: 'Chi tiết hóa đơn', role: 'tenant' } },
+        { path: 'tenant/invoices', name: 'tenant-invoices', component: () => import('@/views/tenant/MyInvoicesView.vue'), meta: { title: 'Hóa đơn của tôi', role: 'tenant' } },
+        { path: 'tenant/invoices/:id(\\d+)', name: 'tenant-invoice', component: () => import('@/views/tenant/MyInvoiceDetailView.vue'), meta: { title: 'Chi tiết hóa đơn', role: 'tenant' } },
         { path: 'tenant/maintenance', component: () => import('@/views/tenant/MyMaintenanceView.vue'), meta: { title: 'Báo hỏng', role: 'tenant' } },
         { path: 'tenant/maintenance/new', component: () => import('@/views/tenant/NewMaintenanceView.vue'), meta: { title: 'Gửi báo hỏng', role: 'tenant' } },
         { path: 'tenant/maintenance/:id(\\d+)', component: () => import('@/views/tenant/MyMaintenanceDetailView.vue'), meta: { title: 'Chi tiết báo hỏng', role: 'tenant' } },
@@ -63,7 +63,11 @@ export const router = createRouter({
       ],
     },
   ],
-  scrollBehavior: (_to, _from, savedPosition) => savedPosition ?? { top: 0 },
+  scrollBehavior: (to, from, savedPosition) => {
+    // The invoice list restores its position once its asynchronous rows are rendered.
+    if (to.name === 'tenant-invoices' && from.name === 'tenant-invoice' && window.history.state?.tenantInvoiceScroll?.path === to.fullPath) return false
+    return savedPosition ?? { top: 0 }
+  },
 })
 
 router.beforeEach(async to => {

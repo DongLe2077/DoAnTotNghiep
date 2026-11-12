@@ -82,6 +82,10 @@ test('CT7 handles private photos, explicit 419 retry, real concurrent conflicts 
   await expect(dialog).toHaveCount(0)
   await expect(page.getByRole('heading', { name: 'Kết quả sửa chữa', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: /^(Cập nhật xử lý|Tiếp nhận \/ xử lý|Ghi tiến độ hoặc hoàn tất)$/ })).toHaveCount(0)
+  await page.getByRole('link', { name: '← Yêu cầu sửa chữa', exact: true }).click()
+  const updated = page.locator('article.recently-saved').filter({ hasText: 'Vừa cập nhật' })
+  await expect(updated).toContainText('Đã xử lý')
+  await updated.getByRole('link', { name: /^Xem yêu cầu/ }).click()
   await page.reload()
   await expect(page.getByText('Đã sửa xong và kiểm tra an toàn.', { exact: true })).toBeVisible()
 

@@ -15,6 +15,8 @@ const search = ref(''), status = ref(''), from = ref(''), until = ref('')
 const room = ref<number[]>([]), reporter = ref<number[]>([]), submittedBy = ref<number | null>(null), filterError = ref('')
 let sequence = 0
 function positive(value: unknown) { const number = Number(value); return Number.isSafeInteger(number) && number > 0 ? number : null }
+const savedRequestId = ref(positive(window.history.state?.savedMaintenanceId))
+if (savedRequestId.value) window.history.replaceState({ ...window.history.state, savedMaintenanceId: null }, '')
 const requestedPage = computed(() => positive(route.query.page) ?? 1)
 const activeFilters = computed(() => Object.keys(route.query).some(key => key !== 'page'))
 function chooseReporter(value: Record<string, unknown>) {
@@ -34,8 +36,9 @@ async function applyFilters() {
 }
 async function changePage(next: number) { await router.replace({ query: { ...route.query, page: next > 1 ? String(next) : undefined } }) }
 watch(reporter, (value, previous) => { if (!value.length && previous.length) submittedBy.value = null })
-watch(() => route.fullPath, async () => {
+watch(() => route.fullPath, async (_path, previous) => {
   const current = ++sequence
+  if (previous) savedRequestId.value = null
   search.value = typeof route.query.q === 'string' ? route.query.q.slice(0, 150) : ''
   status.value = maintenanceStatuses.includes(route.query.status as MaintenanceStatus) ? String(route.query.status) : ''
   from.value = typeof route.query.from === 'string' ? route.query.from.slice(0, 10) : ''
@@ -86,9 +89,9 @@ watch(() => route.fullPath, async () => {
     <template v-else>
       <p class="help-text result-count">{{ total }} yêu cầu{{ activeFilters ? ' phù hợp với bộ lọc' : '' }} · Mới nhất trước</p>
       <div class="management-grid workflow-grid">
-        <article v-for="item in items" :key="item.id" class="record-card workflow-list-card" :aria-labelledby="`maintenance-title-${item.id}`">
+        <article v-for="item in items" :key="item.id" class="record-card workflow-list-card" :class="{ 'recently-saved': item.id === savedRequestId }" :aria-labelledby="`maintenance-title-${item.id}`">
           <header>
-            <div><h2 :id="`maintenance-title-${item.id}`">{{ item.title }}</h2><span class="help-text">Phòng {{ item.room.room_number }} · {{ formatDateTime(item.submitted_at) }}</span></div>
+            <div><h2 :id="`maintenance-title-${item.id}`">{{ item.title }}</h2><span class="help-text">Phòng {{ item.room.room_number }} · {{ formatDateTime(item.submitted_at) }}<template v-if="item.id === savedRequestId"> · Vừa cập nhật</template></span></div>
             <UiBadge :tone="maintenanceStatusTone(item.status)">{{ maintenanceStatusLabel(item.status) }}</UiBadge>
           </header>
           <p v-if="item.resolution" class="help-text maintenance-excerpt"><strong>Cập nhật gần nhất</strong> · {{ item.resolution }}</p>

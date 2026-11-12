@@ -63,8 +63,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="account-page" aria-labelledby="account-heading">
-    <header class="page-heading"><span class="eyebrow">Không gian cá nhân</span><h1 id="account-heading">Tài khoản của bạn</h1><p>Quản lý thông tin đăng nhập và bảo mật tài khoản.</p></header>
+  <section class="management-page tenant-workspace account-page" aria-labelledby="account-heading">
+    <header class="management-header"><h1 id="account-heading">Tài khoản của bạn</h1></header>
 
     <div class="account-grid">
       <section class="password-card" aria-labelledby="password-heading">
@@ -106,8 +106,10 @@ onBeforeUnmount(() => {
       </section>
 
       <aside class="account-aside" aria-label="Thông tin tài khoản">
-        <div class="identity-card"><div class="avatar" aria-hidden="true">{{ auth.user?.username?.slice(0, 1).toLocaleUpperCase('vi-VN') || 'N' }}</div><span class="role-badge">{{ roleLabel }}</span><h2>{{ auth.user?.username }}</h2><p>Tài khoản đang đăng nhập</p><div class="identity-status"><span></span> Đang hoạt động</div></div>
-        <div class="security-tip"><span class="tip-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m12 3 8 3v6c0 5-8 9-8 9S4 17 4 12V6l8-3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="m8 12 3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h3>Giữ tài khoản an toàn</h3><p>Dùng mật khẩu riêng và không chia sẻ cho người khác. Hãy đăng xuất sau khi sử dụng thiết bị dùng chung.</p></div>
+        <div class="identity-card">
+          <div class="avatar" aria-hidden="true">{{ auth.user?.username?.slice(0, 1).toLocaleUpperCase('vi-VN') || 'N' }}</div>
+          <div><h2>{{ auth.user?.username }}</h2><span class="role-badge">{{ roleLabel }}</span></div>
+        </div>
       </aside>
     </div>
   </section>
@@ -115,10 +117,6 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .account-page { width: 100%; max-width: 1120px; margin: 0 auto; color: var(--color-text); }
-.page-heading { margin-bottom: 32px; }
-.eyebrow { color: var(--color-primary); font-size: 14px; font-weight: 600; }
-.page-heading h1 { margin: 8px 0 12px; font-size: 32px; line-height: 1.35; letter-spacing: -.7px; font-weight: 650; }
-.page-heading p { margin: 0; color: var(--color-text-secondary); font-size: 15px; line-height: 1.7; }
 .account-grid { display: grid; grid-template-columns: minmax(0, 1fr) 288px; align-items: start; gap: 24px; }
 .password-card { overflow: hidden; padding: 32px 32px 0; border: 1px solid var(--color-border); border-radius: 16px; background: var(--color-surface); }
 .card-heading { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--color-border); }
@@ -146,23 +144,15 @@ onBeforeUnmount(() => {
 .session-note svg { flex-shrink: 0; width: 20px; height: 20px; margin-top: 2px; }
 .session-note p { margin: 0; font-size: 14px; line-height: 1.7; }
 .form-footer { display: flex; justify-content: flex-end; margin: 0 -32px; padding: 24px 32px; border-top: 1px solid var(--color-border); background: var(--color-surface); }
-.submit-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 12px 20px; border: 1px solid var(--color-primary); border-radius: 10px; background: var(--color-primary); color: #fff; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s; }
-.submit-button:hover:not(:disabled) { background: var(--color-primary-hover); border-color: var(--color-primary-hover); }
+.submit-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 12px 20px; border: 1px solid transparent; border-radius: var(--radius-control); background: var(--color-action, var(--color-primary)); color: var(--color-action-text, #fff); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s; }
+.submit-button:hover:not(:disabled) { background: var(--color-action-hover, var(--color-primary-hover)); }
 .submit-button:disabled { opacity: .65; cursor: not-allowed; }
 .submit-button svg { width: 20px; height: 20px; }
-.spinner { width: 16px; height: 16px; border: 2px solid #ffffff70; border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; }
-.identity-card { padding: 32px 24px 24px; border: 1px solid var(--color-border); border-radius: 16px; background: var(--color-surface); text-align: center; }
-.avatar { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 24px; border-radius: 16px; background: var(--color-primary-soft); color: var(--color-primary); font-size: 28px; font-weight: 600; }
+.spinner { width: 16px; height: 16px; border: 2px solid currentColor; border-inline-end-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; }
+.identity-card { display: flex; align-items: center; gap: 16px; padding: 20px; border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface); }
+.avatar { display: grid; place-items: center; flex: 0 0 44px; height: 44px; border-radius: var(--radius-control); background: var(--color-primary-soft); color: var(--color-primary); font-size: 20px; font-weight: 600; }
 .role-badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 6px; background: var(--color-primary-soft); color: var(--color-primary); font-size: 12px; font-weight: 500; line-height: 1.6; }
-.identity-card h2 { margin: 16px 0 8px; color: var(--color-text); font-size: 18px; font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
-.identity-card p { margin: 0; color: var(--color-text-secondary); font-size: 12px; line-height: 1.7; }
-.identity-status { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--color-border); color: var(--color-success); font-size: 12px; }
-.identity-status span { width: 6px; height: 6px; border-radius: 50%; background: var(--color-success); }
-.security-tip { margin-top: 24px; padding: 24px; border: 1px solid var(--color-border); border-radius: 16px; background: var(--color-primary-soft); }
-.tip-icon { display: block; margin-bottom: 12px; color: var(--color-primary); }
-.tip-icon svg { width: 24px; height: 24px; }
-.security-tip h3 { margin: 0 0 8px; color: var(--color-text); font-size: 14px; font-weight: 600; line-height: 1.6; }
-.security-tip p { margin: 0; color: var(--color-text-secondary); font-size: 14px; line-height: 1.8; }
+.identity-card h2 { margin: 0 0 4px; color: var(--color-text); font-size: 18px; font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
 .error-banner { margin-bottom: 24px; padding: 16px; border: 1px solid var(--color-danger); border-radius: 10px; background: var(--color-danger-soft); color: var(--color-danger); font-size: 14px; line-height: 1.7; }
 .error-banner:focus { outline: 3px solid var(--color-focus); outline-offset: 3px; }
 .sr-only { position: absolute; height: 1px; width: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
@@ -177,9 +167,6 @@ onBeforeUnmount(() => {
 
 @media (max-width: 800px) {
   .account-grid { grid-template-columns: minmax(0, 1fr); }
-  .account-aside { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-  .security-tip { margin-top: 0; }
-  .page-heading h1 { font-size: 28px; }
   .field, .session-note { max-width: none; }
   .visibility-button { width: 48px; height: 48px; }
 }
@@ -190,8 +177,6 @@ onBeforeUnmount(() => {
   .heading-icon { width: 40px; height: 40px; }
   .form-footer { margin: 0 -16px; padding: 24px 16px; }
   .submit-button { width: 100%; }
-  .account-aside { grid-template-columns: minmax(0, 1fr); gap: 16px; }
-  .identity-card, .security-tip { padding: 24px; border-radius: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

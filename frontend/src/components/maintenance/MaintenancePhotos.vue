@@ -77,4 +77,8 @@ onBeforeUnmount(() => { alive = false; clear() })
 .photo-button span { display: block; padding: 8px; font-size: 13px; }
 .photo-state { display: grid; align-content: center; min-height: 94px; margin: 0; padding: 12px; background: var(--color-bg); border-radius: 12px; font-size: 13px; }
 .photo-preview { display: block; max-width: 100%; max-height: 60dvh; margin: 0 auto; object-fit: contain; }
+@media (prefers-reduced-motion: no-preference) {
+  .photo-preview { animation: photo-reveal var(--motion-normal) ease-out both; }
+  @keyframes photo-reveal { from { opacity: .45; } }
+}
 </style>

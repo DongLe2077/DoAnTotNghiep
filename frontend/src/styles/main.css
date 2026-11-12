@@ -48,6 +48,49 @@
   color-scheme: light;
 }
 
+.rentbase-refresh {
+  --color-bg: #f6f6f1;
+  --color-text: #182622;
+  --color-text-secondary: #52645e;
+  --color-text-muted: #56645f;
+  --color-border: #d9dfd8;
+  --color-input-border: #7e9187;
+  --color-primary: #175c4b;
+  --color-primary-hover: #104437;
+  --color-primary-soft: #e8f1eb;
+  --color-focus: #237361;
+  --radius-card: 14px;
+  --radius-control: 8px;
+}
+
+.rentbase-graphite {
+  --color-bg: #f5f7f8;
+  --color-text: #262b37;
+  --color-text-secondary: #566172;
+  --color-text-muted: #566172;
+  --color-border: #dce2e7;
+  --color-input-border: #8390a0;
+  --color-primary: #353f50;
+  --color-primary-hover: #1d222d;
+  --color-primary-soft: #e5f5f1;
+  --color-success: #245550;
+  --color-success-soft: #e5f5f1;
+  --color-action: #8addd1;
+  --color-action-hover: #76cfc2;
+  --color-action-text: #262b37;
+  --color-focus: #286d76;
+  --radius-card: 12px;
+  --radius-control: 8px;
+  --shadow-popover: 0 16px 48px rgb(38 43 55 / 16%);
+  --refresh-dark: #262b37;
+  --owner-header: #1d222d;
+  --owner-width: 1184px;
+  --color-chart-main: #262b37;
+  --color-chart-secondary: #62bcb0;
+}
+
+.rentbase-graphite ::selection { background: var(--color-action); color: var(--color-action-text); }
+
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
 button, input, select, textarea { font: inherit; }

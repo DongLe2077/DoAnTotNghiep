@@ -34,7 +34,10 @@ async function checkDownload(download: Download, name: string) {
 }
 
 test('owner configures property, detects concurrent changes and settings fit a narrow screen', async ({ page }) => {
-  await login(page); await page.getByRole('link', { name: 'Thông tin nhà trọ', exact: true }).click()
+  await login(page)
+  const navigation = page.getByRole('navigation', { name: 'Điều hướng chính', exact: true })
+  await navigation.getByRole('button', { name: 'Vận hành', exact: true }).click()
+  await navigation.getByRole('link', { name: 'Thông tin nhà trọ', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Thông tin nhà trọ', exact: true })).toBeVisible()
   await page.getByLabel('Tên nhà trọ (bắt buộc)', { exact: true }).fill('Nhà trọ Bình An - kiểm thử')
   await page.getByLabel('Địa chỉ nhà trọ (bắt buộc)', { exact: true }).fill('28 Đường Bình An, Thành phố Hồ Chí Minh')

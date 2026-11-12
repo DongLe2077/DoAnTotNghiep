@@ -50,12 +50,15 @@ try {
   check(response.status() === 200 && response.headers()['cache-control'] === 'no-cache' && response.headers()['content-type'].includes('application/manifest+json'), 'Manifest is public, correctly typed and revalidated')
   check(await page.locator('meta[name="theme-color"]').getAttribute('content') === manifest.theme_color, 'Browser theme matches the manifest')
   check(await page.locator('meta[name="apple-mobile-web-app-title"]').getAttribute('content') === manifest.name, 'Apple app metadata matches the manifest')
-  check(await page.locator('link[rel="apple-touch-icon"]').getAttribute('href') === '/icons/apple-touch-icon.png', 'Apple has a dedicated touch icon')
-  for (const icon of [...manifest.icons, { src: '/icons/apple-touch-icon.png', sizes: '180x180', purpose: 'apple' }]) {
+  const appleIcon = await page.locator('link[rel="apple-touch-icon"]').getAttribute('href')
+  check(appleIcon === '/icons/apple-touch-icon.png?v=rentbase', 'Apple has a dedicated touch icon')
+  check(await page.locator('link[rel="icon"]').getAttribute('href') === '/icons/rentbase-mark.svg', 'Browser favicon uses the RentBase mark')
+  const background = manifest.theme_color.slice(1).match(/../g).map(value => Number.parseInt(value, 16))
+  for (const icon of [...manifest.icons, { src: appleIcon, sizes: '180x180', purpose: 'apple' }]) {
     const image = await page.request.get(icon.src), bytes = await image.body(), size = Number(icon.sizes.split('x')[0])
     check(image.status() === 200 && image.headers()['content-type'] === 'image/png' && bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) && bytes.readUInt32BE(16) === size && bytes.readUInt32BE(20) === size, `${icon.purpose} icon ${icon.sizes} is a real, correctly sized PNG`)
     if (icon.purpose === 'maskable') {
-      const safe = await page.evaluate(async ({ src, size }) => {
+      const safe = await page.evaluate(async ({ src, size, background }) => {
         const image = new Image(); image.src = src; await image.decode()
         const canvas = document.createElement('canvas'); canvas.width = canvas.height = size
         const ctx = canvas.getContext('2d'); ctx.drawImage(image, 0, 0)
@@ -63,10 +66,10 @@ try {
         for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
           const offset = (y * size + x) * 4
           if (data[offset + 3] !== 255) return false
-          if ((data[offset] !== 35 || data[offset + 1] !== 92 || data[offset + 2] !== 75) && Math.hypot(x + .5 - size / 2, y + .5 - size / 2) > size * .4) return false
+          if (background.some((value, index) => data[offset + index] !== value) && Math.hypot(x + .5 - size / 2, y + .5 - size / 2) > size * .4) return false
         }
         return true
-      }, { src: icon.src, size })
+      }, { src: icon.src, size, background })
       check(safe, `Maskable ${icon.sizes} is opaque and the house fits inside the safe circle`)
     }
   }

@@ -88,7 +88,7 @@ a.stat-card:hover { border-color: var(--color-primary); background: var(--color-
 .workflow-guide p, .workflow-summary p { line-height: 1.6; }
 .workflow-steps { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; padding: 0; margin: 0 0 16px; list-style: none; }
 .workflow-steps > li { min-width: 0; padding: 9px 6px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); color: var(--color-text-secondary); text-align: center; font-size: 14px; overflow-wrap: anywhere; }
-.workflow-steps > [aria-current] { background: var(--color-primary); border-color: var(--color-primary); color: white; font-weight: 650; }
+.workflow-steps > [aria-current] { background: var(--color-action, var(--color-primary)); border-color: var(--color-action, var(--color-primary)); color: var(--color-action-text, white); font-weight: 650; }
 .workflow-update { margin: 14px 0; padding: 12px 16px; border-radius: 10px; background: var(--color-surface); }
 .workflow-update p { margin: 6px 0 0; }
 .workflow-filters { margin-bottom: 16px; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-surface); }
@@ -116,4 +116,49 @@ a.stat-card:hover { border-color: var(--color-primary); background: var(--color-
 .workflow-form-title:focus { scroll-margin-top: 90px; }
 @media (max-width: 700px) {
   .record-card.workflow-summary, .record-card.workflow-guide, .record-card.workflow-list-card { padding: 16px; }
+}
+
+.owner-shell .management-page > .management-header {
+  padding-block-end: 0;
+  border-block-end: 0;
+  margin-block-end: 24px;
+}
+.owner-shell .management-header h1 {
+  margin: 4px 0 8px;
+  font-size: clamp(29px, 5vw, 49px);
+  line-height: 1.15;
+  letter-spacing: -.055em;
+}
+.owner-shell .management-header .eyebrow {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.owner-shell .management-header p { margin: 0; }
+.owner-shell .management-grid { gap: 16px; }
+.owner-shell .management-toolbar { gap: 12px; }
+.owner-shell .management-toolbar:not(.workflow-filters > .management-toolbar) {
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+}
+.owner-shell .record-card > header { flex-wrap: wrap; }
+.owner-shell .record-card > footer { align-items: center; }
+.owner-shell .workflow-disclosure, .owner-shell .workflow-filters { border-radius: var(--radius-card); }
+.owner-shell .workflow-filters > summary:hover,
+.owner-shell .workflow-disclosure > summary:hover { color: var(--color-text); }
+
+.chart-kicker { color: var(--color-text-secondary); font-size: 11px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+.dashboard-meter { display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: var(--color-bg); margin: 15px 0 3px; }
+.dashboard-meter span { display: block; flex-shrink: 0; transition: width var(--motion-normal) var(--motion-ease); }
+.dashboard-legend { display: flex; flex-wrap: wrap; gap: 0 12px; padding: 0; margin: 0; list-style: none; }
+.dashboard-legend .legend-item { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; font-size: 13px; color: var(--color-text); text-decoration: none; }
+.dashboard-legend a:hover { text-decoration: underline; }
+.dashboard-legend i { width: 9px; height: 9px; flex-shrink: 0; border-radius: 50%; }
+@media (pointer: coarse) { .dashboard-legend a.legend-item { min-height: 44px; } }
+.recently-saved { background: var(--color-primary-soft); box-shadow: inset 3px 0 var(--color-focus); }
+@media (prefers-reduced-motion: no-preference) {
+  .recently-saved { animation: saved-highlight var(--motion-normal) ease-out; }
+  @keyframes saved-highlight { from { background-color: var(--color-surface); } }
 }

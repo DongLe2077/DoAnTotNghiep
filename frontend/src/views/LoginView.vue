@@ -78,13 +78,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="login-page">
+  <div class="login-page rentbase-graphite">
     <header class="login-header">
-      <a class="brand" href="/login" aria-label="Nhà Trọ — Đăng nhập">
-        <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none"><path d="m4 10 8-6 8 6v10H4V10Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 20v-7h6v7M9 8h6" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
-        </span>
-        <span>Nhà Trọ<span class="brand-dot">.</span></span>
+      <a class="brand" href="/login" aria-label="RentBase — Đăng nhập">
+        <img class="brand-mark" src="/icons/rentbase-mark.svg" alt="" width="44" height="44" />
+        <span>RentBase</span>
       </a>
       <PwaInstallButton />
     </header>
@@ -92,38 +90,28 @@ onBeforeUnmount(() => {
     <main class="login-main">
       <section class="intro" aria-labelledby="intro-heading">
         <div class="intro-copy">
-          <span class="eyebrow"><span></span> Nhà trọ của bạn</span>
-          <h1 id="intro-heading">Quản lý gọn gàng.<br /><em>An tâm mỗi ngày.</em></h1>
-          <p>Theo dõi phòng ở, hóa đơn và yêu cầu sửa chữa trong một không gian dễ sử dụng.</p>
+          <span class="intro-label">RENTBASE</span>
+          <h2 id="intro-heading">Quản lý nhà trọ</h2>
+          <p>Theo dõi phòng ở, hóa đơn và yêu cầu sửa chữa.</p>
         </div>
-
-        <div class="home-art" aria-hidden="true">
-          <div class="art-sun"></div>
-          <div class="art-grid"></div>
-          <svg class="building" viewBox="0 0 440 230" fill="none">
-            <path d="M33 209H416" stroke="#8BABA0" stroke-width="1.5"/>
-            <path d="M84 208V69L155 31 226 69V208" fill="#D1DFCE" stroke="#66877C" stroke-width="1.5" stroke-linejoin="round"/>
-            <path d="M76 72 155 29 234 72" stroke="#426C60" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M226 208V104H346V208" fill="#E9E8D9" stroke="#66877C" stroke-width="1.5"/>
-            <path d="M217 104H354" stroke="#426C60" stroke-width="3" stroke-linecap="round"/>
-            <path d="M111 91h27v32h-27zM171 91h27v32h-27zM111 146h27v32h-27zM171 146h27v32h-27z" fill="#FFFDF3" stroke="#66877C" stroke-width="1.5"/>
-            <path d="M124 91v32M184 91v32M124 146v32M184 146v32M111 107h27M171 107h27M111 162h27M171 162h27" stroke="#9DB6A5" stroke-width="1.2"/>
-            <path d="M260 145h34v63h-34z" fill="#749684" stroke="#426C60" stroke-width="1.5"/><path d="M284 177h2" stroke="#F8F5E8" stroke-width="2" stroke-linecap="round"/>
-            <path d="M309 130h19v25h-19z" fill="#FFFDF3" stroke="#66877C" stroke-width="1.5"/>
-            <path d="M49 208v-36M39 185c-16-19 6-39 11-20 6-24 26-7 11 11 17-2 14 18-12 15" fill="#9CAF87"/><path d="M49 208v-38" stroke="#66877C" stroke-width="1.5"/>
-            <path d="M377 208v-48M377 185c-31-1-24-29-10-21-13-29 19-38 22-16 22-9 34 26 1 32" fill="#A6B99A"/><path d="M377 208v-53" stroke="#66877C" stroke-width="1.5"/>
-            <path d="M249 209h56M145 208h20" stroke="#426C60" stroke-width="3" stroke-linecap="round"/>
-          </svg>
-          <span class="art-label"><span></span> Kết nối chủ trọ và người thuê</span>
-        </div>
+        <svg class="building" viewBox="0 0 468 280" fill="none" aria-hidden="true">
+          <g stroke="var(--color-action)" stroke-width="1" opacity=".24">
+            <path d="M0 42h468M0 91h468M0 140h468M0 189h468M0 238h468M38 0v280M87 0v280M136 0v280M185 0v280M234 0v280M283 0v280M332 0v280M381 0v280M430 0v280"/>
+          </g>
+          <path d="M87 91h147v98H87zM283 140h98v98h-98z" fill="var(--color-action)" opacity=".16"/>
+          <path d="M87 42h294v196H87zM87 91h147m0-49v98m0 49v49M136 189v49m147-98h98m-98 0v98M332 42v49" stroke="var(--color-action)" stroke-width="2" opacity=".68"/>
+          <path d="M87 189h98m49-49h49v49h-49m98-98h49M87 16v12m294-12v12M87 22h294M63 42H51m12 196H51m6-196v196" stroke="var(--color-action)" stroke-width="1" opacity=".48"/>
+          <path d="M234 140v49m98-49h49m-294-49v49" stroke="var(--color-action)" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="234" cy="140" r="5" fill="var(--color-action)"/>
+          <circle cx="332" cy="140" r="5" fill="var(--color-action)"/>
+          <circle cx="87" cy="91" r="5" fill="var(--color-action)"/>
+        </svg>
       </section>
 
       <section class="form-area" aria-labelledby="login-heading">
         <div class="form-card">
-          <div class="welcome-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M10 5H6v14h4M14 8l4 4-4 4M8 12h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <span class="form-eyebrow">Chào mừng bạn trở lại</span>
-          <h2 id="login-heading">Đăng nhập</h2>
-          <p class="form-intro">Tiếp tục quản lý và theo dõi nơi ở của bạn.</p>
+          <h1 id="login-heading">Đăng nhập</h1>
+          <p class="form-intro">Sử dụng tài khoản đã được cấp.</p>
 
           <div v-if="notice" class="notice" role="status">
             <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m6 10 3 3 5-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.4"/></svg>
@@ -162,140 +150,111 @@ onBeforeUnmount(() => {
             </button>
           </form>
 
-          <aside v-if="isDemo" class="demo-guide" aria-label="Tài khoản dùng thử"><strong>Tài khoản dùng thử</strong><p>Chủ trọ: <code>admin / 123</code></p><p>Người thuê: <code>user / 123</code></p><p>Để thử hai vai trò cùng lúc, dùng hai trình duyệt hoặc cửa sổ ẩn danh.</p></aside>
-          <p class="account-note">Sử dụng tài khoản đã được cấp.<br />Nếu cần hỗ trợ tài khoản, vui lòng liên hệ chủ trọ.</p>
-          <div class="role-note"><span></span> Dành cho chủ trọ và người thuê</div>
+          <p class="account-note">Cần hỗ trợ tài khoản? Hãy liên hệ chủ trọ.</p>
+          <aside v-if="isDemo" class="demo-guide" aria-label="Tài khoản dùng thử">
+            <strong>Tài khoản dùng thử</strong>
+            <dl>
+              <div><dt>Chủ trọ</dt><dd><code>admin / 123</code></dd></div>
+              <div><dt>Người thuê</dt><dd><code>user / 123</code></dd></div>
+            </dl>
+          </aside>
         </div>
       </section>
     </main>
-    <footer class="login-footer"><span>Nhà Trọ · Không gian quản lý của bạn</span><span>Gọn gàng, rõ ràng, dễ theo dõi</span></footer>
   </div>
 </template>
 
 <style scoped>
 .login-page {
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--pwa-notice-height, 0px));
   display: flex;
   flex-direction: column;
   background: var(--color-bg);
   color: var(--color-text);
 }
 
-.login-header,
-.login-main,
-.login-footer {
-  width: min(1160px, calc(100% - 80px));
-  margin: 0 auto;
+.login-header, .login-main {
+  width: min(1100px, calc(100% - 64px));
+  margin-inline: auto;
 }
 
 .login-header {
-  min-height: 96px;
+  min-height: 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 12px;
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   color: var(--color-text);
   text-decoration: none;
-  font-size: 24px;
+  font-size: clamp(19px, 3vw, 24px);
   font-weight: 700;
-  letter-spacing: -.5px;
-  border-radius: 10px;
+  letter-spacing: -.6px;
+  border-radius: var(--radius-control);
 }
 
 .brand-mark {
   width: 44px;
   height: 44px;
-  display: grid;
-  place-items: center;
-  background: var(--color-primary);
-  color: #fff;
-  border-radius: 12px;
+  flex: none;
 }
 
-.brand-mark svg { width: 26px; height: 26px; }
-.brand-dot { color: var(--color-primary); }
-.header-caption { color: var(--color-text-secondary); font-size: 14px; }
-
 .login-main {
-  flex: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-  align-items: stretch;
-  padding: 16px 0 32px;
+  grid-template-columns: 1.05fr 1fr;
+  margin-block: clamp(16px, 6vh, 72px) 32px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
 }
 
 .intro {
-  position: relative;
-  overflow: hidden;
-  min-height: 560px;
   display: flex;
   flex-direction: column;
-  padding: 48px 40px 24px;
-  background: var(--color-primary-soft);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
+  justify-content: space-between;
+  min-width: 0;
+  padding: clamp(28px, 4vw, 52px);
+  border-radius: calc(var(--radius-card) - 1px) 0 0 calc(var(--radius-card) - 1px);
+  color: #f4f8fa;
+  background: var(--refresh-dark);
 }
 
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--color-primary);
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.eyebrow span,
-.art-label span,
-.role-note span {
-  width: 6px;
-  height: 6px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: var(--color-primary);
-}
-
-.intro h1 {
-  margin: 24px 0 16px;
-  font-size: clamp(28px, 3vw, 36px);
+.intro-label {
+  color: var(--color-action);
+  font-size: 12px;
   font-weight: 650;
-  line-height: 1.4;
-  letter-spacing: -.8px;
+  letter-spacing: .14em;
 }
 
-.intro h1 em { color: var(--color-primary); font-style: normal; }
-.intro p { max-width: 360px; margin: 0; color: var(--color-text-secondary); font-size: 15px; line-height: 1.8; }
+.intro h2 {
+  max-width: 11ch;
+  margin: 14px 0 10px;
+  font-size: clamp(32px, 4.2vw, 56px);
+  font-weight: 650;
+  line-height: 1.18;
+  letter-spacing: -.04em;
+}
 
-.home-art { position: relative; z-index: 1; margin-top: auto; padding-top: 40px; }
-.building { position: relative; left: -8px; display: block; width: calc(100% + 16px); max-height: 224px; }
-.art-sun { position: absolute; top: 48px; right: 32px; width: 48px; height: 48px; border-radius: 50%; background: #e4ddbc; }
-.art-grid { display: none; }
-.art-label { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 16px; color: var(--color-text-secondary); font-size: 12px; }
+.intro p { max-width: 32ch; margin: 0; color: #c5cfd6; }
+.building { width: 100%; max-height: 265px; margin-top: 38px; animation: reveal-plan 240ms var(--motion-ease) both; }
 
 .form-area {
   display: grid;
   place-items: center;
-  padding: 40px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
+  min-width: 0;
+  padding: clamp(28px, 4vw, 58px);
 }
 
-.form-card { width: 100%; max-width: 384px; }
-.welcome-icon { width: 44px; height: 44px; display: grid; place-items: center; margin-bottom: 24px; color: var(--color-primary); background: var(--color-primary-soft); border-radius: 12px; }
-.welcome-icon svg { width: 24px; height: 24px; }
-.form-eyebrow { color: var(--color-text-secondary); font-size: 14px; }
-.form-card h2 { margin: 8px 0 12px; font-size: 32px; line-height: 1.35; font-weight: 650; letter-spacing: -.7px; }
-.form-intro { margin: 0 0 32px; color: var(--color-text-secondary); font-size: 14px; line-height: 1.7; }
+.form-card { width: min(100%, 360px); }
+.form-card h1 { margin: 0 0 6px; font-size: clamp(29px, 4vw, 38px); line-height: 1.3; letter-spacing: -.8px; }
+.form-intro { margin: 0 0 27px; color: var(--color-text-secondary); font-size: 15px; }
 
-.field { margin-bottom: 24px; }
+.field { margin-bottom: 18px; }
 .field label { display: block; margin-bottom: 8px; color: var(--color-text); font-size: 14px; font-weight: 600; }
 .input-wrap { display: flex; align-items: center; min-height: 48px; background: var(--color-surface); border: 1px solid var(--color-input-border); border-radius: 10px; transition: border-color .15s; }
 .input-wrap:focus-within { border-color: var(--color-focus); outline: 3px solid var(--color-focus); outline-offset: 2px; }
@@ -312,16 +271,25 @@ onBeforeUnmount(() => {
 .submit-button:focus-visible,
 .brand:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
 
-.submit-button { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 48px; margin-top: 32px; padding: 12px 16px; border: 1px solid var(--color-primary); border-radius: 10px; background: var(--color-primary); color: #fff; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: background .15s; }
-.submit-button:hover:not(:disabled) { background: var(--color-primary-hover); border-color: var(--color-primary-hover); }
+.submit-button { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 50px; margin-top: 24px; padding: 12px 16px; border: 1px solid transparent; border-radius: var(--radius-control); background: var(--color-action); color: var(--color-action-text); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: background var(--motion-normal); }
+.submit-button:hover:not(:disabled) { background: var(--color-action-hover); }
 .submit-button:disabled { opacity: .65; cursor: not-allowed; }
 .submit-button svg { width: 20px; height: 20px; }
-.account-note { margin: 24px 0; color: var(--color-text-secondary); font-size: 12px; line-height: 1.8; text-align: center; }
-.demo-guide { margin-top: 24px; padding: 16px; border: 1px solid var(--color-border); border-radius: 10px; color: var(--color-text-secondary); background: var(--color-primary-soft); font-size: 13px; line-height: 1.8; }
-.demo-guide strong { color: var(--color-primary); }
-.demo-guide p { margin: 6px 0 0; }
+.account-note { margin: 16px 0 0; color: var(--color-text-secondary); font-size: 13px; }
+.demo-guide {
+  margin-top: 20px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+  font-size: 13px;
+}
+.demo-guide strong { color: var(--color-text); }
+.demo-guide dl { margin: 6px 0 0; }
+.demo-guide dl div { display: flex; justify-content: space-between; gap: 8px; }
+.demo-guide dd { margin: 0; }
 .demo-guide code { color: var(--color-text); font: inherit; font-weight: 600; white-space: nowrap; }
-.role-note { display: flex; justify-content: center; align-items: center; gap: 8px; padding-top: 24px; border-top: 1px solid var(--color-border); color: var(--color-text-secondary); font-size: 12px; }
 
 .notice,
 .error-banner { margin-bottom: 24px; padding: 16px; border: 1px solid var(--color-border); border-radius: 10px; font-size: 14px; line-height: 1.7; }
@@ -331,40 +299,21 @@ onBeforeUnmount(() => {
 .error-banner:focus { outline: 3px solid var(--color-focus); outline-offset: 3px; }
 .retry-countdown { display: block; margin-top: 8px; font-weight: 600; }
 .field-error { margin: 8px 0 0; color: var(--color-danger); font-size: 14px; line-height: 1.6; }
-.spinner { width: 16px; height: 16px; border: 2px solid #ffffff70; border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; }
-.login-footer { min-height: 64px; display: flex; justify-content: space-between; align-items: center; gap: 24px; padding-bottom: 16px; color: var(--color-text-muted); font-size: 12px; }
-
+.spinner { width: 16px; height: 16px; border: 2px solid currentColor; border-inline-end-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes reveal-plan { from { opacity: .45; transform: translateY(4px); } }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-@media (max-width: 1050px) {
-  .login-header, .login-main, .login-footer { width: calc(100% - 48px); }
-  .login-main { gap: 24px; }
-  .intro { padding: 40px 24px 24px; }
-  .intro h1 { font-size: 30px; }
-  .form-area { padding: 32px 24px; }
-}
-
-@media (max-width: 780px) {
-  .login-header, .login-main, .login-footer { width: min(448px, calc(100% - 40px)); }
-  .login-header { min-height: 80px; }
-  .header-caption, .intro { display: none; }
-  .login-main { display: block; padding: 16px 0 24px; }
-  .form-area { padding: 32px 24px; }
-  .form-card { max-width: none; }
-  .form-card h2 { font-size: 30px; }
-  .visibility-button { width: 48px; height: 48px; }
-  .login-footer { justify-content: center; min-height: 48px; text-align: center; }
-  .login-footer span:last-child { display: none; }
-}
-
-@media (max-width: 380px) {
-  .login-header, .login-main, .login-footer { width: calc(100% - 32px); }
-  .form-area { padding: 24px 16px; }
-  .brand { font-size: 22px; }
+@media (max-width: 760px) {
+  .login-header, .login-main { width: min(448px, calc(100% - 32px)); }
+  .login-header { min-height: 72px; }
+  .login-main { display: block; margin-top: 8px; }
+  .intro { display: none; }
+  .form-area { padding: 24px clamp(16px, 5vw, 28px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; }
+  .building { animation: none; }
   .spinner { animation-duration: 1.5s; }
 }
 </style>

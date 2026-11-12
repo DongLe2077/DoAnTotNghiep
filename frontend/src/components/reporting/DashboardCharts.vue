@@ -2,42 +2,93 @@
 import { computed } from 'vue'
 import DashboardInvoiceChart from './DashboardInvoiceChart.vue'
 import DashboardTrendChart from './DashboardTrendChart.vue'
-import { chartPercent } from '@/lib/charts'
+import { chartMonth, chartPercent } from '@/lib/charts'
+import { formatMoney } from '@/lib/format'
 import type { Dashboard } from '@/types/reporting'
+
 const props = defineProps<{ data: Dashboard }>()
 const rooms = computed(() => [
-  { label: 'Có người ở', count: props.data.rooms.occupied_count, color: '#235c4b' },
-  { label: 'Phòng trống', count: props.data.rooms.vacant_count, color: '#46888e' },
-  { label: 'Bảo trì', count: props.data.rooms.maintenance_count, color: '#af792b' },
-])
+  { label: 'Đang ở', count: props.data.rooms.occupied_count, color: 'var(--color-chart-main)' },
+  { label: 'Phòng trống', count: props.data.rooms.vacant_count, color: 'var(--color-chart-secondary)' },
+  { label: 'Bảo trì', count: props.data.rooms.maintenance_count, color: '#b5873c' },
+].map(item => ({ ...item, percent: chartPercent(BigInt(item.count), BigInt(props.data.rooms.total_count)) })))
 </script>
+
 <template>
-  <section class="dashboard-section dashboard-charts" aria-labelledby="charts-title">
-    <h2 id="charts-title">Thống kê trực quan</h2>
-    <DashboardInvoiceChart :month="data.month" :summary="data.invoices" />
-    <details class="workflow-disclosure more-charts">
+  <section class="dashboard-charts" aria-labelledby="charts-title">
+    <div class="chart-grid overview-stats">
+      <section class="record-card finance-panel" aria-labelledby="finance-title">
+        <span class="chart-kicker">Dòng tiền · {{ chartMonth(data.month) }}</span>
+        <h2 id="finance-title">Thực thu trong kỳ</h2>
+        <RouterLink class="finance-amount" :to="{ path: '/owner/cash', query: { month: data.month } }">
+          <span class="sr-only">Thực thu tháng {{ data.month }}</span><strong>{{ formatMoney(data.cash_flow.total_income) }}</strong>
+        </RouterLink>
+        <dl class="record-facts">
+          <div><dt>Thực chi</dt><dd>{{ formatMoney(data.cash_flow.expense_total) }}</dd></div>
+          <div><dt>Chênh lệch thu chi</dt><dd>{{ formatMoney(data.cash_flow.net_cash_flow) }}</dd></div>
+        </dl>
+      </section>
+      <section class="record-card rooms-panel" aria-labelledby="rooms-title">
+        <header>
+          <div><h2 class="chart-kicker">Tình hình hiện tại</h2><h3 id="rooms-title">Phòng ở</h3></div>
+          <RouterLink class="record-link" to="/owner/rooms">Quản lý phòng →</RouterLink>
+        </header>
+        <p class="room-count"><strong>{{ data.rooms.total_count }}</strong> phòng</p>
+        <div class="dashboard-meter" aria-hidden="true"><span v-for="item in rooms" :key="item.label" :style="{ width: item.percent + '%', background: item.color }" /></div>
+        <ul class="dashboard-legend">
+          <li v-for="item in rooms" :key="item.label">
+            <RouterLink v-if="item.label === 'Phòng trống'" to="/owner/rooms" class="legend-item">
+              <i :style="{ background: item.color }" aria-hidden="true" />{{ item.label }} <strong>{{ item.count }}</strong>
+            </RouterLink>
+            <span v-else class="legend-item"><i :style="{ background: item.color }" aria-hidden="true" />{{ item.label }} <strong>{{ item.count }}</strong></span>
+          </li>
+        </ul>
+      </section>
+    </div>
+    <div class="chart-grid chart-grid-secondary">
+      <DashboardInvoiceChart :month="data.month" :summary="data.invoices" />
+      <section class="record-card tracking-panel" aria-labelledby="tracking-title">
+        <span class="chart-kicker">Mọi kỳ</span>
+        <h2 id="tracking-title">Cần theo dõi</h2>
+        <dl class="record-facts">
+          <div><dt><RouterLink to="/owner/receivables?due_status=overdue">Công nợ quá hạn</RouterLink></dt><dd>{{ formatMoney(data.receivables.overdue_amount ?? '0.00') }}</dd></div>
+          <div><dt><RouterLink to="/owner/maintenance">Yêu cầu sửa chữa đang mở</RouterLink></dt><dd>{{ data.maintenance.open_count }}</dd></div>
+        </dl>
+      </section>
+    </div>
+    <h2 id="charts-title" class="trend-heading">Thống kê trực quan</h2>
+    <details class="workflow-disclosure">
       <summary>Xem thêm thống kê</summary>
       <div class="workflow-disclosure-body">
         <DashboardTrendChart :month="data.month" :series="data.monthly_series ?? []" />
-        <article class="record-card room-chart" aria-labelledby="room-chart-title">
-      <div class="room-chart-title"><div><h3 id="room-chart-title">Tình trạng phòng hiện tại</h3><p class="help-text">{{ data.rooms.total_count }} phòng trong nhà trọ</p></div><RouterLink class="record-link" to="/owner/rooms">Quản lý phòng →</RouterLink></div>
-      <div class="room-bar" role="img" :aria-label="rooms.map(item => `${item.label}: ${item.count} phòng`).join(', ')"><span v-for="item in rooms" :key="item.label" :style="{ width: `${chartPercent(BigInt(item.count), BigInt(data.rooms.total_count))}%`, background: item.color }" /></div>
-      <ul class="room-legend"><li v-for="item in rooms" :key="item.label"><i :style="{ background: item.color }" aria-hidden="true" />{{ item.label }} <strong>{{ item.count }}</strong></li></ul>
-      <p v-if="!data.rooms.total_count" class="help-text">Chưa có phòng để thống kê.</p><p class="room-note">Phòng bảo trì được tính riêng, kể cả khi còn người cư trú. Trạng thái này luôn phản ánh hiện tại.</p>
-        </article>
+        <p class="help-text">Phòng bảo trì được tính riêng, kể cả khi còn người cư trú.</p>
       </div>
     </details>
   </section>
 </template>
+
 <style scoped>
-.more-charts { margin-top: 12px; }
-.room-chart { margin-top: 20px; }
-.room-chart-title { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-.room-bar { display: flex; overflow: hidden; height: 14px; border-radius: 7px; background: var(--color-border); margin: 18px 0; }
-.room-bar span { display: block; height: 100%; }
-.room-legend { display: flex; flex-wrap: wrap; gap: 10px 28px; margin: 0; padding: 0; list-style: none; }
-.room-legend li { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--color-text-secondary); }
-.room-legend i { width: 10px; height: 10px; border-radius: 3px; }
-.room-legend strong { margin-left: 6px; color: var(--color-text); }
-.room-note { margin: 16px 0 0; font-size: 12px; line-height: 1.7; color: var(--color-text-secondary); }
+.dashboard-charts { margin-bottom: 12px; }
+.chart-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 14px; }
+.chart-grid-secondary { margin-top: 14px; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+.chart-grid > .record-card { min-width: 0; padding: clamp(16px, 2.5vw, 27px); }
+.chart-grid h2, .chart-grid h3 { margin: 4px 0 10px; font-size: 19px; letter-spacing: -.022em; line-height: 1.35; }
+.chart-grid h2.chart-kicker { margin: 0; font-size: 11px; line-height: inherit; letter-spacing: .13em; }
+.rooms-panel > header { margin-bottom: 0; align-items: flex-start; }
+.rooms-panel > header a { display: inline-flex; align-items: center; min-height: 44px; }
+.finance-panel { background: var(--refresh-dark); color: white; border-color: var(--refresh-dark); }
+.finance-panel .chart-kicker, .finance-amount { color: var(--color-action); }
+.finance-amount { display: inline-flex; align-items: center; min-height: 44px; text-decoration-thickness: 1px; }
+.finance-amount:focus-visible { outline-color: var(--color-action); }
+.finance-amount strong, .room-count strong { font-size: clamp(25px, 4vw, 44px); line-height: 1.25; letter-spacing: -.05em; font-variant-numeric: tabular-nums; }
+.room-count { margin: 12px 0 0; }
+.record-facts { gap: 0; margin: 12px 0 0; }
+.record-facts > div { padding: 8px 0; border-bottom: 1px solid var(--color-border); }
+.record-facts dd { font-weight: 650; }
+.finance-panel .record-facts > div { border-color: #4a5566; }
+.finance-panel .record-facts dt { color: #ced7e1; }
+.tracking-panel a { text-decoration-color: transparent; }
+.tracking-panel a:hover, .tracking-panel a:focus-visible { text-decoration-color: currentColor; }
+.trend-heading { margin: 18px 0 10px; }
+@media (max-width: 700px) { .chart-grid, .chart-grid-secondary { grid-template-columns: minmax(0, 1fr); } }
 </style>

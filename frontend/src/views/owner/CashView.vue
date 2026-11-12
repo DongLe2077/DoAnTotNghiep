@@ -119,7 +119,8 @@ void load(1)
         <div class="workflow-disclosure-body">
           <p class="help-text">Thu hóa đơn: {{ cashMoney(summary.invoice_payment_total) }} · Thu khác: {{ cashMoney(summary.other_income_total) }}. Chênh lệch chưa gồm số dư đầu kỳ.</p>
           <h2 v-if="summary.periods.length">{{ summary.group_by === 'day' ? 'Tổng hợp từng ngày' : 'Tổng hợp từng tháng' }}</h2>
-          <div v-if="summary.periods.length" class="cash-table-wrap">
+          <p v-if="summary.periods.length" class="help-text cash-scroll-hint">Vuốt ngang bảng để xem các cột còn lại.</p>
+          <div v-if="summary.periods.length" class="cash-table-wrap" tabindex="0" role="region" aria-label="Bảng tổng hợp thu chi theo kỳ">
             <table>
               <thead><tr><th scope="col">Kỳ phát sinh</th><th scope="col">Tổng thu</th><th scope="col">Tổng chi</th><th scope="col">Chênh lệch</th><th scope="col">Số khoản</th></tr></thead>
               <tbody><tr v-for="period in summary.periods" :key="period.period"><th scope="row">{{ period.period.split('-').reverse().join('/') }}</th><td>{{ cashMoney(period.total_income) }}</td><td>{{ cashMoney(period.expense_total) }}</td><td>{{ cashMoney(period.net_cash_flow) }}</td><td>{{ period.entry_count }}</td></tr></tbody>
@@ -146,11 +147,14 @@ void load(1)
 .cash-negative { color: var(--color-danger) !important; }
 .cash-periods { margin-top: 16px; }
 .cash-table-wrap { max-width: 100%; overflow-x: auto; }
+.cash-scroll-hint { display: none; }
 table { width: 100%; min-width: 560px; border-collapse: collapse; font-size: 14px; text-align: right; }
 th, td { padding: 12px 10px; border-bottom: 1px solid var(--color-border); }
 th { font-weight: 500; color: var(--color-text-secondary); }
 th:first-child { text-align: left; }
 @media (max-width: 600px) {
+  .cash-scroll-hint { display: block; }
+  th:first-child { position: sticky; inset-inline-start: 0; background: var(--color-surface); }
   .cash-totals { grid-template-columns: 1fr; padding: 12px 16px; }
   .cash-totals > div { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
   .cash-totals dd { margin: 0; }

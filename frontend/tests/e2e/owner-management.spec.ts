@@ -58,6 +58,7 @@ test('CT1 rooms use real CRUD, field validation, protected history and reviewed 
   await dialog.getByLabel('Sức chứa (người) (bắt buộc)').fill('4')
   await dialog.getByRole('button', { name: 'Lưu thông tin', exact: true }).click()
   await expect(dialog).toHaveCount(0)
+  await expect(page.locator('.room-register-row.recently-saved').filter({ hasText: 'CT1-B201' })).toContainText('0 / 4 người')
   await page.reload()
   await expect(page.getByRole('article').filter({ hasText: 'CT1-B201' })).toContainText('0 / 4 người')
   await page.getByRole('button', { name: 'Xem phòng A101', exact: true }).click()

@@ -43,7 +43,7 @@ function prepare() {
   if (!localError.value) { client.clearError(); review.value = true }
 }
 async function upload() {
-  if (!saved.value) return
+  if (!saved.value || client.busy.value) return
   if (!files.value.length && !pendingPhotos.value) { completed.value = true; await router.push(`/tenant/maintenance/${saved.value.id}?created=1`); return }
   pendingPhotos.value ??= [...files.value]
   try { await client.post(`/maintenance-requests/${saved.value.id}/photos`, photoFormData(pendingPhotos.value)); files.value = []; pendingPhotos.value = null; completed.value = true; await router.push(`/tenant/maintenance/${saved.value.id}?created=1`) }
@@ -61,39 +61,100 @@ async function send() {
 }
 void loadEligibility()
 </script>
-<template><section class="management-page tenant-page tenant-form"><RouterLink class="back-link" to="/tenant/maintenance">← Báo hỏng của tôi</RouterLink><header class="management-header workflow-header"><div><h1>Gửi báo hỏng</h1></div></header>
-  <UiPageState v-if="checking" kind="loading" /><UiPageState v-else-if="eligibilityError" kind="error" :description="eligibilityError"><UiButton @click="loadEligibility">Thử lại</UiButton></UiPageState><UiPageState v-else-if="!eligible.length" kind="forbidden" title="Bạn chưa có quyền gửi báo hỏng mới" description="Chỉ đại diện hiện tại đang cư trú được gửi yêu cầu. Bạn vẫn xem được các yêu cầu đã gửi trước đây." />
-  <template v-else>
-    <ol v-if="!saved" class="workflow-steps" aria-label="Các bước gửi báo hỏng">
-      <li :aria-current="!review ? 'step' : undefined">1. Mô tả sự cố</li>
-      <li :aria-current="review ? 'step' : undefined">2. Xem lại và gửi</li>
-    </ol>
-    <h2 v-if="!saved" ref="stepTitle" class="workflow-form-title" tabindex="-1">{{ review ? 'Xem lại yêu cầu' : 'Thông tin sự cố' }}</h2>
-    <p v-if="client.error.value" class="form-error" role="alert">{{ client.error.value }}</p><p v-if="localError" class="form-error" role="alert">{{ localError }}</p><ul v-if="messages.length" class="field-error"><li v-for="message in messages" :key="message">{{ message }}</li></ul>
-    <article v-if="saved" class="record-card form-grid"><UiNotice tone="success" title="Báo hỏng đã được gửi">Yêu cầu #{{ saved.id }} đã được ghi nhận. Chỉ cần hoàn tất ảnh; không gửi lại nội dung báo hỏng.</UiNotice><UiNotice v-if="pendingPhotos" tone="warning">Ảnh trước có thể đã được nhận. Gửi lại đúng các ảnh đang chờ để kiểm tra, hệ thống không lưu ảnh trùng.</UiNotice><TenantPhotoPicker v-model="files" :existing="saved.photos.length" :disabled="client.busy.value || !!pendingPhotos" /><div class="button-row"><UiButton :loading="client.busy.value" @click="upload">{{ files.length ? 'Gửi lại ảnh đã chọn' : 'Hoàn tất, xem yêu cầu' }}</UiButton><RouterLink class="record-link" :to="`/tenant/maintenance/${saved.id}?created=1`">Xem yêu cầu đã gửi →</RouterLink></div></article>
-    <article v-else-if="review" class="record-card form-grid"><UiNotice v-if="frozen" tone="warning">Yêu cầu trước có thể đã được ghi nhận. Hãy kiểm tra danh sách trước khi gửi lại. Nội dung trùng chỉ được gộp khi yêu cầu cũ chưa hoàn tất.</UiNotice><dl class="record-facts"><div><dt>Phòng</dt><dd>{{ location?.room.room_number }}</dd></div><div><dt>Tiêu đề</dt><dd>{{ form.title }}</dd></div></dl><p class="tenant-description">{{ form.description }}</p><p class="help-text">{{ files.length ? `${files.length} ảnh đính kèm` : 'Không đính kèm ảnh' }}</p><div class="button-row"><UiButton v-if="!frozen" variant="secondary" @click="review = false">Quay lại sửa</UiButton><UiButton :loading="client.busy.value" @click="send">{{ frozen ? 'Gửi lại yêu cầu đang chờ' : 'Xác nhận gửi báo hỏng' }}</UiButton></div></article>
-    <form v-else class="record-card form-grid" @submit.prevent="prepare">
-      <fieldset :disabled="client.busy.value">
-        <dl v-if="eligible.length === 1 && location" class="record-facts selected-room">
-          <div><dt>Phòng báo hỏng</dt><dd><strong>Phòng {{ location.room.room_number }}</strong></dd></div>
+<template>
+  <section class="management-page tenant-page tenant-workspace tenant-maintenance tenant-form">
+    <RouterLink class="back-link" to="/tenant/maintenance">← Báo hỏng của tôi</RouterLink>
+    <header class="management-header">
+      <div>
+        <span class="tenant-kicker">Hỗ trợ nơi ở</span>
+        <h1>Gửi báo hỏng</h1>
+        <p>Mô tả sự cố để chủ trọ biết cần sửa gì và ở đâu.</p>
+      </div>
+    </header>
+    <UiPageState v-if="checking" kind="loading" skeleton="report-form" title="Đang tải phòng có thể báo hỏng…" />
+    <UiPageState v-else-if="eligibilityError" kind="error" :description="eligibilityError">
+      <UiButton @click="loadEligibility">Thử lại</UiButton>
+    </UiPageState>
+    <UiPageState v-else-if="!eligible.length" kind="forbidden" title="Bạn chưa có quyền gửi báo hỏng mới" description="Chỉ đại diện hiện tại đang cư trú được gửi yêu cầu. Bạn vẫn xem được các yêu cầu đã gửi trước đây." />
+    <template v-else>
+      <ol v-if="!saved" class="workflow-steps" aria-label="Các bước gửi báo hỏng">
+        <li :aria-current="!review ? 'step' : undefined">1. Mô tả sự cố</li>
+        <li :aria-current="review ? 'step' : undefined">2. Xem lại và gửi</li>
+      </ol>
+      <h2 v-if="!saved" ref="stepTitle" class="workflow-form-title tenant-maintenance-heading" tabindex="-1">{{ review ? 'Xem lại yêu cầu' : 'Thông tin sự cố' }}</h2>
+      <p v-if="client.error.value" class="form-error" role="alert">{{ client.error.value }}</p>
+      <p v-if="localError" class="form-error" role="alert">{{ localError }}</p>
+      <ul v-if="messages.length" class="field-error">
+        <li v-for="message in messages" :key="message">{{ message }}</li>
+      </ul>
+      <article v-if="saved" class="record-card form-grid tenant-report-form">
+        <UiNotice tone="success" title="Báo hỏng đã được gửi">{{ client.busy.value ? 'Đang gửi ảnh đính kèm…' : `Chủ trọ có thể xem yêu cầu #${saved.id}. Bạn có thể hoàn tất phần ảnh bên dưới.` }}</UiNotice>
+        <UiNotice v-if="pendingPhotos && !client.busy.value" tone="warning">Chưa xác nhận được lần gửi ảnh trước. Gửi lại các ảnh đang chờ để hệ thống kiểm tra và tránh lưu trùng.</UiNotice>
+        <TenantPhotoPicker v-model="files" class="tenant-report-photo-field" :existing="saved.photos.length" :disabled="client.busy.value || !!pendingPhotos" />
+        <div class="button-row tenant-report-actions">
+          <UiButton :loading="client.busy.value" @click="upload">{{ client.busy.value ? 'Đang gửi ảnh…' : files.length ? 'Gửi lại ảnh đã chọn' : 'Hoàn tất, xem yêu cầu' }}</UiButton>
+          <RouterLink v-if="files.length && !client.busy.value" class="record-link" :to="`/tenant/maintenance/${saved.id}?created=1`">Xem yêu cầu đã gửi →</RouterLink>
+        </div>
+      </article>
+      <article v-else-if="review" class="record-card form-grid tenant-report-form">
+        <UiNotice v-if="frozen && !client.busy.value" tone="warning">Yêu cầu trước có thể đã được ghi nhận. Hãy kiểm tra danh sách trước khi gửi lại. Nội dung trùng chỉ được gộp khi yêu cầu cũ chưa hoàn tất.</UiNotice>
+        <dl class="record-facts tenant-report-room">
+          <div><dt>Phòng</dt><dd>{{ location?.room.room_number }}</dd></div>
+          <div><dt>Tiêu đề</dt><dd>{{ form.title }}</dd></div>
         </dl>
-        <label v-else class="select-field" for="report-room">
-          <span>Phòng báo hỏng</span>
-          <select id="report-room" v-model="form.occupancy_id" class="ui-select" required>
-            <option value="" disabled>Chọn phòng</option>
-            <option v-for="item in eligible" :key="item.occupancy_id" :value="String(item.occupancy_id)">Phòng {{ item.room.room_number }} · Nhóm {{ item.group.group_code }}</option>
-          </select>
-        </label>
-        <OwnerField v-model="form.title" name="title" label="Tiêu đề sự cố" required :max-length="150" :errors="client.errors.value" hint="Ví dụ: Vòi nước bếp bị rò." />
-        <UiField :id="descriptionId" label="Mô tả sự cố" required :error="client.errors.value.description?.[0]" hint="Cho biết vị trí và tình trạng sự cố." v-slot="{ describedBy, invalid }">
-          <textarea :id="descriptionId" v-model="form.description" class="ui-input" rows="4" maxlength="8000" required :aria-describedby="describedBy" :aria-invalid="invalid" />
-        </UiField>
-        <TenantPhotoPicker v-model="files" />
-      </fieldset>
-      <UiButton type="submit">Xem lại trước khi gửi</UiButton>
-    </form>
-  </template></section></template>
+        <div>
+          <h3>Mô tả sự cố</h3>
+          <p class="tenant-description">{{ form.description }}</p>
+        </div>
+        <div class="tenant-report-photo-field">
+          <h3>{{ files.length ? `${files.length} ảnh đính kèm` : 'Không đính kèm ảnh' }}</h3>
+          <ul v-if="files.length" class="tenant-report-file-list">
+            <li v-for="(file, index) in files" :key="index">{{ file.name }}</li>
+          </ul>
+        </div>
+        <div class="button-row tenant-report-actions">
+          <UiButton v-if="!frozen" variant="secondary" @click="review = false">Quay lại sửa</UiButton>
+          <UiButton :loading="client.busy.value" @click="send">{{ client.busy.value ? 'Đang gửi báo hỏng…' : frozen ? 'Gửi lại yêu cầu đang chờ' : 'Xác nhận gửi báo hỏng' }}</UiButton>
+        </div>
+      </article>
+      <form v-else class="record-card form-grid tenant-report-form" @submit.prevent="prepare">
+        <fieldset :disabled="client.busy.value">
+          <dl v-if="eligible.length === 1 && location" class="record-facts tenant-report-room">
+            <div><dt>Phòng báo hỏng</dt><dd><strong>Phòng {{ location.room.room_number }}</strong></dd></div>
+          </dl>
+          <label v-else class="select-field" for="report-room">
+            <span>Phòng báo hỏng</span>
+            <select id="report-room" v-model="form.occupancy_id" class="ui-select" required>
+              <option value="" disabled>Chọn phòng</option>
+              <option v-for="item in eligible" :key="item.occupancy_id" :value="String(item.occupancy_id)">Phòng {{ item.room.room_number }} · Nhóm {{ item.group.group_code }}</option>
+            </select>
+          </label>
+          <OwnerField v-model="form.title" name="title" label="Tiêu đề sự cố" required :max-length="150" :errors="client.errors.value" hint="Ví dụ: Vòi nước bếp bị rò." />
+          <UiField :id="descriptionId" label="Mô tả sự cố" required :error="client.errors.value.description?.[0]" hint="Cho biết vị trí và tình trạng sự cố." v-slot="{ describedBy, invalid }">
+            <textarea :id="descriptionId" v-model="form.description" class="ui-input" rows="4" maxlength="8000" required :aria-describedby="describedBy" :aria-invalid="invalid" />
+          </UiField>
+          <TenantPhotoPicker v-model="files" class="tenant-report-photo-field" />
+        </fieldset>
+        <div class="button-row tenant-report-actions">
+          <UiButton type="submit">Xem lại trước khi gửi</UiButton>
+        </div>
+      </form>
+    </template>
+  </section>
+</template>
 
 <style scoped>
-.selected-room { margin: 0; padding: 12px; border-radius: 8px; background: var(--color-primary-soft); }
+@media (max-width: 600px) {
+  .tenant-report-actions {
+    position: sticky;
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+    z-index: 1;
+    margin: 0 -16px -16px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--color-border);
+    border-radius: 0 0 var(--radius-card) var(--radius-card);
+    background: var(--color-surface);
+  }
+  :global(.keyboard-open) .tenant-report-actions { position: static; }
+}
 </style>

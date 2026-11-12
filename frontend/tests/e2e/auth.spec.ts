@@ -35,7 +35,9 @@ async function expectOwnerIdentity(page: Page) {
     const navigation = page.getByRole('dialog', { name: 'Điều hướng chính', exact: true })
     await expect(navigation.getByText('e2e_owner', { exact: true })).toBeVisible()
     await navigation.getByRole('button', { name: 'Đóng menu', exact: true }).click()
-  } else await expect(page.getByText('e2e_owner', { exact: true }).first()).toBeVisible()
+  } else {
+    await expect(page.getByRole('banner').getByRole('link', { name: 'Tài khoản', exact: true })).toHaveText('e2e_owner')
+  }
 }
 
 test('owner signs in with real cookies, survives reload, and signs out', async ({ page, context, request }) => {
@@ -182,7 +184,7 @@ test('logging out synchronizes a second open tab', async ({ page, context }) => 
   await login(page, 'e2e_owner')
   const secondPage = await context.newPage()
   await secondPage.goto('/owner')
-  await expect(secondPage.getByText('e2e_owner', { exact: true }).first()).toBeVisible()
+  await expectOwnerIdentity(secondPage)
   await page.getByRole('button', { name: 'Đăng xuất', exact: true }).click()
   await expect(page).toHaveURL(/\/login(?:\?|$)/)
   await expect(secondPage).toHaveURL(/\/login(?:\?|$)/)
@@ -195,7 +197,7 @@ test('a failed logout keeps the session and offers a visible retry error', async
   await page.getByRole('button', { name: 'Đăng xuất', exact: true }).click()
   await expect(page.getByRole('alert')).toContainText('Chưa thể đăng xuất')
   await expect(page).toHaveURL(/\/owner\/?$/)
-  await expect(page.getByText('e2e_owner', { exact: true }).first()).toBeVisible()
+  await expectOwnerIdentity(page)
   expect((await page.request.get('/api/auth/me')).status()).toBe(200)
 
   await page.unroute('**/api/auth/logout')

@@ -63,7 +63,8 @@ try {
   check(manifestResponse.status() === 200 && manifestResponse.headers()['content-type'].includes('application/manifest+json') && manifestResponse.headers()['cache-control'] === 'no-cache', 'Public HTTPS manifest is available with revalidation and the correct MIME type')
   const manifest = await manifestResponse.json()
   check(manifest.name === 'Nhà Trọ' && manifest.start_url === '/' && manifest.scope === '/' && manifest.display === 'standalone', 'Public HTTPS installation opens the role-aware root in standalone mode')
-  for (const icon of [...manifest.icons, { src: '/icons/apple-touch-icon.png', sizes: '180x180' }]) {
+  const appleIcon = await owner.locator('link[rel="apple-touch-icon"]').getAttribute('href')
+  for (const icon of [...manifest.icons, { src: appleIcon, sizes: '180x180' }]) {
     const response = await owner.request.get(icon.src), data = await response.body(), size = Number(icon.sizes.split('x')[0])
     check(response.status() === 200 && response.headers()['content-type'] === 'image/png' && data.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) && data.readUInt32BE(16) === size && data.readUInt32BE(20) === size, `Public HTTPS delivers app icon ${icon.src} at the declared size`)
   }

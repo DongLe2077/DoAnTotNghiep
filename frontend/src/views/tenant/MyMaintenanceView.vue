@@ -34,13 +34,17 @@ watch(() => route.query, query => {
 void checkEligibility()
 </script>
 <template>
-  <section class="management-page tenant-page">
-    <header class="management-header workflow-header">
-      <div><h1>Báo hỏng của tôi</h1></div>
-      <div><RouterLink v-if="eligible.length" class="tenant-primary-link" to="/tenant/maintenance/new">+ Gửi báo hỏng</RouterLink></div>
+  <section class="management-page tenant-page tenant-workspace tenant-maintenance">
+    <header class="management-header">
+      <div>
+        <span class="tenant-kicker">Hỗ trợ nơi ở</span>
+        <h1>Báo hỏng của tôi</h1>
+        <p>Báo sự cố cho chủ trọ và theo dõi tiến độ sửa chữa.</p>
+      </div>
+      <RouterLink v-if="eligible.length" class="tenant-primary-link" to="/tenant/maintenance/new">+ Gửi báo hỏng</RouterLink>
     </header>
     <UiNotice v-if="eligibilityError" tone="warning">Chưa kiểm tra được quyền gửi báo hỏng. {{ eligibilityError }} <UiButton variant="ghost" @click="checkEligibility">Kiểm tra lại quyền</UiButton></UiNotice>
-    <UiNotice v-else-if="!checking && !eligible.length" tone="info">Nếu phòng có sự cố, nhờ người đại diện đang ở trong phòng gửi yêu cầu cho chủ trọ. Bạn vẫn có thể xem các yêu cầu mình đã gửi.</UiNotice>
+    <UiNotice v-else-if="!checking && !eligible.length" tone="info" title="Ai có thể gửi báo hỏng?">Người đại diện đang cư trú gửi yêu cầu cho phòng. Bạn có thể theo dõi những yêu cầu mình đã gửi trước đây.</UiNotice>
     <details class="workflow-filters" :open="hasFilters">
       <summary>Tìm và lọc báo hỏng <span v-if="hasFilters" class="help-text">Đang lọc</span></summary>
       <form class="management-toolbar" @submit.prevent="filter">
@@ -51,19 +55,27 @@ void checkEligibility()
         <RouterLink v-if="hasFilters" class="workflow-card-link" :to="route.path">Xóa bộ lọc</RouterLink>
       </form>
     </details>
-    <UiPageState v-if="loading" kind="loading" />
+    <UiPageState v-if="loading" kind="loading" skeleton="cards" title="Đang tải báo hỏng…" />
     <UiPageState v-else-if="error" kind="error" :description="error"><UiButton @click="load()">Thử lại</UiButton></UiPageState>
     <UiPageState v-else-if="!items.length" :title="hasFilters ? 'Chưa có yêu cầu phù hợp' : 'Bạn chưa gửi báo hỏng nào'" :description="hasFilters ? 'Xóa bộ lọc để xem tất cả báo hỏng của bạn.' : 'Các yêu cầu bạn gửi sẽ xuất hiện tại đây để theo dõi tiến độ.'" />
-    <div v-else class="management-grid workflow-grid">
-      <article v-for="report in items" :key="report.id" class="record-card workflow-list-card">
-        <header>
-          <div><h2>{{ report.title }}</h2><span class="help-text">Phòng {{ report.room.room_number }} · Gửi {{ formatDateTime(report.submitted_at) }}</span></div>
-          <UiBadge :tone="maintenanceStatusTone(report.status)">{{ maintenanceStatusLabel(report.status) }}</UiBadge>
-        </header>
-        <p v-if="report.resolution" class="help-text maintenance-excerpt"><strong>Chủ trọ cập nhật</strong> · {{ report.resolution }}</p>
-        <footer><RouterLink class="workflow-card-link" :to="`/tenant/maintenance/${report.id}`">Xem tiến độ và ảnh →</RouterLink><span class="help-text">{{ report.photos.length }} ảnh</span></footer>
-      </article>
-    </div>
+    <section v-else aria-labelledby="tenant-reports-heading">
+      <h2 id="tenant-reports-heading" class="tenant-maintenance-heading">Yêu cầu đã gửi</h2>
+      <div class="management-grid workflow-grid">
+        <article v-for="report in items" :key="report.id" class="record-card workflow-list-card tenant-report-card">
+          <header>
+            <span class="tenant-kicker">Phòng {{ report.room.room_number }}</span>
+            <UiBadge :tone="maintenanceStatusTone(report.status)">{{ maintenanceStatusLabel(report.status) }}</UiBadge>
+          </header>
+          <h3>{{ report.title }}</h3>
+          <p class="help-text">Gửi lúc {{ formatDateTime(report.submitted_at) }}</p>
+          <p v-if="report.resolution" class="help-text maintenance-excerpt"><strong>Chủ trọ cập nhật</strong> · {{ report.resolution }}</p>
+          <footer>
+            <RouterLink class="workflow-card-link" :to="`/tenant/maintenance/${report.id}`" :aria-label="`Xem tiến độ và ảnh: ${report.title}`">Xem tiến độ và ảnh <span aria-hidden="true">→</span></RouterLink>
+            <span class="help-text">{{ report.photos.length }} ảnh</span>
+          </footer>
+        </article>
+      </div>
+    </section>
     <OwnerPager v-if="!error && lastPage > 1" :page="page" :last-page="lastPage" :total="total" :loading="loading" @change="load($event)" />
   </section>
 </template>

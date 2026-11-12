@@ -19,11 +19,12 @@ const { items, loading, loadError, page, lastPage, total, load } = useOwnerList<
 const rooms = computed(() => isRoom ? items.value as Room[] : [])
 const services = computed(() => !isRoom ? items.value as Service[] : [])
 const search = ref(''), status = ref(''), method = ref(''), notice = ref(''), openError = ref('')
+const savedRoomId = ref<number | null>(null)
 const mode = ref<'' | 'create' | 'detail' | 'edit' | 'delete' | 'rate'>(''), opening = ref(false), review = ref(false)
 const room = ref<Room | null>(null), service = ref<Service | null>(null)
 const form = reactive({ room_number: '', capacity: '1', default_monthly_rent: '', operational_status: 'available', service_code: '', name: '', unit: '', billing_method: 'per_room', default_unit_price: '', is_active: true })
 const title = computed(() => mode.value === 'rate' ? 'Giá thuê mặc định chung' : mode.value === 'delete' ? `Xóa ${isRoom ? 'phòng' : 'dịch vụ'}` : `${mode.value === 'create' ? 'Thêm' : mode.value === 'edit' ? 'Sửa' : 'Chi tiết'} ${isRoom ? 'phòng' : 'dịch vụ'}`)
-function filter() { void load(1, { q: search.value, ...(status.value ? { [isRoom ? 'occupancy_status' : 'is_active']: status.value } : {}), ...(!isRoom && method.value ? { billing_method: method.value } : {}) }) }
+function filter() { savedRoomId.value = null; void load(1, { q: search.value, ...(status.value ? { [isRoom ? 'occupancy_status' : 'is_active']: status.value } : {}), ...(!isRoom && method.value ? { billing_method: method.value } : {}) }) }
 function create() {
   openSequence++; opening.value = false
   clearError(); openError.value = ''; room.value = null; service.value = null; review.value = false
@@ -64,13 +65,16 @@ async function save() {
   if (busy.value) return
   if (mode.value === 'rate' && !review.value) { review.value = true; return }
   try {
+    let updatedRoomId: number | null = null
     if (mode.value === 'delete') await write('delete', `${path}/${(room.value ?? service.value)!.id}`)
     else if (mode.value === 'rate') await write('put', '/rooms/rental-rate', { default_monthly_rent: form.default_monthly_rent })
     else {
       const payload = isRoom ? { room_number: form.room_number, capacity: Number(form.capacity), operational_status: form.operational_status, ...(mode.value === 'create' && form.default_monthly_rent ? { default_monthly_rent: form.default_monthly_rent } : {}) }
         : { service_code: form.service_code, name: form.name, unit: form.unit, billing_method: form.billing_method, default_unit_price: form.default_unit_price, is_active: form.is_active }
-      await write(mode.value === 'create' ? 'post' : 'put', mode.value === 'create' ? path : `${path}/${(room.value ?? service.value)!.id}`, payload)
+      const result = await write<{ data: Room | Service }>(mode.value === 'create' ? 'post' : 'put', mode.value === 'create' ? path : `${path}/${(room.value ?? service.value)!.id}`, payload)
+      if (isRoom) updatedRoomId = result.data.id
     }
+    savedRoomId.value = updatedRoomId
     notice.value = mode.value === 'delete' ? 'Đã xóa mục chưa có lịch sử.' : mode.value === 'rate' ? 'Đã cập nhật giá mặc định. Giá của các đợt thuê hiện có được giữ nguyên.' : 'Đã lưu thông tin.'
     close(); await load()
   } catch { /* The form keeps its values and displays server field errors. */ }
@@ -85,8 +89,20 @@ void load()
     <UiPageState v-if="loading" kind="loading" skeleton="cards" />
     <UiPageState v-else-if="loadError" kind="error" :description="loadError"><UiButton @click="load()">Thử lại</UiButton></UiPageState>
     <UiPageState v-else-if="!items.length" title="Chưa có kết quả phù hợp" description="Bạn có thể thay đổi bộ lọc hoặc thêm mới." />
+    <section v-else-if="isRoom" class="room-register" aria-labelledby="room-register-title">
+      <header class="room-register-title"><h2 id="room-register-title">Danh sách phòng</h2><span>{{ total }} phòng</span></header>
+      <div class="room-register-grid room-column-labels" aria-hidden="true">
+        <span>Số phòng</span><span>Trạng thái</span><span>Người ở</span><span>Giá mặc định / tháng</span><span>Thao tác</span>
+      </div>
+      <article v-for="item in rooms" :key="item.id" class="room-register-grid room-register-row" :class="{ 'recently-saved': item.id === savedRoomId }">
+        <h3>Phòng {{ item.room_number }}</h3>
+        <UiBadge :tone="item.occupancy_status === 'vacant' ? 'success' : item.occupancy_status === 'maintenance' ? 'warning' : 'neutral'">{{ { vacant: 'Phòng trống', occupied: 'Có người ở', maintenance: 'Bảo trì' }[item.occupancy_status] }}</UiBadge>
+        <div><span class="room-mobile-label">Người ở</span>{{ item.resident_count }} / {{ item.capacity }} người</div>
+        <div><span class="room-mobile-label">Giá / tháng</span><strong>{{ formatMoney(item.default_monthly_rent) }}</strong></div>
+        <div class="button-row room-actions"><UiButton variant="secondary" :aria-label="`Xem phòng ${item.room_number}`" @click="detail(item.id)">Xem chi tiết</UiButton><RouterLink class="record-link" :to="{ path: '/owner/stays', query: { room_id: item.id } }">Lịch sử thuê</RouterLink></div>
+      </article>
+    </section>
     <div v-else class="management-grid">
-      <article v-for="item in rooms" :key="item.id" class="record-card"><header><h2>Phòng {{ item.room_number }}</h2><UiBadge :tone="item.occupancy_status === 'vacant' ? 'success' : item.occupancy_status === 'maintenance' ? 'warning' : 'info'">{{ { vacant: 'Phòng trống', occupied: 'Có người ở', maintenance: 'Bảo trì' }[item.occupancy_status] }}</UiBadge></header><dl class="record-facts"><div><dt>Người ở / Sức chứa</dt><dd>{{ item.resident_count }} / {{ item.capacity }} người</dd></div><div><dt>Giá mặc định / tháng</dt><dd class="ui-money">{{ formatMoney(item.default_monthly_rent) }}</dd></div></dl><footer><UiButton variant="secondary" @click="detail(item.id)">Xem phòng {{ item.room_number }}</UiButton><RouterLink class="record-link" :to="{ path: '/owner/stays', query: { room_id: item.id } }">Lịch sử thuê</RouterLink></footer></article>
       <article v-for="item in services" :key="item.id" class="record-card"><header><div><h2>{{ item.name }}</h2><span class="help-text">{{ item.service_code }}</span></div><UiBadge :tone="item.is_active ? 'success' : 'neutral'">{{ item.is_active ? 'Đang áp dụng mới' : 'Đã tắt' }}</UiBadge></header><dl class="record-facts"><div><dt>Cách tính</dt><dd>{{ item.billing_method === 'metered' ? 'Theo chỉ số' : 'Theo phòng' }}</dd></div><div><dt>Đơn giá mặc định</dt><dd>{{ formatUnitPrice(item.default_unit_price) }} / {{ item.unit }}</dd></div></dl><footer><UiButton variant="secondary" @click="detail(item.id)">Xem dịch vụ {{ item.name }}</UiButton></footer></article>
     </div>
     <OwnerPager v-if="!loadError && total > 0" :page="page" :last-page="lastPage" :total="total" :loading="loading" @change="load($event)" />
@@ -117,3 +133,25 @@ void load()
     </UiDialog>
   </section>
 </template>
+
+<style scoped>
+.room-register { border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface); }
+.room-register-title { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; padding: 14px 16px; }
+.room-register-title h2 { margin: 0; font-size: 19px; }
+.room-register-title > span { color: var(--color-text-secondary); font-size: 14px; }
+.room-register-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .9fr) minmax(0, .85fr) minmax(0, 1.05fr) minmax(0, 1.55fr); align-items: center; gap: 10px; padding: 10px 16px; border-top: 1px solid var(--color-border); overflow-wrap: anywhere; }
+.room-register-grid h3 { font-size: 15px; }
+.room-register-row { font-size: 14px; }
+.room-register-row:not(.recently-saved):hover { background: var(--color-bg); }
+.room-register-row:last-child { border-end-start-radius: var(--radius-card); border-end-end-radius: var(--radius-card); }
+.room-column-labels { background: var(--color-bg); color: var(--color-text-secondary); font-size: 12px; font-weight: 650; }
+.room-actions .record-link { display: inline-flex; align-items: center; min-height: 44px; }
+.room-mobile-label { display: none; }
+@media (max-width: 760px) {
+  .room-column-labels { display: none; }
+  .room-register-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 12px; padding-block: 14px; }
+  .room-register-row h3 { font-size: 17px; }
+  .room-mobile-label { display: block; font-size: 12px; color: var(--color-text-secondary); }
+  .room-actions { grid-column: 1 / -1; }
+}
+</style>

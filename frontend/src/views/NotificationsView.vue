@@ -153,15 +153,15 @@ async function openSubject(item: AppNotification) {
 </script>
 
 <template>
-  <section class="notifications-page" aria-labelledby="notifications-heading">
-    <header class="page-heading">
+  <section class="management-page tenant-workspace notifications-page" aria-labelledby="notifications-heading">
+    <header class="management-header">
       <div>
         <h1 id="notifications-heading">Thông báo</h1>
         <p aria-live="polite">{{ unreadDescription }}</p>
       </div>
       <div class="page-actions">
         <RouterLink v-if="auth.user?.role === 'owner'" class="workflow-card-link" to="/owner/announcements">Quản lý thông báo chung</RouterLink>
-        <UiButton variant="ghost" :loading="notifications.readingAll" :disabled="notifications.loading || notifications.unreadCount === 0 || !!notifications.busyIds.length || openingId !== null" @click="markAllRead">
+        <UiButton variant="secondary" :loading="notifications.readingAll" :disabled="notifications.loading || notifications.unreadCount === 0 || !!notifications.busyIds.length || openingId !== null" @click="markAllRead">
           Đánh dấu tất cả đã đọc
         </UiButton>
       </div>
@@ -203,19 +203,20 @@ async function openSubject(item: AppNotification) {
       <ul v-else class="notification-list" aria-label="Danh sách thông báo">
         <li v-for="item in notifications.items" :key="item.id" class="notification-item" :class="{ 'notification-item--unread': !item.is_read }">
           <article class="notification-content" :aria-labelledby="`notification-title-${item.id}`">
-            <div class="notification-heading">
-              <span v-if="!item.is_read" class="unread-dot"><span class="sr-only">Chưa đọc</span></span>
-              <h2 :id="`notification-title-${item.id}`">{{ item.data.title }}</h2>
+            <div class="notification-meta">
+              <span v-if="!item.is_read" class="unread-label">Chưa đọc</span>
+              <span>{{ notificationTypeLabel(item.type) }}</span>
               <time v-if="item.created_at" :datetime="item.created_at">{{ formatDateTime(item.created_at) }}</time>
             </div>
+            <h2 :id="`notification-title-${item.id}`">{{ item.data.title }}</h2>
             <p class="notification-body">{{ item.data.body }}</p>
             <div class="item-actions">
-              <UiButton variant="ghost" :loading="openingId === item.id" :disabled="actionsPending || notifications.busyIds.includes(item.id)"
+              <UiButton variant="secondary" :loading="openingId === item.id" :disabled="actionsPending || notifications.busyIds.includes(item.id)"
                 :aria-label="`${subjectLabel(item)}: ${item.data.title}`" @click="openSubject(item)">{{ subjectLabel(item) }}</UiButton>
               <UiButton v-if="!item.is_read" variant="ghost" class="mark-read-button"
                 :loading="notifications.busyIds.includes(item.id) && openingId !== item.id" :disabled="actionsPending || notifications.busyIds.includes(item.id)"
                 :aria-label="`Đánh dấu đã đọc: ${item.data.title}`" title="Đánh dấu đã đọc" @click="markRead(item)">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg>
+                Đánh dấu đã đọc
               </UiButton>
             </div>
           </article>
@@ -237,31 +238,34 @@ async function openSubject(item: AppNotification) {
 
 <style scoped>
 .notifications-page { width: 100%; max-width: 1120px; margin: 0 auto; }
-.page-heading, .page-actions, .inbox-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; }
-.page-heading { justify-content: space-between; margin-bottom: 16px; }
-.page-heading h1 { margin: 0 0 4px; font-size: clamp(26px, 5vw, 32px); }
-.page-heading p, .notification-body { margin: 0; color: var(--color-text-secondary); font-size: 14px; }
+.page-actions, .inbox-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
+.notification-body { margin: 0; color: var(--color-text-secondary); font-size: 14px; }
 .action-notice { margin-bottom: 16px; }
 .inbox-card { border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface); }
-.inbox-toolbar { padding: 12px 16px; border-bottom: 1px solid var(--color-border); }
-.inbox-toolbar > details { width: 100%; }
+.inbox-toolbar { justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--color-border); }
+.inbox-toolbar > details[open] { width: 100%; }
 .inbox-filters, .item-actions { display: flex; flex-wrap: wrap; gap: 4px; }
 .inbox-filters button { min-height: 44px; padding: 8px 14px; border: 1px solid transparent; border-radius: 8px; color: var(--color-text-secondary); background: transparent; font: inherit; font-size: 14px; cursor: pointer; }
-.inbox-filters button[aria-pressed="true"] { border-color: var(--color-border); color: var(--color-primary); background: var(--color-primary-soft); font-weight: 650; }
+.inbox-filters button[aria-pressed="true"] { color: var(--color-action-text); background: var(--color-action); font-weight: 650; }
 .notification-list { margin: 0; padding: 0; list-style: none; }
-.notification-item { padding: 14px 16px 8px; }
+.notification-item { padding: 16px 18px; border-inline-start: 4px solid transparent; }
 .notification-item + .notification-item { border-top: 1px solid var(--color-border); }
-.notification-item--unread { background: var(--color-primary-soft); }
-.notification-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-bottom: 4px; }
-.notification-heading h2 { flex: 1 1 160px; margin: 0; font-size: 16px; overflow-wrap: anywhere; }
-.notification-heading time { font-size: 12px; color: var(--color-text-secondary); }
-.unread-dot { flex: 0 0 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--color-primary); }
+.notification-item--unread { border-inline-start-color: var(--color-focus); background: var(--color-primary-soft); }
+.notification-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; color: var(--color-text-secondary); font-size: 12px; }
+.notification-meta time { margin-inline-start: auto; }
+.notification-content h2 { margin: 6px 0; font-size: 17px; overflow-wrap: anywhere; }
+.unread-label { display: inline-flex; align-items: center; gap: 6px; color: var(--color-success); font-weight: 700; }
+.unread-label::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 .notification-body { display: -webkit-box; overflow: hidden; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.item-actions { margin-top: 4px; }
+.item-actions { margin-top: 10px; }
 .item-actions > button { min-height: 44px; }
 .mark-read-button { min-width: 44px; }
-.mark-read-button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--color-border); }
 .pagination p { margin: 0; color: var(--color-text-secondary); font-size: 13px; }
 .pagination > div { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 560px) {
+  .page-actions > button { width: 100%; }
+  .notification-item { padding-inline: 12px; }
+  .notification-meta time { margin-inline-start: 0; }
+}
 </style>

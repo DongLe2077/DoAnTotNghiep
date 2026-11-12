@@ -14,5 +14,97 @@
 .tenant-page textarea.ui-input { min-height: 150px; resize: vertical; }
 .tenant-form { max-width: 760px; }
 .tenant-form .form-grid > fieldset { display: grid; gap: 20px; }
-.tenant-primary-link { display: inline-flex; align-items: center; min-height: 44px; padding: 11px 18px; border-radius: 10px; color: white; background: var(--color-primary); font-size: 14px; font-weight: 600; text-decoration: none; }
+.tenant-primary-link { display: inline-flex; align-items: center; min-height: 44px; padding: 11px 18px; border-radius: 10px; color: var(--color-action-text, white); background: var(--color-action, var(--color-primary)); font-size: 14px; font-weight: 600; text-decoration: none; }
+.rentbase-graphite .tenant-primary-link:hover { background: var(--color-action-hover); }
+.tenant-workspace > .management-header { margin-bottom: 24px; }
+.tenant-workspace .management-header h1 {
+  margin: 4px 0 8px;
+  font-size: clamp(28px, 4.5vw, 44px);
+  line-height: 1.15;
+  letter-spacing: -.05em;
+}
+.tenant-workspace .management-header p { margin: 0; }
+.tenant-kicker {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.tenant-highlight {
+  --color-focus: var(--color-action);
+  background: var(--refresh-dark);
+  color: #f4f8fa;
+  border-color: var(--refresh-dark);
+}
+.tenant-highlight .workflow-amount { color: var(--color-action); }
+.tenant-highlight h2.workflow-caption { color: #c5cfd6; }
+.tenant-highlight .workflow-deadline > span { color: #f4d798; }
 @media (max-width: 700px) { .tenant-room-hero { grid-template-columns: 1fr; gap: 20px; } .tenant-rent { border-top: 1px solid var(--color-border); padding-top: 20px; } .tenant-rent > strong { font-size: 27px; } .tenant-quick-links { flex-direction: column; } }
+
+.tenant-maintenance > .management-header { gap: 16px 24px; }
+.tenant-maintenance .tenant-primary-link { justify-content: center; }
+.tenant-maintenance h2.tenant-maintenance-heading { margin: 20px 0 12px; font-size: 18px; }
+.tenant-report-card > header { align-items: center; }
+.tenant-report-card > header > .tenant-kicker { min-width: 0; }
+.tenant-report-card > h3 { font-size: 19px; }
+.tenant-report-card > p:last-of-type { margin-bottom: 16px; }
+.tenant-report-card .workflow-card-link { gap: 6px; }
+
+.tenant-report-form > .ui-notice { margin: 0; }
+.tenant-report-form .tenant-description { margin: 8px 0 0; }
+.tenant-report-room, .tenant-report-photo-field {
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-bg);
+}
+.tenant-report-room dd { text-align: start; font-weight: 600; }
+.tenant-report-file-list { margin: 8px 0 0; padding-inline-start: 20px; font-size: 14px; }
+.tenant-report-actions { justify-content: flex-end; }
+
+.tenant-repair-detail { align-items: stretch; }
+.tenant-repair-detail > * { min-width: 0; }
+.tenant-repair-progress > header { align-items: center; flex-wrap: wrap; }
+.tenant-repair-progress > header h2 { margin: 0; }
+.tenant-repair-progress > .help-text { color: #c5cfd6; font-size: 13px; }
+.tenant-repair-progress > .tenant-description { margin-bottom: 0; }
+.tenant-repair-stages {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+}
+.tenant-repair-stages li {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  padding: 9px 4px;
+  border: 1px solid #5e6978;
+  border-radius: 8px;
+  color: #e0e7eb;
+  font-size: 12px;
+  text-align: center;
+}
+.tenant-repair-stages li > span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-weight: 700;
+}
+.tenant-repair-stages li[aria-current] { border-color: var(--color-action); color: var(--color-action); font-weight: 700; }
+.tenant-repair-update { margin-top: 14px; padding: 14px; border-radius: 8px; background: #343c49; }
+.tenant-repair-update .tenant-description, .tenant-repair-description .tenant-description { margin: 8px 0 0; }
+.tenant-repair-photos { display: grid; gap: 10px; }
+@media (max-width: 700px) {
+  .tenant-report-form, .tenant-repair-progress { padding: 16px; }
+  .tenant-report-form textarea.ui-input { min-height: 112px; }
+  .tenant-report-actions > button { width: 100%; }
+}

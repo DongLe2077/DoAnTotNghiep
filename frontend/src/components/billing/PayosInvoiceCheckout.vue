@@ -17,10 +17,10 @@ const emit = defineEmits<{ confirmed: [] }>()
 const client = useTenantApi()
 const state = ref<CheckoutState | null>(null)
 const unavailable = ref(false)
+const checking = ref(false)
 const endpoint = `/invoices/${props.invoice.id}/payos`
 let timer: number | undefined
 let disposed = false
-let checking = false
 
 function accept(next: CheckoutState) {
   state.value = next
@@ -37,20 +37,21 @@ function scheduleCheck() {
 }
 
 async function check() {
-  if (checking || client.busy.value || disposed) return
-  checking = true
+  if (checking.value || client.busy.value || disposed) return
+  checking.value = true
   try {
     const { data } = await client.get<{ data: CheckoutState }>(endpoint)
     if (!disposed) { unavailable.value = false; accept(data) }
   } catch {
     if (!disposed) unavailable.value = true
   } finally {
-    checking = false
+    checking.value = false
     scheduleCheck()
   }
 }
 
 async function start() {
+  if (checking.value || client.busy.value || disposed) return
   try {
     const { data } = await client.post<{ data: CheckoutState }>(endpoint, {})
     if (disposed) return
@@ -90,16 +91,18 @@ onBeforeUnmount(() => {
     <UiNotice v-else-if="state?.status === 'expired'" tone="info" title="Link thanh toán đã hết hạn">
       Nếu bạn chưa chuyển tiền, hãy tạo link mới. Nếu đã chuyển, hãy liên hệ chủ trọ để đối chiếu.
     </UiNotice>
-    <UiNotice v-else-if="state?.status === 'pending' || (returning && !state)" tone="info" title="Đang kiểm tra thanh toán">
+    <UiNotice v-else-if="!unavailable && (state?.status === 'pending' || (returning && !state))" tone="info" title="Đang kiểm tra thanh toán">
       Sau khi ngân hàng xác nhận, hóa đơn sẽ tự cập nhật tại đây.
     </UiNotice>
-    <p v-if="unavailable" class="help-text" role="status">Chưa kiểm tra được trạng thái payOS. <UiButton variant="ghost" @click="check">Kiểm tra lại</UiButton></p>
+    <p v-else-if="!state && !unavailable" class="help-text checkout-loading" role="status">Đang tải phương thức thanh toán…</p>
+    <p v-if="unavailable" class="help-text" role="status">Chưa kiểm tra được trạng thái payOS. <UiButton variant="ghost" :loading="checking" @click="check">{{ checking ? 'Đang kiểm tra…' : 'Kiểm tra lại' }}</UiButton></p>
     <p v-if="client.error.value" class="form-error" role="alert">{{ client.error.value }}</p>
-    <UiButton v-if="state?.can_start" :loading="client.busy.value" @click="start">{{ state.checkout_url ? 'Mở lại trang thanh toán' : 'Thanh toán qua ngân hàng' }}</UiButton>
+    <UiButton v-if="state?.can_start" :loading="client.busy.value" :disabled="checking" @click="start">{{ client.busy.value ? 'Đang mở trang thanh toán…' : state.checkout_url ? 'Mở lại trang thanh toán' : 'Thanh toán qua ngân hàng' }}</UiButton>
     <p v-if="state?.can_start && !state.checkout_url" class="help-text">Quét VietQR trên trang payOS để trả số tiền còn thiếu.</p>
   </div>
 </template>
 
 <style scoped>
 .payos-checkout { margin-bottom: 16px; }
+.checkout-loading { min-height: 44px; }
 </style>

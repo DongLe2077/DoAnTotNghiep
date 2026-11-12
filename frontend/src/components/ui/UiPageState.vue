@@ -9,7 +9,7 @@ const props = withDefaults(defineProps<{
   title?: string
   description?: string
   headingLevel?: 'h1' | 'h2' | 'h3'
-  skeleton?: 'dashboard' | 'cards' | 'list'
+  skeleton?: 'dashboard' | 'cards' | 'list' | 'invoices' | 'invoice-detail' | 'report-form'
 }>(), { kind: 'empty', headingLevel: 'h2' })
 
 const defaults: Record<PageStateKind, { title: string; description: string }> = {
@@ -20,7 +20,7 @@ const defaults: Record<PageStateKind, { title: string; description: string }> = 
   'not-found': { title: 'Không tìm thấy trang', description: 'Đường dẫn có thể đã thay đổi hoặc không còn được sử dụng.' },
 }
 const titleText = computed(() => props.title ?? defaults[props.kind].title)
-const descriptionText = computed(() => props.description ?? defaults[props.kind].description)
+const descriptionText = computed(() => props.description ?? (props.kind === 'loading' && props.skeleton ? '' : defaults[props.kind].description))
 const headingId = `page-state-${useId()}`
 </script>
 
@@ -56,6 +56,6 @@ const headingId = `page-state-${useId()}`
 .page-state--skeleton .page-state__title { font-size: 17px; letter-spacing: 0; }
 .page-state--skeleton .page-state__description { margin: 0 0 8px; }
 @keyframes state-spin { to { transform: rotate(360deg); } }
-@media (max-width: 560px) { .page-state { padding: 32px 20px; } .page-state__title { font-size: 22px; } .page-state__actions { flex-direction: column; align-items: stretch; } }
+@media (max-width: 560px) { .page-state:not(.page-state--skeleton) { padding: 32px 20px; } .page-state:not(.page-state--skeleton) .page-state__title { font-size: 22px; } .page-state__actions { flex-direction: column; align-items: stretch; } }
 @media (prefers-reduced-motion: reduce) { .page-state__spinner { animation: none; } }
 </style>

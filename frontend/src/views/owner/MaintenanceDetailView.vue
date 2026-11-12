@@ -21,6 +21,7 @@ const route = useRoute(), auth = useAuthStore(), notifications = useNotification
 const { get, write, busy, error, errors, clearError } = useOwnerApi()
 const id = computed(() => Number(route.params.id))
 const request = ref<MaintenanceRequest | null>(null), loading = ref(true), loadError = ref(''), loadStatus = ref(0), notice = ref('')
+const savedUpdate = ref(false)
 const descriptionOpen = ref<boolean | null>(null), historyOpen = ref(false), expensesOpen = ref(false)
 const editing = ref(false), reviewing = ref(false), conflicted = ref(false), clientError = ref('')
 const status = ref<'in_progress' | 'resolved'>('in_progress'), resolution = ref(''), version = ref('')
@@ -53,7 +54,7 @@ async function save() {
   if (!request.value?.can_process || !reviewing.value || conflicted.value || busy.value) return
   try {
     const result = await write<{ message: string; data: MaintenanceRequest }>('patch', `/maintenance-requests/${id.value}`, { version_token: version.value, status: status.value, resolution: resolution.value || null })
-    notice.value = result.message; request.value = result.data; closeEdit()
+    notice.value = result.message; request.value = result.data; savedUpdate.value = true; closeEdit()
     void notifications.refreshCount(true)
     if (notifications.items.length) void notifications.refresh()
   } catch (caught) { if (toApiError(caught).status === 409) conflicted.value = true }
@@ -63,22 +64,22 @@ async function reloadConflict() {
   await load()
 }
 function focusRefresh() { if (!editing.value && !busy.value && !loading.value) void load() }
-watch(id, () => { closeEdit(); notice.value = ''; void load() }, { immediate: true })
-watch(() => auth.user ? `${auth.user.id}:${auth.user.role}` : '', () => { sequence++; request.value = null; editing.value = false; resolution.value = ''; version.value = ''; notice.value = '' }, { flush: 'sync' })
+watch(id, () => { closeEdit(); notice.value = ''; savedUpdate.value = false; void load() }, { immediate: true })
+watch(() => auth.user ? `${auth.user.id}:${auth.user.role}` : '', () => { sequence++; request.value = null; editing.value = false; resolution.value = ''; version.value = ''; notice.value = ''; savedUpdate.value = false }, { flush: 'sync' })
 window.addEventListener('focus', focusRefresh)
 onBeforeUnmount(() => { alive = false; sequence++; request.value = null; window.removeEventListener('focus', focusRefresh) })
 </script>
 
 <template>
   <section class="management-page">
-    <RouterLink class="back-link" to="/owner/maintenance">← Yêu cầu sửa chữa</RouterLink>
+    <RouterLink class="back-link" :to="{ path: '/owner/maintenance', state: { savedMaintenanceId: savedUpdate ? id : null } }">← Yêu cầu sửa chữa</RouterLink>
     <UiPageState v-if="loading" kind="loading" title="Đang tải yêu cầu sửa chữa…" />
     <UiPageState v-else-if="loadError" :kind="loadStatus === 404 ? 'not-found' : loadStatus === 403 ? 'forbidden' : 'error'" :title="loadStatus === 404 ? 'Không tìm thấy yêu cầu sửa chữa' : undefined" :description="loadError"><UiButton v-if="![403, 404].includes(loadStatus)" @click="load">Thử lại</UiButton></UiPageState>
     <template v-else-if="request">
       <header class="management-header workflow-header"><div><h1>{{ request.title }}</h1><p>Phòng {{ request.room.room_number }} · Yêu cầu #{{ request.id }}</p></div></header>
       <UiNotice v-if="notice" tone="success">{{ notice }}</UiNotice>
       <div class="detail-sections workflow-sections">
-        <section class="record-card workflow-summary">
+        <section class="record-card workflow-summary" :class="{ 'recently-saved': savedUpdate }">
           <header><h2>{{ request.status === 'resolved' ? 'Kết quả sửa chữa' : 'Tiến độ xử lý' }}</h2><UiBadge :tone="maintenanceStatusTone(request.status)">{{ maintenanceStatusLabel(request.status) }}</UiBadge></header>
           <p class="help-text">Cập nhật gần nhất {{ formatDateTime(request.updated_at) }}</p>
           <div v-if="request.resolution" class="workflow-update"><p class="plain-content">{{ request.resolution }}</p></div>

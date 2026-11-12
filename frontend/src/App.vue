@@ -3,10 +3,13 @@ import { RouterView } from 'vue-router'
 import UiPageState from '@/components/ui/UiPageState.vue'
 import PwaStatus from '@/components/pwa/PwaStatus.vue'
 import { updateLocked } from '@/lib/reload-safety'
+import { useAuthStore } from '@/stores/auth'
+
+const auth = useAuthStore()
 </script>
 
 <template>
-  <PwaStatus />
+  <PwaStatus :class="{ 'rentbase-graphite': auth.isAuthenticated }" />
   <div :inert="updateLocked ? true : undefined">
   <RouterView v-slot="{ Component }">
     <component :is="Component" v-if="Component" />

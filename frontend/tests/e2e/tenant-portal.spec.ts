@@ -135,6 +135,54 @@ test('NT2 follows grants, partial/full receipts and revocation without offering 
   await page.goto('/tenant/invoices'); await expect(page.getByRole('heading', { name: 'Chưa có hóa đơn phù hợp', exact: true })).toBeVisible()
 })
 
+test('NT2 restores the filtered invoice page and scroll after returning from a detail', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await login(page, 'e2e_notify_tenant')
+  const response = await page.request.get('/api/tenant/invoices/1')
+  expect(response.ok()).toBe(true)
+  const { data: invoice } = await response.json()
+  const rows = [...Array.from({ length: 14 }, (_, index) => ({ ...invoice, id: 100 + index })), invoice]
+  let failNext = false
+  await page.route(url => url.pathname === '/api/tenant/invoices', async route => {
+    await new Promise(resolve => setTimeout(resolve, 650))
+    const query = new URL(route.request().url()).searchParams
+    expect(query.get('due_status')).toBe('overdue')
+    if (failNext) {
+      failNext = false
+      await route.fulfill({ status: 503, json: { message: 'Kết nối thử nghiệm gián đoạn.' } })
+      return
+    }
+    await route.fulfill({ json: { data: rows, meta: { current_page: Number(query.get('page')), last_page: 2, total: 30 } } })
+  })
+  await page.goto('/tenant/invoices?due_status=overdue')
+  await expect(page.getByText('Đang tải hóa đơn…', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Trang sau', exact: true }).click()
+  await expect(page).toHaveURL('/tenant/invoices?due_status=overdue&page=2')
+  const invoiceLink = page.locator('a[href="/tenant/invoices/1"]')
+  const list = page.locator('.tenant-invoice-list')
+  for (const useBrowserBack of [false, true]) {
+    await invoiceLink.scrollIntoViewIfNeeded()
+    const scroll = await invoiceLink.evaluate(link => {
+      if (!(link instanceof HTMLAnchorElement)) throw new Error('Expected an invoice link')
+      const top = -link.closest('.tenant-invoice-list')!.getBoundingClientRect().top
+      link.click()
+      return top
+    })
+    expect(scroll).toBeGreaterThan(500)
+    await expect(page).toHaveURL('/tenant/invoices/1')
+    if (useBrowserBack) {
+      failNext = true
+      await page.goBack()
+      await page.getByRole('button', { name: 'Thử lại', exact: true }).click()
+    }
+    else await page.getByRole('link', { name: '← Hóa đơn của tôi', exact: true }).click()
+    await expect(page).toHaveURL('/tenant/invoices?due_status=overdue&page=2')
+    await expect(page.getByRole('combobox', { name: 'Hạn thanh toán', exact: true })).toHaveValue('overdue')
+    await expect(page.getByText('30 kết quả · Trang 2 / 2', { exact: true })).toBeVisible()
+    await expect.poll(async () => Math.abs(await list.evaluate(el => -el.getBoundingClientRect().top) - scroll)).toBeLessThanOrEqual(8)
+  }
+})
+
 test('NT2 payOS return waits for server confirmation and updates the invoice without a manual refresh', async ({ page, request }) => {
   const c = await context(request, 'NT2-PAYOS')
   const preview = (await apiWrite(request, 'POST', `/owner/occupancies/${c.stay.id}/invoices/preview`, { billing_month: '2026-01' })).data
@@ -203,7 +251,7 @@ test('NT3 lost photo response retries only images and completes the owner-to-ten
   await page.getByRole('button', { name: 'Xem lại trước khi gửi', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Xem lại yêu cầu', exact: true })).toBeFocused()
   await expect(page.getByRole('list', { name: 'Các bước gửi báo hỏng' }).getByText('2. Xem lại và gửi')).toHaveAttribute('aria-current', 'step')
-  await page.getByRole('button', { name: 'Xác nhận gửi báo hỏng', exact: true }).click()
+  await page.getByRole('button', { name: 'Xác nhận gửi báo hỏng', exact: true }).dblclick()
   await expect(page.getByText('Báo hỏng đã được gửi', { exact: true })).toBeVisible()
   await expect(page.getByRole('alert')).toBeVisible(); expect(creates).toBe(1)
   await page.getByRole('button', { name: 'Gửi lại ảnh đã chọn', exact: true }).click()

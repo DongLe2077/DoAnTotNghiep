@@ -53,7 +53,7 @@ test('forbidden page explains the active role and can switch accounts without di
 test('owner pages and low-height navigation remain usable at 320px without horizontal scrolling', async ({ page }) => {
   await login(page, 'e2e_owner')
   await page.setViewportSize({ width: 320, height: 740 })
-  for (const path of ['/owner', '/owner/rooms', '/owner/services', '/owner/tenants', '/owner/stays', '/owner/stays/new', '/owner/meters', '/owner/invoices', '/owner/invoices/new', '/owner/payments', '/owner/receivables', '/owner/cash', '/owner/maintenance', '/owner/announcements', '/owner/announcements/new']) {
+  for (const path of ['/owner', '/owner/rooms', '/owner/services', '/owner/tenants', '/owner/stays', '/owner/stays/new', '/owner/meters', '/owner/meters/bulk', '/owner/invoices', '/owner/invoices/new', '/owner/payments', '/owner/receivables', '/owner/cash', '/owner/maintenance', '/owner/announcements', '/owner/announcements/new']) {
     await checkPage(page, path)
     if (path === '/owner/payments') {
       await page.getByLabel('Từ thời điểm (giờ Việt Nam)', { exact: true }).fill('2026-10-01T08:30')
@@ -70,7 +70,8 @@ test('owner pages and low-height navigation remain usable at 320px without horiz
   await page.screenshot({ path: resolve(shots, 'acceptance-announcement-form-mobile.png'), fullPage: true, animations: 'disabled' })
   await page.setViewportSize({ width: 1024, height: 600 })
   await checkPage(page, '/owner/rooms')
-  const navigation = page.locator('.main-navigation')
+  const navigation = page.getByRole('navigation', { name: 'Điều hướng chính', exact: true })
+  await navigation.getByRole('button', { name: 'Vận hành', exact: true }).click()
   await navigation.getByRole('link', { name: 'Thông báo chung', exact: true }).click()
   await expect(page).toHaveURL('/owner/announcements')
   await page.getByRole('link', { name: '+ Soạn thông báo', exact: true }).click()
