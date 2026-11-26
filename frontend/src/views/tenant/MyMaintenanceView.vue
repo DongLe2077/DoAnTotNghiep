@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useLiveRefresh } from '@/composables/useLiveRefresh'
 import { onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -32,6 +33,7 @@ watch(() => route.query, query => {
   void load(1, filters())
 }, { immediate: true })
 void checkEligibility()
+useLiveRefresh('property', () => !loading.value ? load(page.value) : false)
 </script>
 <template>
   <section class="management-page tenant-page tenant-workspace tenant-maintenance">
@@ -56,19 +58,18 @@ void checkEligibility()
       </form>
     </details>
     <UiPageState v-if="loading" kind="loading" skeleton="cards" title="Đang tải báo hỏng…" />
-    <UiPageState v-else-if="error" kind="error" :description="error"><UiButton @click="load()">Thử lại</UiButton></UiPageState>
+    <UiPageState v-else-if="error" kind="error" :description="error"><UiButton @click="load()">Tải lại</UiButton></UiPageState>
     <UiPageState v-else-if="!items.length" :title="hasFilters ? 'Chưa có yêu cầu phù hợp' : 'Bạn chưa gửi báo hỏng nào'" :description="hasFilters ? 'Xóa bộ lọc để xem tất cả báo hỏng của bạn.' : 'Các yêu cầu bạn gửi sẽ xuất hiện tại đây để theo dõi tiến độ.'" />
     <section v-else aria-labelledby="tenant-reports-heading">
       <h2 id="tenant-reports-heading" class="tenant-maintenance-heading">Yêu cầu đã gửi</h2>
-      <div class="management-grid workflow-grid">
-        <article v-for="report in items" :key="report.id" class="record-card workflow-list-card tenant-report-card">
+      <div class="management-grid workflow-grid rb7-record-list">
+        <article v-for="report in items" :key="report.id" class="record-card workflow-list-card tenant-report-card rb7-record-row">
           <header>
-            <span class="tenant-kicker">Phòng {{ report.room.room_number }}</span>
+            <div><span class="tenant-kicker">Phòng {{ report.room.room_number }}</span><h3>{{ report.title }}</h3></div>
             <UiBadge :tone="maintenanceStatusTone(report.status)">{{ maintenanceStatusLabel(report.status) }}</UiBadge>
           </header>
-          <h3>{{ report.title }}</h3>
-          <p class="help-text">Gửi lúc {{ formatDateTime(report.submitted_at) }}</p>
-          <p v-if="report.resolution" class="help-text maintenance-excerpt"><strong>Chủ trọ cập nhật</strong> · {{ report.resolution }}</p>
+          <div><p class="help-text">Gửi lúc {{ formatDateTime(report.submitted_at) }}</p>
+          <p v-if="report.resolution" class="help-text maintenance-excerpt"><strong>Chủ trọ cập nhật</strong> · {{ report.resolution }}</p></div>
           <footer>
             <RouterLink class="workflow-card-link" :to="`/tenant/maintenance/${report.id}`" :aria-label="`Xem tiến độ và ảnh: ${report.title}`">Xem tiến độ và ảnh <span aria-hidden="true">→</span></RouterLink>
             <span class="help-text">{{ report.photos.length }} ảnh</span>

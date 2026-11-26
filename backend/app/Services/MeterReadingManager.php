@@ -135,7 +135,7 @@ class MeterReadingManager
 
     private function assertMonthOpen(Occupancy $occupancy, CarbonImmutable $start): void
     {
-        $invoice = Invoice::query()->where('occupancy_id', $occupancy->id)
+        $invoice = Invoice::query()->where('occupancy_id', $occupancy->id)->where('invoice_kind', Invoice::KIND_MONTHLY)
             ->whereDate('billing_month', $start->startOfMonth()->format('Y-m-d'))->lockForUpdate()->first();
         abort_if($invoice !== null, 409, 'Tháng này đã phát hành hóa đơn; không thể thêm, sửa hoặc xóa chỉ số.');
     }

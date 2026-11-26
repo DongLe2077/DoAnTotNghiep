@@ -20,6 +20,8 @@ class InvoicePreviewRequest extends OwnerRequest
     {
         return [
             'billing_month' => ['required', 'date_format:Y-m', 'regex:/^[1-9][0-9]{3}-(0[1-9]|1[0-2])$/', 'before_or_equal:'.now()->format('Y-m')],
+            'service_ids' => ['sometimes', 'array', 'list'],
+            'service_ids.*' => ['required', 'integer', 'min:1', 'distinct'],
             'items' => ['prohibited'],
             'monthly_rent' => ['prohibited'],
             'total_amount' => ['prohibited'],

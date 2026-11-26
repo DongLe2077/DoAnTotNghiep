@@ -80,7 +80,7 @@ test('CT8 failed refresh clears prior private statistics and explicit retry relo
   await expect(page.locator('.stat-card')).toHaveCount(0)
   await expect(page.locator('.dashboard-charts')).toHaveCount(0)
   await page.unroute('**/api/owner/dashboard?**')
-  await page.getByRole('button', { name: 'Thử lại', exact: true }).click()
+  await page.getByRole('button', { name: 'Tải lại', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Tình hình hiện tại', exact: true })).toBeVisible()
 })
 

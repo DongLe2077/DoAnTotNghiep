@@ -37,6 +37,12 @@ class OccupancyController extends Controller
                 $query->where($field, $data[$field]);
             }
         }
+        if (isset($data['billing_month'])) {
+            $start = \Carbon\CarbonImmutable::createFromFormat('!Y-m', $data['billing_month']);
+            $query->where('started_at', '<', $start->addMonth())
+                ->where(fn ($stay) => $stay->whereNull('ended_at')->orWhere('ended_at', '>', $start))
+                ->orderByRaw('CASE WHEN ended_at IS NULL THEN 0 ELSE 1 END');
+        }
         if (isset($data['tenant_id'])) {
             $query->whereHas('tenantStays', fn ($query) => $query->where('tenant_id', $data['tenant_id']));
         }

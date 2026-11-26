@@ -12,4 +12,4 @@ Route::get('/', function () {
 });
 
 Route::get('/{page}', FrontendController::class)
-    ->where('page', '(?:login|account|notifications|forbidden|connection-error|design|owner(?:/.*)?|tenant(?:/.*)?)');
+    ->where('page', '(?:login|register|find-rooms(?:/.*)?|my-room-requests|properties|account|notifications|forbidden|connection-error|design|owner(?:/.*)?|tenant(?:/.*)?)');

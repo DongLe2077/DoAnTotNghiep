@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PaymentCorrection extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     public const UPDATED_AT = null;
 
     protected $fillable = ['invoice_id', 'payment_id', 'replacement_payment_id', 'action', 'reason', 'before_data', 'after_data', 'performed_by', 'actor_username', 'idempotency_key', 'request_fingerprint'];

@@ -16,7 +16,7 @@ export function initializeMobileViewport() {
       if (document.activeElement !== field) return
       const box = field.getBoundingClientRect()
       const content = field.closest('.ui-dialog .content')?.getBoundingClientRect()
-      const header = document.querySelector('.topbar')?.getBoundingClientRect()
+      const header = document.querySelector('.rb7-top, .topbar')?.getBoundingClientRect()
       const visibleTop = Math.max(top, content?.top ?? header?.bottom ?? top) + 8
       const visibleBottom = Math.min(top + height, content?.bottom ?? top + height) - 8
       if (box.top < visibleTop || box.bottom > visibleBottom) field.scrollIntoView({ block: 'nearest', behavior: 'instant' })

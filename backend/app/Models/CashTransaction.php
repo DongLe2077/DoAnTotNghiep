@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CashTransaction extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     use SoftDeletes;
 
     public const CREATED_AT = 'recorded_at';

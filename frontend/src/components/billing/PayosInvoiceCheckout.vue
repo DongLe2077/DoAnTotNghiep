@@ -6,7 +6,7 @@ import { useTenantApi } from '@/composables/useTenantApi'
 import type { Invoice } from '@/types/billing'
 
 interface CheckoutState {
-  status: 'idle' | 'pending' | 'paid' | 'review' | 'expired' | 'stale'
+  status: 'idle' | 'pending' | 'paid' | 'review' | 'expired' | 'stale' | 'queued_for_deletion'
   checkout_url: string | null
   can_start: boolean
   payment_id: number | null
@@ -82,7 +82,10 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="payos-checkout">
-    <UiNotice v-if="state?.status === 'review'" tone="warning" title="Cần đối chiếu chuyển khoản">
+    <UiNotice v-if="state?.status === 'queued_for_deletion'" tone="warning" title="Hóa đơn đang chờ xóa">
+      Vui lòng liên hệ chủ trọ trước khi chuyển khoản.
+    </UiNotice>
+    <UiNotice v-else-if="state?.status === 'review'" tone="warning" title="Cần đối chiếu chuyển khoản">
       Chủ trọ cần kiểm tra giao dịch này. Nếu đã chuyển tiền, hãy liên hệ chủ trọ trước khi thanh toán lại.
     </UiNotice>
     <UiNotice v-else-if="state?.status === 'stale'" tone="warning" title="Hóa đơn đã thay đổi">

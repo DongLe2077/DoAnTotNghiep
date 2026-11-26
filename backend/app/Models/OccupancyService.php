@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OccupancyService extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     public const UPDATED_AT = null;
 
     protected $table = 'occupancy_services';

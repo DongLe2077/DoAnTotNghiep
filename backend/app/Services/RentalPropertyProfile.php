@@ -13,7 +13,7 @@ class RentalPropertyProfile
 
     public function current(): ?RentalProperty
     {
-        return RentalProperty::query()->find(1);
+        return RentalProperty::query()->find(app(\App\Services\Tenancy\PropertyContext::class)->enabled() ? app(\App\Services\Tenancy\PropertyContext::class)->requireId() : 1);
     }
 
     public static function version(?RentalProperty $profile): string
@@ -28,7 +28,7 @@ class RentalPropertyProfile
             return DB::transaction(function () use ($data, $actorId) {
                 $actor = User::query()->findOrFail($actorId);
                 abort_unless($actor->is_active && $actor->hasRole(User::ROLE_OWNER), 403);
-                $profile = RentalProperty::query()->lockForUpdate()->find(1);
+                $profile = RentalProperty::query()->lockForUpdate()->find(app(\App\Services\Tenancy\PropertyContext::class)->enabled() ? app(\App\Services\Tenancy\PropertyContext::class)->requireId() : 1);
                 abort_unless(hash_equals(self::version($profile), $data['version_token']), 409,
                     'Thông tin nhà trọ đã thay đổi. Hãy tải lại và đối chiếu trước khi lưu.');
                 if ($profile === null) {

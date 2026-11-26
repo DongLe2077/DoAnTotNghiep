@@ -20,8 +20,8 @@ class PreviewAnnouncementRequest extends OwnerRequest
         return [
             'title' => ['required', 'string', 'max:160'],
             'body' => ['required', 'string', 'max:8000'],
-            'audience' => ['required', Rule::in(['all', 'rooms'])],
-            'room_ids' => ['required_if:audience,rooms', 'prohibited_if:audience,all', 'array', 'min:1', 'max:100'],
+            'audience' => ['required', Rule::in(app(\App\Services\Tenancy\PropertyContext::class)->enabled() ? ['all', 'rooms', 'members'] : ['all', 'rooms'])],
+            'room_ids' => ['required_if:audience,rooms', 'prohibited_if:audience,all,members', 'array', 'min:1', 'max:100'],
             'room_ids.*' => ['integer', 'min:1', 'distinct', 'exists:rooms,id'],
             'recipient_user_ids' => ['prohibited'], 'created_by' => ['prohibited'], 'created_at' => ['prohibited'],
         ];

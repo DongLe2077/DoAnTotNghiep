@@ -17,12 +17,13 @@ use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class InvoiceBilling
 {
-    public function preview(Occupancy $occupancy, string $month): array
+    public function preview(Occupancy $occupancy, string $month, ?array $serviceIds = null): array
     {
-        return DB::transaction(fn () => $this->calculate($this->lockContext($occupancy), $month), 3);
+        return DB::transaction(fn () => $this->calculate($this->lockContext($occupancy), $month, $serviceIds), 3);
     }
 
     public function issue(Occupancy $occupancy, array $data, int $actorId): Invoice
@@ -30,35 +31,88 @@ class InvoiceBilling
         try {
             return DB::transaction(function () use ($occupancy, $data, $actorId) {
                 $locked = $this->lockContext($occupancy);
-                $preview = $this->calculate($locked, $data['billing_month']);
-                abort_unless($preview['can_issue'], 409, implode(' ', $preview['blockers']));
-                abort_unless(hash_equals($preview['preview_token'], $data['preview_token']), 409, 'Dữ liệu tính tiền đã thay đổi. Hãy xem trước hóa đơn lại trước khi phát hành.');
-                $invoice = Invoice::create([
+                $preview = $this->calculate($locked, $data['billing_month'], $data['service_ids'] ?? null);
+                return $this->publish($locked, $data, $actorId, $preview, [
                     'invoice_number' => 'HD-'.str_replace('-', '', $data['billing_month']).'-'.$locked->id,
-                    'occupancy_id' => $locked->id, 'billing_month' => $data['billing_month'].'-01',
-                    'representative_assignment_id' => $preview['representative_assignment_id'], 'issued_by' => $actorId,
-                    'due_date' => $data['due_date'] ?? null,
+                    'invoice_kind' => Invoice::KIND_MONTHLY,
                 ]);
-                foreach ($preview['items'] as $line) {
-                    InvoiceItem::create(['invoice_id' => $invoice->id, 'occupancy_id' => $locked->id] + array_intersect_key($line, array_flip([
-                        'item_type', 'description', 'unit', 'quantity', 'unit_price', 'occupancy_service_id',
-                        'meter_reading_id', 'charge_period_start', 'charge_period_end',
-                    ])));
-                }
-                if ($preview['recipient_user_id'] !== null) {
-                    InvoiceAccessGrant::create([
-                        'invoice_id' => $invoice->id, 'occupancy_id' => $locked->id,
-                        'user_id' => $preview['recipient_user_id'],
-                        'representative_assignment_id' => $preview['representative_assignment_id'],
-                        'granted_by' => $actorId, 'grant_reason' => 'Cấp cho người đại diện khi phát hành hóa đơn.',
-                    ]);
-                }
-
-                return $invoice;
             }, 3);
         } catch (UniqueConstraintViolationException) {
             abort(409, 'Hóa đơn hoặc nguồn tính tiền đã được sử dụng. Hãy tải lại danh sách hóa đơn.');
         }
+    }
+
+    public function previewOneTime(Occupancy $occupancy, array $data): array
+    {
+        return DB::transaction(fn () => $this->calculateOneTime($this->lockContext($occupancy), $data), 3);
+    }
+
+    /** @return array{invoice: Invoice, replayed: bool} */
+    public function issueOneTime(Occupancy $occupancy, array $data, int $actorId): array
+    {
+        $key = hash('sha256', $data['idempotency_key']);
+        $fingerprint = hash('sha256', json_encode([
+            $occupancy->id, $actorId, $data['billing_month'], trim($data['description']),
+            (string) BigDecimal::of((string) $data['amount'])->toScale(2), $data['due_date'] ?? null,
+        ], JSON_THROW_ON_ERROR));
+        try {
+            return DB::transaction(function () use ($occupancy, $data, $actorId, $key, $fingerprint) {
+                $locked = $this->lockContext($occupancy);
+                $prior = Invoice::query()->where('issue_key_hash', $key)->lockForUpdate()->first();
+                if ($prior !== null) {
+                    return $this->replayedOneTime($prior, $fingerprint);
+                }
+                $preview = $this->calculateOneTime($locked, $data);
+                $invoice = $this->publish($locked, $data, $actorId, $preview, [
+                    'invoice_number' => 'KT-'.str_replace('-', '', $data['billing_month']).'-'.Str::ulid(),
+                    'invoice_kind' => Invoice::KIND_ONE_TIME,
+                    'issue_key_hash' => $key,
+                    'issue_fingerprint' => $fingerprint,
+                ]);
+
+                return ['invoice' => $invoice, 'replayed' => false];
+            }, 3);
+        } catch (UniqueConstraintViolationException) {
+            // Reconcile a concurrent submission after its transaction has released the unique key.
+            $prior = Invoice::query()->where('issue_key_hash', $key)->first();
+            abort_if($prior === null, 409, 'Mã yêu cầu phát hành đã được sử dụng.');
+
+            return $this->replayedOneTime($prior, $fingerprint);
+        }
+    }
+
+    private function replayedOneTime(Invoice $invoice, string $fingerprint): array
+    {
+        abort_unless(hash_equals($invoice->issue_fingerprint, $fingerprint), 409, 'Mã yêu cầu đã được dùng cho khoản thu có thông tin khác.');
+
+        return ['invoice' => $invoice, 'replayed' => true];
+    }
+
+    private function publish(Occupancy $occupancy, array $data, int $actorId, array $preview, array $fields): Invoice
+    {
+        abort_unless($preview['can_issue'], 409, implode(' ', $preview['blockers']));
+        abort_unless(hash_equals($preview['preview_token'], $data['preview_token']), 409, 'Dữ liệu tính tiền đã thay đổi. Hãy xem trước hóa đơn lại trước khi phát hành.');
+        $invoice = Invoice::create($fields + [
+            'occupancy_id' => $occupancy->id, 'billing_month' => $data['billing_month'].'-01',
+            'representative_assignment_id' => $preview['representative_assignment_id'], 'issued_by' => $actorId,
+            'due_date' => $data['due_date'] ?? null, 'rounding_amount' => $preview['rounding_amount'],
+        ]);
+        foreach ($preview['items'] as $line) {
+            InvoiceItem::create(['invoice_id' => $invoice->id, 'occupancy_id' => $occupancy->id] + array_intersect_key($line, array_flip([
+                'item_type', 'description', 'unit', 'quantity', 'unit_price', 'occupancy_service_id',
+                'meter_reading_id', 'charge_period_start', 'charge_period_end',
+            ])));
+        }
+        if ($preview['recipient_user_id'] !== null) {
+            InvoiceAccessGrant::create([
+                'invoice_id' => $invoice->id, 'occupancy_id' => $occupancy->id,
+                'user_id' => $preview['recipient_user_id'],
+                'representative_assignment_id' => $preview['representative_assignment_id'],
+                'granted_by' => $actorId, 'grant_reason' => 'Cấp cho người đại diện khi phát hành hóa đơn.',
+            ]);
+        }
+
+        return $invoice;
     }
 
     private function lockContext(Occupancy $occupancy): Occupancy
@@ -69,7 +123,7 @@ class InvoiceBilling
         return Occupancy::query()->lockForUpdate()->findOrFail($occupancy->id);
     }
 
-    private function calculate(Occupancy $occupancy, string $month): array
+    private function calculate(Occupancy $occupancy, string $month, ?array $serviceIds): array
     {
         $monthStart = CarbonImmutable::createFromFormat('!Y-m-d', $month.'-01', config('app.timezone'));
         $monthEnd = $monthStart->addMonth();
@@ -80,10 +134,10 @@ class InvoiceBilling
         $blockers = [];
         $warnings = [];
         if ($end->greaterThan($now)) {
-            $blockers[] = 'Chỉ phát hành sau khi hết tháng hoặc đã ghi nhận trả/chuyển phòng.';
+            $blockers[] = 'Có thể phát hành từ '.$end->format('H:i d/m/Y').' hoặc sớm hơn khi đã ghi nhận trả/chuyển phòng.';
         }
         $cutoff = $end->min($now);
-        $existing = $occupancy->invoices()->whereDate('billing_month', $month.'-01')->lockForUpdate()->first();
+        $existing = $occupancy->invoices()->where('invoice_kind', Invoice::KIND_MONTHLY)->whereDate('billing_month', $month.'-01')->lockForUpdate()->first();
         if ($existing !== null) {
             $blockers[] = 'Đợt thuê đã có hóa đơn cho tháng này.';
         }
@@ -91,7 +145,8 @@ class InvoiceBilling
         // A group lock serializes all invoices, including transfers between rooms.
         // Locking reads avoid stale repeatable-read snapshots on MySQL.
         $groupInvoices = Invoice::query()->whereIn('occupancy_id', Occupancy::query()->select('id')->where('rental_group_id', $occupancy->rental_group_id))
-            ->whereDate('billing_month', $month.'-01')->orderBy('id')->lockForUpdate()->get();
+            ->where('invoice_kind', Invoice::KIND_MONTHLY)->whereDate('billing_month', $month.'-01')
+            ->orderBy('id')->lockForUpdate()->get();
         $rentInvoice = null;
         foreach ($groupInvoices as $priorInvoice) {
             $rentLines = $priorInvoice->items()->where('item_type', 'rent')->lockForUpdate()->get();
@@ -115,6 +170,14 @@ class InvoiceBilling
         $periods = $occupancy->occupancyServices()->where('effective_from', '<', $cutoff)
             ->where(fn ($query) => $query->whereNull('effective_until')->orWhere('effective_until', '>', $start))
             ->orderBy('service_id')->orderBy('effective_from')->orderBy('id')->lockForUpdate()->get();
+        if ($serviceIds !== null) {
+            $serviceIds = array_map('intval', $serviceIds);
+            sort($serviceIds, SORT_NUMERIC);
+            abort_if(array_diff($serviceIds, $periods->pluck('service_id')->all()) !== [], 422,
+                'Có dịch vụ không áp dụng cho đợt thuê trong tháng đã chọn. Hãy chọn lại đợt thuê để cập nhật danh sách.');
+            $periods = $periods->whereInStrict('service_id', $serviceIds);
+        }
+
         $previousEnds = [];
         foreach ($periods as $period) {
             $from = $start->max($period->effective_from);
@@ -153,6 +216,45 @@ class InvoiceBilling
             }
         }
 
+        $recipient = $this->representative($occupancy, $now, $blockers, $warnings);
+
+        return $this->finishPreview([
+            'occupancy_id' => $occupancy->id, 'billing_month' => $month, 'invoice_kind' => Invoice::KIND_MONTHLY,
+            'period_start' => $start->format('Y-m-d H:i:s'), 'period_end' => $cutoff->format('Y-m-d H:i:s'),
+            'is_final_period' => $end->lessThanOrEqualTo($now),
+            'existing_invoice_id' => $existing?->id, 'rent_already_billed_invoice_id' => $rentInvoice?->id,
+            'rent_source_occupancy_id' => $rentSource->id,
+        ] + $recipient + ($serviceIds === null ? [] : ['service_ids' => $serviceIds]), $items, $blockers, $warnings);
+    }
+
+    private function calculateOneTime(Occupancy $occupancy, array $data): array
+    {
+        $month = $data['billing_month'];
+        $monthStart = CarbonImmutable::createFromFormat('!Y-m-d', $month.'-01', config('app.timezone'));
+        $monthEnd = $monthStart->addMonth();
+        $start = $monthStart->max($occupancy->started_at);
+        $end = $monthEnd->min($occupancy->ended_at ?? $monthEnd);
+        $now = CarbonImmutable::now()->startOfSecond();
+        abort_unless($start->lessThan($end) && $start->lessThanOrEqualTo($now), 422, 'Tháng tính tiền không giao với thời gian thuê đã diễn ra.');
+        $blockers = [];
+        $warnings = [];
+        $recipient = $this->representative($occupancy, $now, $blockers, $warnings);
+        $items = [$this->line([
+            'item_type' => 'one_time', 'description' => trim($data['description']), 'unit' => 'khoản',
+            'quantity' => '1.000', 'unit_price' => (string) $data['amount'],
+            'occupancy_service_id' => null, 'meter_reading_id' => null,
+            'charge_period_start' => null, 'charge_period_end' => null,
+        ], $blockers)];
+
+        return $this->finishPreview([
+            'occupancy_id' => $occupancy->id, 'billing_month' => $month, 'invoice_kind' => Invoice::KIND_ONE_TIME,
+            'period_start' => $start->format('Y-m-d H:i:s'), 'period_end' => $end->format('Y-m-d H:i:s'),
+            'existing_invoice_id' => null,
+        ] + $recipient, $items, $blockers, $warnings);
+    }
+
+    private function representative(Occupancy $occupancy, CarbonImmutable $now, array &$blockers, array &$warnings): array
+    {
         $representatives = $occupancy->representativeAssignments()->where('started_at', '<=', $now)
             ->orderByDesc('started_at')->orderByDesc('id')->lockForUpdate()->get();
         $representative = $representatives->first(fn ($assignment) => $occupancy->ended_at === null
@@ -163,7 +265,7 @@ class InvoiceBilling
             $stay = $representative->tenantStay()->lockForUpdate()->first();
             if ($stay !== null && $stay->occupancy_id === $occupancy->id) {
                 Tenant::query()->lockForUpdate()->findOrFail($stay->tenant_id);
-                $recipient = User::query()->where('tenant_id', $stay->tenant_id)->lockForUpdate()->first();
+                $recipient = Tenant::query()->findOrFail($stay->tenant_id)->user()->lockForUpdate()->first();
                 if ($occupancy->ended_at === null && $stay->moved_out_at !== null) {
                     $recipient = null;
                 }
@@ -182,18 +284,24 @@ class InvoiceBilling
             }
             $recipient = null;
         }
-        $total = BigDecimal::zero()->toScale(2);
+
+        return ['representative_assignment_id' => $representative?->id, 'recipient_user_id' => $recipient?->id];
+    }
+
+    private function finishPreview(array $fields, array $items, array $blockers, array $warnings): array
+    {
+        $subtotal = BigDecimal::zero()->toScale(2);
         foreach ($items as $item) {
-            $total = $total->plus($item['line_total']);
+            $subtotal = $subtotal->plus($item['line_total']);
         }
-        $result = [
-            'occupancy_id' => $occupancy->id, 'billing_month' => $month,
-            'period_start' => $start->format('Y-m-d H:i:s'), 'period_end' => $cutoff->format('Y-m-d H:i:s'),
-            'is_final_period' => $end->lessThanOrEqualTo($now),
-            'existing_invoice_id' => $existing?->id, 'rent_already_billed_invoice_id' => $rentInvoice?->id,
-            'rent_source_occupancy_id' => $rentSource->id,
-            'representative_assignment_id' => $representative?->id, 'recipient_user_id' => $recipient?->id,
-            'items' => $items, 'total_amount' => (string) $total,
+        $total = $subtotal->dividedBy(1000, 0, RoundingMode::HALF_UP)->multipliedBy(1000)->toScale(2);
+        if ($subtotal->isGreaterThan('9999999999999999.99') || $total->isGreaterThan('9999999999999999.99')) {
+            $blockers[] = 'Tổng hóa đơn vượt giới hạn số tiền của CSDL.';
+        }
+
+        $result = $fields + [
+            'items' => $items, 'subtotal_amount' => (string) $subtotal, 'total_amount' => (string) $total,
+            'rounding_amount' => (string) $total->minus($subtotal),
             'can_issue' => $blockers === [], 'blockers' => array_values(array_unique($blockers)), 'warnings' => $warnings,
         ];
         $result['preview_token'] = hash_hmac('sha256', json_encode($result, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE), config('app.key'));

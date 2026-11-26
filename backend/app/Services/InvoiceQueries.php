@@ -16,7 +16,7 @@ class InvoiceQueries
             ->with('occupancy.room', 'occupancy.rentalGroup');
 
         if ($tenantUserId !== null) {
-            $query->whereExists(fn ($access) => $access->selectRaw('1')->from('active_invoice_access as access')
+            $query->whereExists(fn ($access) => $access->selectRaw('1')->from(app(\App\Services\Tenancy\PropertyContext::class)->enabled() ? 'invoice_access_grants as access' : 'active_invoice_access as access')->when(app(\App\Services\Tenancy\PropertyContext::class)->enabled(), fn ($q) => $q->whereNull('access.revoked_at'))
                 ->whereColumn('access.invoice_id', 'invoices.id')->where('access.user_id', $tenantUserId));
         }
         if (isset($filters['billing_month'])) {

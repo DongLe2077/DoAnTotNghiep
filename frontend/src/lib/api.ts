@@ -1,3 +1,4 @@
+import { selectedProperty } from '@/lib/property-selection'
 import axios, { type InternalAxiosRequestConfig } from 'axios'
 import { activeRequests, updateLocked } from '@/lib/reload-safety'
 import { reportApiConnection } from '@/lib/pwa-runtime'
@@ -70,6 +71,8 @@ api.interceptors.request.use(config => {
   request.pwaTracked = true
   activeRequests.value++
   request.sessionRevision = sessionRevision
+  const propertyId = selectedProperty()
+  if (propertyId && /^[1-9][0-9]*$/.test(propertyId)) config.headers.set('X-Property-ID', propertyId)
   return config
 })
 

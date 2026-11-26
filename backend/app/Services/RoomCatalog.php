@@ -41,14 +41,16 @@ class RoomCatalog
         try {
             return DB::transaction(function () use ($attributes) {
                 $rooms = $this->lockRooms();
-                $rate = $this->uniformRate($rooms);
+                $rate = $this->rateSummary($rooms)['default_monthly_rent'];
                 if ($rate === null && ! array_key_exists('default_monthly_rent', $attributes)) {
-                    throw ValidationException::withMessages(['default_monthly_rent' => 'Phòng đầu tiên cần có giá thuê mặc định.']);
+                    throw ValidationException::withMessages(['default_monthly_rent' => 'Nhập giá thuê mặc định cho phòng này.']);
                 }
-                $this->validateRoomRate($attributes, $rate);
-                $attributes['default_monthly_rent'] = $rate ?? $this->normalizeRate($attributes['default_monthly_rent']);
+                $attributes['default_monthly_rent'] = isset($attributes['default_monthly_rent'])
+                    ? $this->normalizeRate($attributes['default_monthly_rent']) : $rate;
 
-                return Room::create($attributes);
+                $room = Room::create($attributes);
+                app(MonthlyOccupancy::class)->track($room, $room->operational_status ?? 'available');
+                return $room;
             }, 3);
         } catch (UniqueConstraintViolationException $exception) {
             throw ValidationException::withMessages(['room_number' => 'Số phòng đã tồn tại.']);
@@ -62,12 +64,14 @@ class RoomCatalog
                 $rooms = $this->lockRooms();
                 $lockedRoom = $rooms->firstWhere('id', $room->id);
                 abort_unless($lockedRoom instanceof Room, 404);
-                $this->validateRoomRate($attributes, $this->uniformRate($rooms));
-                $residents = (int) DB::table('room_occupancy_summary')->where('room_id', $room->id)->value('resident_count');
+                $residents = (int) \App\Services\Tenancy\PropertyDatabase::table('room_occupancy_summary')->where('room_id', $room->id)->value('resident_count');
                 if (isset($attributes['capacity']) && (int) $attributes['capacity'] < $residents) {
                     throw ValidationException::withMessages(['capacity' => "Phòng hiện có {$residents} người ở; sức chứa không được thấp hơn số này."]);
                 }
                 $lockedRoom->update($attributes);
+                if ($lockedRoom->wasChanged('operational_status')) {
+                    app(MonthlyOccupancy::class)->track($lockedRoom, $lockedRoom->operational_status);
+                }
 
                 return $lockedRoom;
             }, 3);
@@ -82,6 +86,7 @@ class RoomCatalog
             DB::transaction(function () use ($room) {
                 $lockedRoom = Room::query()->lockForUpdate()->findOrFail($room->id);
                 abort_if($lockedRoom->occupancies()->exists(), 409, 'Phòng đã có lịch sử thuê nên không thể xóa. Có thể chuyển sang trạng thái bảo trì.');
+                app(MonthlyOccupancy::class)->track($lockedRoom, 'deleted');
                 $lockedRoom->delete();
             }, 3);
         } catch (QueryException $exception) {
@@ -98,14 +103,6 @@ class RoomCatalog
         return Room::query()->orderBy('id')->lockForUpdate()->get();
     }
 
-    private function uniformRate(Collection $rooms): ?string
-    {
-        $summary = $this->rateSummary($rooms);
-        abort_unless($summary['is_uniform'], 409, 'Giá thuê các phòng chưa đồng nhất. Hãy cập nhật giá thuê chung trước.');
-
-        return $summary['default_monthly_rent'];
-    }
-
     private function rateSummary(Collection $rooms): array
     {
         $rates = $rooms->pluck('default_monthly_rent')->unique()->values();
@@ -115,13 +112,6 @@ class RoomCatalog
             'room_count' => $rooms->count(),
             'is_uniform' => $rates->count() <= 1,
         ];
-    }
-
-    private function validateRoomRate(array $attributes, ?string $rate): void
-    {
-        if ($rate !== null && array_key_exists('default_monthly_rent', $attributes) && $this->normalizeRate($attributes['default_monthly_rent']) !== $rate) {
-            throw ValidationException::withMessages(['default_monthly_rent' => 'Các phòng dùng giá thuê mặc định chung. Hãy dùng chức năng cập nhật giá thuê chung để thay đổi.']);
-        }
     }
 
     private function normalizeRate(string|int|float $rate): string

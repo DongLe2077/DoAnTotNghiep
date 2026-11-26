@@ -42,13 +42,12 @@ try {
   if (!existsSync(accessPath)) {
     if (existsSync(resolve(root, 'owner-demo.sqlite'))) throw new Error('Thiếu access.json của dữ liệu đã có. Hãy khôi phục tệp này; chương trình không tự đặt lại mật khẩu.')
     const accounts = {}
-    for (const [username, role, prefix] of [['admin', 'owner', 'Owner'], ['user', 'tenant', 'User'], ['nhom_demo', 'tenant', 'Group'], ['thanhvien_demo', 'tenant', 'Member'], ['phong_demo', 'tenant', 'Room']]) accounts[username] = { role, password: ['admin', 'user'].includes(username) ? '123' : `${prefix}-${randomBytes(9).toString('hex')}` }
-    // User-selected shortcut credentials are confined to this synthetic mobile runtime.
-    writeFileSync(accessPath, JSON.stringify({ version: 1, simple_demo_passwords: true, accounts }, null, 2), { mode: 0o600, flag: 'wx' })
+    for (const [username, role, prefix] of [['admin', 'owner', 'Owner'], ['user', 'tenant', 'User'], ['nhom_demo', 'tenant', 'Group'], ['thanhvien_demo', 'tenant', 'Member'], ['phong_demo', 'tenant', 'Room']]) accounts[username] = { role, password: `${prefix}-${randomBytes(9).toString('hex')}` }
+    writeFileSync(accessPath, JSON.stringify({ version: 1, accounts }, null, 2), { mode: 0o600, flag: 'wx' })
   }
   const access = JSON.parse(readFileSync(accessPath, 'utf8'))
   process.stdout.write('Đang kiểm tra và đóng gói giao diện cho bản thử điện thoại…\n')
-  const buildEnv = { ...process.env, VITE_DEMO_MODE: '1', VITE_PRESENTATION_MODE: '0' }
+  const buildEnv = { ...process.env, VITE_DEMO_MODE: '0', VITE_PRESENTATION_MODE: '0' }
   const dist = resolve(root, 'dist')
   if (existsSync(dist) && realpathSync(dist) !== dist) throw new Error('Unexpected mobile build directory.')
   let buildLog = ''
@@ -82,7 +81,7 @@ try {
   const backendLog = createWriteStream(resolve(root, 'backend.log'), { flags: 'a' }); streams.push(backendLog)
   backendLog.once('error', fail)
   const backend = spawn(process.execPath, ['tests/e2e/support/serve-backend.mjs'], {
-    cwd: frontend, env: { ...process.env, E2E_DEMO: '1', E2E_PRESENTATION: '1', E2E_MOBILE: '1', E2E_API_PORT: String(backendPort), E2E_FRONTEND_PORT: String(gatewayPort), MOBILE_PUBLIC_ORIGIN: origin },
+    cwd: frontend, env: { ...process.env, PAYOS_ENABLED: 'false', BROADCAST_CONNECTION: 'null', PUSHER_APP_ID: '', PUSHER_APP_KEY: '', PUSHER_APP_SECRET: '', PUSHER_APP_CLUSTER: '', E2E_DEMO: '1', E2E_PRESENTATION: '1', E2E_MOBILE: '1', E2E_API_PORT: String(backendPort), E2E_FRONTEND_PORT: String(gatewayPort), MOBILE_PUBLIC_ORIGIN: origin },
     stdio: ['ignore', 'pipe', 'pipe', 'ipc'], windowsHide: true,
   })
   monitor(backend, 'Máy chủ dữ liệu thử')

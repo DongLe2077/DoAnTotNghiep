@@ -29,6 +29,14 @@ class AuthenticationTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('app_notifications', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained();
+            $table->string('type', 40);
+            $table->char('dedupe_key', 64)->unique();
+            $table->dateTime('created_at');
+        });
+
         $this->withCredentials();
     }
 

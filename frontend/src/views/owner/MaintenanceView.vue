@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useLiveRefresh } from '@/composables/useLiveRefresh'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -54,6 +55,7 @@ watch(() => route.fullPath, async (_path, previous) => {
   await load(requestedPage.value, filters)
   if (current === sequence && !loadError.value && page.value !== requestedPage.value) await changePage(page.value)
 }, { immediate: true })
+useLiveRefresh('property', () => !loading.value ? load(page.value) : false)
 </script>
 
 <template>
@@ -84,17 +86,17 @@ watch(() => route.fullPath, async (_path, previous) => {
       <p v-if="filterError" class="form-error" role="alert">{{ filterError }}</p>
     </form>
     <UiPageState v-if="loading" kind="loading" title="Đang tải yêu cầu sửa chữa…" />
-    <UiPageState v-else-if="loadError" kind="error" :description="loadError"><UiButton @click="load()">Thử lại</UiButton></UiPageState>
+    <UiPageState v-else-if="loadError" kind="error" :description="loadError"><UiButton @click="load()">Tải lại</UiButton></UiPageState>
     <UiPageState v-else-if="!items.length" title="Chưa có yêu cầu phù hợp" description="Yêu cầu báo hỏng do người thuê gửi sẽ xuất hiện tại đây. Bạn có thể thay đổi bộ lọc để xem thêm." />
     <template v-else>
       <p class="help-text result-count">{{ total }} yêu cầu{{ activeFilters ? ' phù hợp với bộ lọc' : '' }} · Mới nhất trước</p>
-      <div class="management-grid workflow-grid">
-        <article v-for="item in items" :key="item.id" class="record-card workflow-list-card" :class="{ 'recently-saved': item.id === savedRequestId }" :aria-labelledby="`maintenance-title-${item.id}`">
+      <div class="management-grid workflow-grid rb7-record-list">
+        <article v-for="item in items" :key="item.id" class="record-card workflow-list-card rb7-record-row" :class="{ 'recently-saved': item.id === savedRequestId }" :aria-labelledby="`maintenance-title-${item.id}`">
           <header>
             <div><h2 :id="`maintenance-title-${item.id}`">{{ item.title }}</h2><span class="help-text">Phòng {{ item.room.room_number }} · {{ formatDateTime(item.submitted_at) }}<template v-if="item.id === savedRequestId"> · Vừa cập nhật</template></span></div>
             <UiBadge :tone="maintenanceStatusTone(item.status)">{{ maintenanceStatusLabel(item.status) }}</UiBadge>
           </header>
-          <p v-if="item.resolution" class="help-text maintenance-excerpt"><strong>Cập nhật gần nhất</strong> · {{ item.resolution }}</p>
+          <div><p v-if="item.resolution" class="help-text maintenance-excerpt"><strong>Cập nhật gần nhất</strong> · {{ item.resolution }}</p></div>
           <footer><RouterLink class="workflow-card-link" :to="`/owner/maintenance/${item.id}`" :aria-label="`Xem yêu cầu ${item.title}`">Xem yêu cầu →</RouterLink><span class="help-text">{{ item.photos.length }} ảnh</span></footer>
         </article>
       </div>

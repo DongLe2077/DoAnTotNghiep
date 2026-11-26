@@ -22,6 +22,7 @@ const criticalFlows = [
   'forbidden page explains', 'owner pages and low-height', 'tenant pages retain',
   'header stays reachable', 'month control and update', 'tenant header and bottom',
   'pages fit tablet and desktop',
+  'owners review the blue deletion dialogs', 'representative and owner complete checkout',
 ]
 
 const reportRoot = process.env.MOBILE_REVIEW_OUTPUT ?? '.cache/mobile-review'

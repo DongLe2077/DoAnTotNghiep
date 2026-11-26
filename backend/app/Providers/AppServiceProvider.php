@@ -14,7 +14,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(\App\Services\LiveUpdates::class);
+        $this->app->singleton(\App\Services\Tenancy\PropertyContext::class);
+        $this->app->extend('validation.presence', fn ($verifier, $app) => new \App\Services\Tenancy\PropertyPresenceVerifier($app['db']));
     }
 
     /**
@@ -22,6 +24,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $live = $this->app->make(\App\Services\LiveUpdates::class);
+        \Illuminate\Support\Facades\DB::listen($live->observe(...));
+        $this->app->terminating($live->flush(...));
+
+        RateLimiter::for('account-registration', fn (Request $request) => [
+            Limit::perMinute(6)->by('minute:'.$request->ip()),
+            Limit::perHour(25)->by('hour:'.$request->ip()),
+        ]);
+        RateLimiter::for('property-invitation', fn (Request $request) => [
+            Limit::perMinute(12)->by('user:'.$request->user('web')?->id),
+            Limit::perMinute(45)->by('ip:'.$request->ip()),
+        ]);
+
         RateLimiter::for('password-change', fn (Request $request) => Limit::perMinute(5)
             ->by((string) $request->user('web')?->id)
             ->response(fn (Request $request, array $headers) => response()->json([

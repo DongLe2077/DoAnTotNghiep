@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MaintenanceExpenseHistory extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     public const UPDATED_AT = null;
 
     protected $fillable = ['maintenance_expense_link_id', 'maintenance_request_id', 'cash_transaction_id', 'revision',

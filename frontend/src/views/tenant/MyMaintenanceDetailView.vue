@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useLiveRefresh } from '@/composables/useLiveRefresh'
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -14,7 +15,7 @@ import { maintenanceStatuses, maintenanceStatusLabel, maintenanceStatusTone } fr
 import type { MyMaintenance } from '@/types/tenant'
 const route = useRoute(), uploaded = ref(false), historyOpen = ref(false)
 // Returning from a file chooser must not unmount the uploader and discard selected files.
-const { data: report, loading, error, status, load } = useTenantResource<MyMaintenance>(() => `/maintenance-requests/${route.params.id}`, false)
+const { data: report, loading, error, status, load, refresh } = useTenantResource<MyMaintenance>(() => `/maintenance-requests/${route.params.id}`, false)
 const currentStep = {
   submitted: 'Chủ trọ sẽ tiếp nhận yêu cầu của bạn.',
   in_progress: 'Bạn sẽ nhận được thông báo khi có tiến độ mới.',
@@ -22,12 +23,13 @@ const currentStep = {
 }
 async function refreshPhotos() { uploaded.value = true; await load() }
 void load()
+useLiveRefresh('property', () => !loading.value ? refresh() : false)
 </script>
 <template>
   <section class="management-page tenant-page tenant-workspace tenant-maintenance">
     <RouterLink class="back-link" to="/tenant/maintenance">← Báo hỏng của tôi</RouterLink>
     <UiPageState v-if="loading" kind="loading" />
-    <UiPageState v-else-if="error" :kind="status === 403 || status === 404 ? 'not-found' : 'error'" :title="status === 403 || status === 404 ? 'Yêu cầu không còn khả dụng' : 'Chưa tải được yêu cầu'" :description="status === 403 || status === 404 ? 'Bạn chỉ xem được yêu cầu do chính tài khoản mình gửi.' : error"><UiButton @click="load">Thử lại</UiButton></UiPageState>
+    <UiPageState v-else-if="error" :kind="status === 403 || status === 404 ? 'not-found' : 'error'" :title="status === 403 || status === 404 ? 'Yêu cầu không còn khả dụng' : 'Chưa tải được yêu cầu'" :description="status === 403 || status === 404 ? 'Bạn chỉ xem được yêu cầu do chính tài khoản mình gửi.' : error"><UiButton @click="load">Tải lại</UiButton></UiPageState>
     <template v-else-if="report">
       <header class="management-header">
         <div>

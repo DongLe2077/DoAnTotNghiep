@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CashCreationRequest extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     public const UPDATED_AT = null;
 
     protected $fillable = ['idempotency_key', 'cash_transaction_id', 'recorded_by', 'request_data', 'request_fingerprint'];

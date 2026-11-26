@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InvoiceItem extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     public $timestamps = false;
 
     protected $table = 'invoice_items';

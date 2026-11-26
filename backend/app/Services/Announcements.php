@@ -43,7 +43,7 @@ class Announcements
                 }
                 $preview = $this->calculate($values);
                 abort_unless(hash_equals($preview['preview_token'], $data['preview_token']), 409, 'Nội dung hoặc danh sách người nhận đã thay đổi. Hãy xem trước lại trước khi gửi.');
-                abort_unless($preview['can_send'], 409, 'Chưa có người thuê đang ở có tài khoản hoạt động trong phạm vi đã chọn.');
+                abort_unless($preview['can_send'], 409, 'Chưa có tài khoản hoạt động trong phạm vi đã chọn.');
                 $announcement = Announcement::create($values + ['room_snapshot' => $preview['rooms'], 'created_by' => $actorId,
                     'idempotency_key' => $data['idempotency_key'], 'request_fingerprint' => $fingerprint]);
                 $now = now()->startOfSecond();
@@ -87,12 +87,36 @@ class Announcements
 
     private function calculate(array $values): array
     {
+        if ($values['audience'] === 'members') {
+            $propertyId = app(\App\Services\Tenancy\PropertyContext::class)->requireId();
+            $members = DB::table('property_memberships as m')->join('users as u', 'u.id', '=', 'm.user_id')
+                ->join('rental_properties as p', 'p.id', '=', 'm.property_id')
+                ->where('m.property_id', $propertyId)->whereColumn('m.user_id', '!=', 'p.owner_user_id')
+                ->where('m.status', 'approved')->whereNull('m.revoked_at')->where('u.is_active', true)
+                ->orderBy('u.id')->lockForUpdate()->get(['u.id', 'u.username', 'u.full_name']);
+            $recipients = $members->map(fn ($member) => [
+                'user_id' => (int) $member->id, 'username' => $member->username,
+                'full_name' => $member->full_name ?? $member->username, 'room_ids' => [], 'room_numbers' => [],
+            ])->all();
+
+            return $this->previewData($values, [], $recipients);
+        }
+
         // Tenancy changes also lock room rows. The locking read then fixes active users/stays.
         $rooms = Room::query()->when($values['audience'] === 'rooms', fn ($query) => $query->whereIn('id', $values['room_ids']))
             ->orderBy('id')->lockForUpdate()->get(['id', 'room_number']);
-        $rows = DB::table('users as u')->join('tenants as t', 't.id', '=', 'u.tenant_id')
+        $accounts = DB::table('users as u');
+        if (app(\App\Services\Tenancy\PropertyContext::class)->enabled()) {
+            $accounts->join('property_memberships as m', 'm.user_id', '=', 'u.id')
+                ->join('tenants as t', 't.id', '=', 'm.tenant_id')
+                ->where('m.property_id', app(\App\Services\Tenancy\PropertyContext::class)->requireId())
+                ->where('m.status', 'approved')->whereNull('m.revoked_at');
+        } else {
+            $accounts->join('tenants as t', 't.id', '=', 'u.tenant_id')->where('u.role', 'tenant');
+        }
+        $rows = $accounts
             ->join('tenant_stays as s', 's.tenant_id', '=', 't.id')->join('occupancies as o', 'o.id', '=', 's.occupancy_id')
-            ->where('u.role', 'tenant')->where('u.is_active', true)->whereNull('s.moved_out_at')->whereNull('o.ended_at')
+            ->where('u.is_active', true)->whereNull('s.moved_out_at')->whereNull('o.ended_at')
             ->where('s.moved_in_at', '<=', now())->where('o.started_at', '<=', now())->whereIn('o.room_id', $rooms->pluck('id'))
             ->orderBy('u.id')->orderBy('o.room_id')->lockForUpdate()->get(['u.id as user_id', 'u.username', 't.full_name', 'o.room_id']);
         $byId = $rooms->keyBy('id');
@@ -107,9 +131,14 @@ class Announcements
         }
         $recipients = array_values($recipients);
         $snapshot = $rooms->map(fn ($room) => ['id' => $room->id, 'room_number' => $room->room_number])->all();
+        return $this->previewData($values, $snapshot, $recipients);
+    }
+
+    private function previewData(array $values, array $snapshot, array $recipients): array
+    {
         $result = ['title' => $values['title'], 'body' => $values['body'], 'audience' => $values['audience'], 'rooms' => $snapshot,
             'recipients' => $recipients, 'recipient_count' => count($recipients), 'can_send' => count($recipients) > 0];
-        $result['preview_token'] = hash_hmac('sha256', json_encode([$values, $snapshot, $recipients], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), config('app.key'));
+        $result['preview_token'] = hash_hmac('sha256', json_encode([app(\App\Services\Tenancy\PropertyContext::class)->id(), $values, $snapshot, $recipients], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), config('app.key'));
 
         return $result;
     }

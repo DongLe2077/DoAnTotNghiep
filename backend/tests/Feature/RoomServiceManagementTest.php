@@ -49,16 +49,17 @@ class RoomServiceManagementTest extends TestCase
         $this->postJson('/api/owner/rooms', ['room_number' => 'A102', 'capacity' => 4])
             ->assertCreated()->assertJsonPath('data.default_monthly_rent', '3000000.00');
         $this->postJson('/api/owner/rooms', ['room_number' => 'A103', 'capacity' => 4, 'default_monthly_rent' => '4000000'])
-            ->assertUnprocessable()->assertJsonValidationErrors('default_monthly_rent');
+            ->assertCreated()->assertJsonPath('data.default_monthly_rent', '4000000.00');
     }
 
-    public function test_room_rate_cannot_be_changed_individually(): void
+    public function test_room_rate_can_be_changed_individually_without_changing_a_current_stay(): void
     {
         $this->owner();
         $room = $this->room();
+        $occupancy = $this->occupancy($room);
         $this->patchJson("/api/owner/rooms/{$room->id}", ['default_monthly_rent' => '4000000'])
-            ->assertUnprocessable()->assertJsonValidationErrors('default_monthly_rent');
-        $this->assertSame('3000000.00', $room->fresh()->default_monthly_rent);
+            ->assertOk()->assertJsonPath('data.default_monthly_rent', '4000000.00');
+        $this->assertSame('3000000.00', $occupancy->fresh()->monthly_rent);
         $this->putJson("/api/owner/rooms/{$room->id}", ['default_monthly_rent' => '03000000.0'])
             ->assertOk()->assertJsonPath('data.default_monthly_rent', '3000000.00');
     }
@@ -85,7 +86,9 @@ class RoomServiceManagementTest extends TestCase
         $this->room();
         $this->room(['room_number' => 'A102', 'default_monthly_rent' => '4000000']);
         $this->getJson('/api/owner/rooms/rental-rate')->assertOk()->assertJsonPath('data.is_uniform', false);
-        $this->postJson('/api/owner/rooms', ['room_number' => 'A103', 'capacity' => 2])->assertStatus(409);
+        $this->postJson('/api/owner/rooms', ['room_number' => 'A103', 'capacity' => 2])->assertUnprocessable()->assertJsonValidationErrors('default_monthly_rent');
+        $this->postJson('/api/owner/rooms', ['room_number' => 'A103', 'capacity' => 2, 'default_monthly_rent' => '800000'])
+            ->assertCreated()->assertJsonPath('data.default_monthly_rent', '800000.00');
         $this->putJson('/api/owner/rooms/rental-rate', ['default_monthly_rent' => '3200000'])
             ->assertOk()->assertJsonPath('data.is_uniform', true);
     }

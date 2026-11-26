@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useLiveRefresh } from '@/composables/useLiveRefresh'
 import { computed, ref, watch } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -49,6 +50,7 @@ watch(() => route.query, query => {
   hasFilters.value = Boolean(dueStatus.value || month.value || paymentStatus.value)
   void load(requestedPage.value, filters())
 }, { immediate: true })
+useLiveRefresh('property', () => !loading.value ? load(page.value) : false)
 </script>
 <template>
   <section ref="listSection" class="management-page tenant-page tenant-workspace tenant-invoice-list">
@@ -72,10 +74,10 @@ watch(() => route.query, query => {
       </form>
     </details>
     <UiPageState v-if="loading" kind="loading" skeleton="invoices" title="Đang tải hóa đơn…" />
-    <UiPageState v-else-if="error" kind="error" :description="error"><UiButton @click="load(requestedPage)">Thử lại</UiButton></UiPageState>
+    <UiPageState v-else-if="error" kind="error" :description="error"><UiButton @click="load(requestedPage)">Tải lại</UiButton></UiPageState>
     <UiPageState v-else-if="!items.length" title="Chưa có hóa đơn phù hợp" :description="hasFilters ? 'Xóa bộ lọc để xem tất cả hóa đơn của bạn.' : 'Hóa đơn sẽ xuất hiện khi chủ trọ cấp quyền xem cho bạn.'" />
-    <div v-else class="invoice-list">
-      <article v-for="invoice in items" :key="invoice.id" class="record-card workflow-list-card">
+    <div v-else class="invoice-list rb7-record-list">
+      <article v-for="invoice in items" :key="invoice.id" class="record-card workflow-list-card rb7-record-row">
         <header>
           <div><span class="tenant-kicker">Phòng {{ invoice.room.room_number }}</span><h2>Tháng {{ invoice.billing_month.slice(5) }}/{{ invoice.billing_month.slice(0, 4) }}</h2><span class="help-text">{{ invoice.invoice_number }}</span></div>
           <UiBadge :tone="tenantPaymentTone(invoice.payment_status)">{{ tenantPaymentLabel(invoice.payment_status) }}</UiBadge>
@@ -108,5 +110,4 @@ watch(() => route.query, query => {
 .workflow-list-amount.amount-due { background: var(--color-primary-soft); }
 .workflow-list-amount .workflow-amount { font-size: clamp(23px, 4vw, 30px); }
 .workflow-list-amount .workflow-deadline { margin: 0; }
-.invoice-list .workflow-card-link { text-underline-offset: 3px; }
 </style>

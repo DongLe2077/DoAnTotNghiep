@@ -11,14 +11,33 @@ use Psr\Log\NullLogger;
 
 class PayosGateway
 {
+    private function setting(string $key): mixed
+    {
+        $context = app(\App\Services\Tenancy\PropertyContext::class);
+        if (!$context->enabled()) return config('payos.'.$key);
+        $id = $context->requireId();
+        $row = \Illuminate\Support\Facades\DB::table('property_payment_settings')->where('property_id', $id)->first();
+        if ($row) {
+            if ($key === 'enabled') return (bool) $row->enabled;
+            $data = json_decode(\Illuminate\Support\Facades\Crypt::decryptString($row->credentials), true, 16, JSON_THROW_ON_ERROR);
+            return $data[$key] ?? null;
+        }
+        $migrated = $id === (int) config('tenancy.legacy_payos_property_id')
+            && \Illuminate\Support\Facades\DB::table('property_migration_runs as runs')
+                ->join('rental_properties as property', 'property.id', '=', 'runs.property_id')
+                ->where('runs.migration_key', 'legacy-property-1')->where('runs.property_id', $id)
+                ->whereColumn('runs.owner_user_id', 'property.owner_user_id')->exists();
+        return $migrated ? config('payos.'.$key) : null;
+    }
+
     public function configured(): bool
     {
-        return filled(config('payos.client_id')) && filled(config('payos.api_key')) && filled(config('payos.checksum_key'));
+        return filled($this->setting('client_id')) && filled($this->setting('api_key')) && filled($this->setting('checksum_key'));
     }
 
     public function enabled(): bool
     {
-        return config('payos.enabled') && $this->configured() && $this->origin() !== null;
+        return $this->setting('enabled') && $this->configured() && $this->origin() !== null;
     }
 
     public function origin(): ?string
@@ -40,7 +59,7 @@ class PayosGateway
 
     public function verify(array $data, string $signature): bool
     {
-        $expected = (new CryptoProvider)->createSignatureFromObj($data, (string) config('payos.checksum_key'));
+        $expected = (new CryptoProvider)->createSignatureFromObj($data, (string) $this->setting('checksum_key'));
 
         return $expected !== null && hash_equals($expected, $signature);
     }
@@ -50,9 +69,9 @@ class PayosGateway
         $factory = new HttpFactory;
 
         return new PayOS(
-            clientId: config('payos.client_id'),
-            apiKey: config('payos.api_key'),
-            checksumKey: config('payos.checksum_key'),
+            clientId: $this->setting('client_id'),
+            apiKey: $this->setting('api_key'),
+            checksumKey: $this->setting('checksum_key'),
             logger: new NullLogger,
             maxRetries: 0,
             httpClient: new HTTPClient(new Client(['timeout' => 7, 'connect_timeout' => 3]), $factory, $factory),

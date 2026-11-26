@@ -20,7 +20,7 @@ void load()
     <UiPageState v-if="loading" kind="loading" />
     <UiPageState v-else-if="error" :kind="status === 404 ? 'not-found' : 'error'"
       :title="status === 404 ? 'Chưa có hồ sơ liên kết' : 'Chưa tải được lịch sử'" :description="error">
-      <UiButton @click="load()">Thử lại</UiButton>
+      <UiButton @click="load()">Tải lại</UiButton>
     </UiPageState>
     <UiPageState v-else-if="!items.length" title="Bạn chưa có lịch sử cư trú" description="Các lần nhận, chuyển và trả phòng sẽ hiển thị tại đây." />
     <div v-else class="management-grid workflow-grid">

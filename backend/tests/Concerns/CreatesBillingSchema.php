@@ -49,5 +49,6 @@ SQL);
         (require database_path('migrations/2026_10_23_000001_add_invoice_controls.php'))->up();
         (require database_path('migrations/2026_10_27_000002_create_payment_corrections.php'))->up();
         (require database_path('migrations/2026_10_28_000002_create_meter_reading_requests.php'))->up();
+        (require database_path('migrations/2026_11_23_000001_add_one_time_and_rounded_invoices.php'))->up();
     }
 }

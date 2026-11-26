@@ -2,7 +2,7 @@ import type { AppNotification, NotificationType } from '@/types/notifications'
 import type { Role } from '@/types/auth'
 
 export function notificationTypeLabel(type: NotificationType): string {
-  return { maintenance_submitted: 'Báo hỏng mới', maintenance_updated: 'Cập nhật sửa chữa', invoice_reminder: 'Nhắc hóa đơn', invoice_updated: 'Cập nhật hóa đơn', owner_announcement: 'Thông báo chung' }[type]
+  return { maintenance_submitted: 'Báo hỏng mới', maintenance_updated: 'Cập nhật sửa chữa', invoice_reminder: 'Nhắc hóa đơn', invoice_updated: 'Cập nhật hóa đơn', owner_announcement: 'Thông báo chung', welcome: 'Chào mừng' }[type]
 }
 
 const dateTime = new Intl.DateTimeFormat('vi-VN', {

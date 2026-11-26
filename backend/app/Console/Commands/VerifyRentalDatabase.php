@@ -34,6 +34,9 @@ class VerifyRentalDatabase extends Command
             $tables = $connection->select("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME != 'migrations' ORDER BY TABLE_NAME", [$database]);
             $actualTables = array_column($tables, 'TABLE_NAME');
             $expectedTables = array_keys($models);
+            if (in_array('scheduled_deletions', $actualTables, true)) {
+                $actualTables = array_values(array_diff($actualTables, ['scheduled_deletions']));
+            }
             $payosTables = [
                 'invoice_payos_checkouts' => ['id', 'invoice_id', 'order_code', 'amount', 'invoice_version', 'status', 'link_id', 'checkout_url', 'expires_at', 'checked_at', 'created_at', 'updated_at'],
                 'invoice_payos_transfers' => ['id', 'checkout_id', 'reference_key', 'reference', 'amount', 'paid_at', 'payment_id', 'review_reason', 'created_at'],

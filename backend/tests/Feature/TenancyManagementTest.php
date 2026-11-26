@@ -346,6 +346,26 @@ class TenancyManagementTest extends TestCase
         $this->getJson('/api/owner/occupancies?status=ended&room_id='.$occupancy->room_id)->assertOk()->assertJsonPath('meta.total', 1);
     }
 
+    public function test_billing_month_returns_only_overlapping_stays_for_the_requested_room(): void
+    {
+        $room = $this->room();
+        $old = $this->checkIn([$this->tenant()], $room);
+        $destination = $this->room();
+        $this->postJson("/api/owner/occupancies/{$old->id}/transfer", [
+            'room_id' => $destination->id,
+            'transferred_at' => '2026-02-15 10:00:00',
+        ])->assertCreated();
+        $active = $this->checkIn([$this->tenant()], $room, at: '2026-02-20 10:00:00');
+
+        $url = "/api/owner/occupancies?room_id={$room->id}&billing_month=";
+        $this->getJson($url.'2025-12')->assertOk()->assertJsonPath('meta.total', 0);
+        $this->getJson($url.'2026-01')->assertOk()->assertJsonPath('meta.total', 1)->assertJsonPath('data.0.id', $old->id);
+        $this->getJson($url.'2026-02')->assertOk()->assertJsonPath('meta.total', 2)
+            ->assertJsonPath('data.0.id', $active->id)->assertJsonPath('data.1.id', $old->id);
+        $this->getJson($url.'2026-03')->assertOk()->assertJsonPath('meta.total', 1)->assertJsonPath('data.0.id', $active->id);
+        $this->getJson($url.'2026-13')->assertUnprocessable();
+    }
+
     public function test_future_dates_invalid_shapes_and_missing_records_return_validation_errors(): void
     {
         $this->postJson('/api/owner/occupancies', [])->assertUnprocessable();

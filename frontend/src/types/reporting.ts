@@ -9,7 +9,20 @@ export interface CashSummary {
   invoice_payment_total: string; other_income_total: string; expense_total: string
   total_income: string; net_cash_flow: string; entry_count: number
 }
+interface OccupancyPeriod {
+  period_closed: boolean
+  resident_at_end: number | null
+  vacant_at_end: number | null
+  arrivals: number
+  departures: number
+  transfers: number
+  rooms_used: number
+}
+
 export interface Dashboard {
+  occupancy_period?: OccupancyPeriod
+  room_details?: { room_id: number; room_number: string; resident_count: number; capacity: number; status: string; available_places: number }[]
+  archived_report?: { captured_at: string; totals: { occupancy: OccupancyPeriod; invoices: InvoiceSummary; cash: CashSummary } } | null
   month: string; as_of: string
   rooms: { total_count: number; occupied_count: number; vacant_count: number; maintenance_count: number; available_for_check_in_count: number; active_occupancy_count: number; resident_count: number; total_capacity: number }
   tenants: { total_count: number; residing_count: number }

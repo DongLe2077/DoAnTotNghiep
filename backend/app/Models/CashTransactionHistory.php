@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CashTransactionHistory extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     public const UPDATED_AT = null;
 
     protected $fillable = ['cash_transaction_id', 'revision', 'action', 'before_data', 'after_data', 'performed_by', 'reason', 'reverted_history_id'];

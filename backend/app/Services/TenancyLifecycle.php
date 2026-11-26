@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\CheckoutApplication;
 use App\Models\Occupancy;
 use App\Models\OccupancyService;
 use App\Models\RentalGroup;
@@ -184,14 +185,17 @@ class TenancyLifecycle
         });
     }
 
-    public function checkOut(Occupancy $occupancy, array $data): Occupancy
+    public function checkOut(Occupancy $occupancy, array $data, ?CheckoutApplication $application = null): Occupancy
     {
-        return $this->transaction(function () use ($occupancy, $data) {
+        return $this->transaction(function () use ($occupancy, $data, $application) {
             $locked = $this->lockContext($occupancy);
+            abort_if($application !== null && (int) $application->occupancy_id !== $locked->id, 404);
+            $pending = $application?->lockPending();
             $at = $this->date($data['ended_at']);
             $this->assertEventTime($locked, $at, 'ended_at');
             $this->lockTenants($locked->tenantStays()->whereNull('moved_out_at')->pluck('tenant_id')->all());
             $this->closePeriods($locked, $at);
+            $pending?->update(['status' => 'confirmed']);
 
             return $locked;
         });
@@ -241,7 +245,7 @@ class TenancyLifecycle
         if ($member === null) {
             throw ValidationException::withMessages([$field => 'Người đại diện phải đang ở trong đúng đợt thuê.']);
         }
-        $user = User::query()->where('tenant_id', $tenantId)->lockForUpdate()->first();
+        $user = Tenant::query()->findOrFail($tenantId)->user()->lockForUpdate()->first();
         if ($user === null || ! $user->is_active || ! $user->hasRole(User::ROLE_TENANT)) {
             throw ValidationException::withMessages([$field => 'Người đại diện cần có tài khoản người thuê đang hoạt động.']);
         }
@@ -287,14 +291,14 @@ class TenancyLifecycle
             'maintenance_requests' => ['submitted_at'],
         ] as $table => $columns) {
             $selects = array_map(fn ($column) => "MAX({$column}) AS {$column}", $columns);
-            $row = (array) DB::table($table)->where('occupancy_id', $occupancy->id)->selectRaw(implode(', ', $selects))->first();
+            $row = (array) \App\Services\Tenancy\PropertyDatabase::table($table)->where('occupancy_id', $occupancy->id)->selectRaw(implode(', ', $selects))->first();
             foreach ($row as $value) {
                 if ($value !== null && $value > $latest) {
                     $latest = $value;
                 }
             }
         }
-        $readingEnd = DB::table('meter_readings as readings')->join('occupancy_services as periods', 'periods.id', '=', 'readings.occupancy_service_id')
+        $readingEnd = \App\Services\Tenancy\PropertyDatabase::table('meter_readings as readings')->join('occupancy_services as periods', 'periods.id', '=', 'readings.occupancy_service_id')
             ->where('periods.occupancy_id', $occupancy->id)->max('readings.period_end');
         $latest = max($latest, $readingEnd ?? $latest);
         if ($at->format('Y-m-d H:i:s') < $latest) {

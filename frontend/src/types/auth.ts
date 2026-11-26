@@ -6,6 +6,18 @@ export interface User {
   role: Role
   tenant_id: number | null
   is_active: boolean
+  property_id?: number | null
+  needs_property?: boolean
+  can_create_property?: boolean
+  properties?: { id: number; name: string; address: string; role: string }[]
+}
+
+export interface Registration {
+  full_name: string
+  contact_phone: string
+  username: string
+  password: string
+  password_confirmation: string
 }
 
 export interface PasswordChange {

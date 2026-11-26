@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Service extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     protected $table = 'services';
 
     protected $fillable = [

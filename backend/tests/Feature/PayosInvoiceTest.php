@@ -152,10 +152,54 @@ class PayosInvoiceTest extends TestCase
         $this->assertDatabaseCount('invoice_payos_transfers', 0);
     }
 
-    private function checkout(): PayosCheckout
+    public function test_signed_webhook_uses_the_rounded_remaining_balance_of_a_one_time_charge(): void
     {
-        $this->partialMock(PayosGateway::class)->shouldReceive('create')->once()->andReturnUsing(function (array $request) {
-            $this->assertSame(3000000, $request['amount']);
+        $path = '/api/owner/occupancies/'.$this->invoice->occupancy_id.'/invoices/one-time';
+        $charge = ['billing_month' => '2026-10', 'description' => 'Phí thay thẻ ra vào', 'amount' => '2700',
+            'idempotency_key' => 'one-time-payos-2700'];
+        $token = $this->actingAs($this->owner, 'web')->postJson($path.'/preview', $charge)->assertOk()->json('data.preview_token');
+        $id = $this->postJson($path, $charge + ['preview_token' => $token])->assertCreated()->assertJsonPath('data.total_amount', '3000.00')->json('data.id');
+        $this->invoice = Invoice::findOrFail($id);
+        $this->postJson('/api/owner/invoices/'.$id.'/payments', [
+            'amount' => '1000', 'paid_at' => now()->toDateTimeString(),
+            'payment_method' => 'cash', 'idempotency_key' => 'one-time-partial-cash',
+        ])->assertCreated()->assertJsonPath('invoice.outstanding_amount', '2000.00');
+
+        $checkout = $this->checkout(2000);
+        $event = $this->signed($this->event($checkout, ['amount' => 2000]));
+        $this->postJson('/api/webhooks/payos', $event)->assertNoContent();
+        $this->postJson('/api/webhooks/payos', $event)->assertNoContent();
+        $this->getJson('/api/tenant/invoices/'.$id)->assertOk()->assertJsonPath('data.payment_status', 'paid')
+            ->assertJsonPath('data.paid_amount', '3000.00')->assertJsonPath('data.outstanding_amount', '0.00');
+        $this->assertDatabaseCount('payments', 2);
+        $this->assertDatabaseCount('invoice_payos_transfers', 1);
+    }
+
+    public function test_two_thousand_dong_one_time_invoice_creates_one_receipt_on_webhook_replay(): void
+    {
+        $path = '/api/owner/occupancies/'.$this->invoice->occupancy_id.'/invoices/one-time';
+        $charge = ['billing_month' => '2026-10', 'description' => 'Phí sao chìa khóa', 'amount' => '2000',
+            'idempotency_key' => 'one-time-payos-2000'];
+        $token = $this->actingAs($this->owner, 'web')->postJson($path.'/preview', $charge)
+            ->assertOk()->assertJsonPath('data.total_amount', '2000.00')->json('data.preview_token');
+        $id = $this->postJson($path, $charge + ['preview_token' => $token])->assertCreated()
+            ->assertJsonPath('data.outstanding_amount', '2000.00')->json('data.id');
+        $this->invoice = Invoice::findOrFail($id);
+
+        $checkout = $this->checkout(2000);
+        $event = $this->signed($this->event($checkout, ['amount' => 2000]));
+        $this->postJson('/api/webhooks/payos', $event)->assertNoContent();
+        $this->postJson('/api/webhooks/payos', $event)->assertNoContent();
+        $this->getJson('/api/tenant/invoices/'.$id)->assertOk()->assertJsonPath('data.payment_status', 'paid')
+            ->assertJsonPath('data.paid_amount', '2000.00')->assertJsonPath('data.outstanding_amount', '0.00');
+        $this->assertDatabaseCount('payments', 1);
+        $this->assertDatabaseCount('invoice_payos_transfers', 1);
+    }
+
+    private function checkout(int $amount = 3000000): PayosCheckout
+    {
+        $this->partialMock(PayosGateway::class)->shouldReceive('create')->once()->andReturnUsing(function (array $request) use ($amount) {
+            $this->assertSame($amount, $request['amount']);
             $this->assertSame('https://rentbase.example.test/tenant/invoices/'.$this->invoice->id.'?payos=return', $request['returnUrl']);
 
             return ['orderCode' => $request['orderCode'], 'amount' => $request['amount'],

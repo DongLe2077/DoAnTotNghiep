@@ -28,16 +28,12 @@ async function login(page: Page, username: string, password = fixturePassword) {
 }
 
 async function expectOwnerIdentity(page: Page) {
-  await expect(page.locator('.topbar')).toBeVisible()
+  await expect(page.locator('.rb7-top')).toBeVisible()
   const menuButton = page.getByRole('button', { name: 'Mở menu', exact: true })
-  if (await menuButton.isVisible()) {
-    await menuButton.click()
-    const navigation = page.getByRole('dialog', { name: 'Điều hướng chính', exact: true })
-    await expect(navigation.getByText('e2e_owner', { exact: true })).toBeVisible()
-    await navigation.getByRole('button', { name: 'Đóng menu', exact: true }).click()
-  } else {
-    await expect(page.getByRole('banner').getByRole('link', { name: 'Tài khoản', exact: true })).toHaveText('e2e_owner')
-  }
+  await menuButton.click()
+  const navigation = page.getByRole('dialog', { name: 'Điều hướng chính', exact: true })
+  await expect(navigation.getByText('e2e_owner', { exact: true })).toBeVisible()
+  await navigation.getByRole('button', { name: 'Đóng menu', exact: true }).click()
 }
 
 test('owner signs in with real cookies, survives reload, and signs out', async ({ page, context, request }) => {
@@ -113,7 +109,8 @@ test('real CSRF rejects mutations without the XSRF header', async ({ page }) => 
 test('password change validates the current password and requires a new login', async ({ page }) => {
   const newPassword = 'E2e-New-Password-2077!'
   await login(page, 'e2e_password_owner')
-  await page.getByRole('link', { name: 'Tài khoản', exact: true }).first().click()
+  await page.getByRole('button', { name: 'Mở menu', exact: true }).click()
+  await page.getByRole('dialog').getByRole('link', { name: 'Tài khoản', exact: true }).click()
   await expect(page).toHaveURL(/\/account\/?$/)
   await screenshot(page, 'account')
   await page.getByLabel(/^Mật khẩu hiện tại(?:\s*\*)?$/).fill('Incorrect-password!')

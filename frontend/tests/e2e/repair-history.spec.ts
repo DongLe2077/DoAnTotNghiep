@@ -111,7 +111,7 @@ test('legacy history is labelled honestly and refresh failure hides old entries 
   await page.route('**/api/owner/maintenance-requests/1/history?*', route => route.abort('failed'), { times: 1 })
   await history.getByRole('button', { name: 'Làm mới lịch sử', exact: true }).click()
   await expect(history.getByRole('listitem')).toHaveCount(0)
-  await history.getByRole('button', { name: 'Thử lại lịch sử', exact: true }).click()
+  await history.getByRole('button', { name: 'Tải lại lịch sử', exact: true }).click()
   await expect(history.getByText('Mốc bắt đầu lưu lịch sử', { exact: true })).toBeVisible()
   await page.setViewportSize({ width: 320, height: 740 }); await page.reload()
   await page.getByText('Xem lịch sử xử lý', { exact: true }).click()

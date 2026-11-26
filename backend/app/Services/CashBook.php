@@ -196,13 +196,13 @@ class CashBook
     public function ledger(array $filters): Builder
     {
         // No invoice/items join is needed: each confirmed payment contributes exactly once.
-        $payments = DB::table('payments')->join('invoices', 'invoices.id', '=', 'payments.invoice_id')
+        $payments = \App\Services\Tenancy\PropertyDatabase::table('payments')->join('invoices', 'invoices.id', '=', 'payments.invoice_id')
             ->whereNotExists(fn ($query) => $query->selectRaw('1')->from('payment_corrections')->whereColumn('payment_corrections.payment_id', 'payments.id'))
             ->selectRaw("payments.id AS source_id, 'payment' AS source, 'invoice_payment' AS entry_type,
                 payments.amount, payments.paid_at AS occurred_at, NULL AS description,
                 payments.recorded_by, payments.recorded_at, payments.invoice_id,
                 invoices.invoice_number, payments.payment_method");
-        $cash = DB::table('cash_transactions')->whereNull('deleted_at')->selectRaw("id AS source_id, 'cash_transaction' AS source,
+        $cash = \App\Services\Tenancy\PropertyDatabase::table('cash_transactions')->whereNull('deleted_at')->selectRaw("id AS source_id, 'cash_transaction' AS source,
                 transaction_type AS entry_type, amount, occurred_at, description, recorded_by, recorded_at,
                 NULL AS invoice_id, NULL AS invoice_number, NULL AS payment_method");
         $this->applyDates($payments, 'payments.paid_at', $filters);

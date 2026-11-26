@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InvoiceAccessGrant extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     public const CREATED_AT = 'granted_at';
 
     public const UPDATED_AT = null;

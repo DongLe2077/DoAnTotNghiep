@@ -24,7 +24,9 @@ class RemindInvoices extends Command
         if ($this->option('overdue')) {
             $filters['due_status'] = 'overdue';
         }
-        $this->line(json_encode($notifications->remindOutstanding($filters, (bool) $this->option('dry-run')), JSON_THROW_ON_ERROR));
+        foreach (app(\App\Services\Tenancy\PropertyTasks::class)->each(fn () => $notifications->remindOutstanding($filters, (bool) $this->option('dry-run'))) as $result) {
+            $this->line(json_encode($result, JSON_THROW_ON_ERROR));
+        }
 
         return self::SUCCESS;
     }

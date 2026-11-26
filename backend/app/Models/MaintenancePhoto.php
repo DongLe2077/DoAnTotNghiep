@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MaintenancePhoto extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     public const UPDATED_AT = null;
 
     protected $fillable = ['maintenance_request_id', 'uploaded_by', 'path', 'sha256', 'mime_type', 'byte_size'];

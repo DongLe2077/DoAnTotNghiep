@@ -1,21 +1,22 @@
 import type { ServicePeriod } from './owner'
 
+export type InvoiceKind = 'monthly' | 'one_time'
 export type PaymentStatus = 'unpaid' | 'partially_paid' | 'paid' | 'inconsistent' | 'cancelled'
 export type InvoiceAction = 'adjustment' | 'due_date' | 'cancel' | 'restore'
 export interface InvoiceSnapshot { total_amount: string; paid_amount: string; outstanding_amount: string; due_date: string | null; payment_status: PaymentStatus; cancelled_at: string | null }
 export interface InvoiceChange { id: number; revision: number; action: InvoiceAction; amount: string; reason: string; before: InvoiceSnapshot; after: InvoiceSnapshot; performed_by: string | null; created_at: string }
 export interface InvoiceControlFields { original_amount?: string; adjustment_amount?: string; due_date?: string | null; due_status?: string; overdue_days?: number; cancelled_at?: string | null; revision?: number; version_token?: string; changes?: InvoiceChange[] }
-export interface InvoiceLine { id?: number; item_type: string; description: string; unit: string; quantity: string; unit_price: string; source_unit_price?: string | null; line_total: string; charge_period_start: string | null; charge_period_end: string | null; meter_reading?: { previous_reading: string; current_reading: string; consumption: string; period_start: string; period_end: string } | null }
+export interface InvoiceLine { id?: number; item_type: string; description: string; unit: string; quantity: string; unit_price: string; source_unit_price?: string | null; line_total: string; billing_method?: 'per_room' | 'metered' | null; charge_period_start: string | null; charge_period_end: string | null; meter_reading?: { previous_reading: string; current_reading: string; consumption: string; period_start: string; period_end: string } | null }
 export interface InvoiceGrant { id: number; representative_assignment_id: number; granted_at: string; revoked_at: string | null; grant_reason: string; is_active: boolean }
 export interface PayosReviewTransfer { id: number; amount: string | number; reference: string; paid_at: string; review_reason: string }
 export interface Invoice extends InvoiceControlFields {
   id: number; invoice_number: string; occupancy_id: number; billing_month: string; issued_at: string
   representative_assignment_id: number; room: { id: number; room_number: string }; group: { id: number; group_code: string }
-  item_count: number; total_amount: string; paid_amount: string; outstanding_amount: string; payment_status: PaymentStatus
+  invoice_kind: InvoiceKind; rounding_amount: string; item_count: number; total_amount: string; paid_amount: string; outstanding_amount: string; payment_status: PaymentStatus
   items?: InvoiceLine[]; payments?: InvoicePayment[]; access_grants?: InvoiceGrant[]
   payos_configured?: boolean; payos_review_transfers?: PayosReviewTransfer[]
 }
-export interface InvoicePreview { occupancy_id: number; billing_month: string; period_start: string; period_end: string; total_amount: string; items: InvoiceLine[]; can_issue: boolean; blockers: string[]; warnings: string[]; preview_token: string; existing_invoice_id: number | null; recipient_user_id: number | null }
+export interface InvoicePreview { occupancy_id: number; billing_month: string; period_start: string; period_end: string; invoice_kind: InvoiceKind; service_ids?: number[]; subtotal_amount: string; rounding_amount: string; total_amount: string; items: InvoiceLine[]; can_issue: boolean; blockers: string[]; warnings: string[]; preview_token: string; existing_invoice_id: number | null; recipient_user_id: number | null }
 export interface MeterReading { id: number; occupancy_service_id: number; occupancy_service: ServicePeriod; billing_month: string; period_start: string; period_end: string; previous_reading: string; current_reading: string; consumption: string; recorded_at: string; is_billed: boolean; invoice_id: number | null }
 export interface PaymentCorrection { id: number; reason: string; created_at: string; performed_by?: { id: number; username: string } | null; replacement_payment_id: number | null }
 export interface InvoicePayment { id: number; receipt_number?: string; amount: string; paid_at: string; payment_method: string; source?: 'manual' | 'payos'; status?: 'active' | 'voided'; correction?: PaymentCorrection | null; replaces_payment_id?: number | null; version_token?: string; can_correct?: boolean }

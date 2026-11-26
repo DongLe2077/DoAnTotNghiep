@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
       strategies: 'injectManifest', srcDir: 'src', filename: 'sw.ts',
       injectRegister: false, manifest: false, registerType: 'prompt', includeAssets: [],
       injectManifest: {
-        globPatterns: ['index.html', 'assets/**/*.{js,css}', 'fonts/**/*.woff2', 'icons/*.{png,svg}', 'favicon.svg'],
+        globPatterns: ['index.html', 'assets/**/*.{js,css}', 'assets/login-courtyard-*.webp', 'fonts/**/*.woff2', 'icons/*.{png,svg}', 'favicon.svg'],
         maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
       },
       devOptions: { enabled: false },

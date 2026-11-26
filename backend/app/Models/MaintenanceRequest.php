@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MaintenanceRequest extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     public const CREATED_AT = 'submitted_at';
 
     protected $table = 'maintenance_requests';

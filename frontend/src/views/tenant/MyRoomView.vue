@@ -1,24 +1,27 @@
 <script setup lang="ts">
+import { useLiveRefresh } from '@/composables/useLiveRefresh'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
 import UiNotice from '@/components/ui/UiNotice.vue'
 import UiPageState from '@/components/ui/UiPageState.vue'
+import MyCheckoutRequests from '@/components/tenancy/MyCheckoutRequests.vue'
 import { useTenantResource } from '@/composables/useTenantApi'
 import { formatMoney } from '@/lib/format'
 import { formatUnitPrice } from '@/lib/unit-price'
 import { formatDateTime } from '@/lib/notifications'
 import type { MyStay } from '@/types/tenant'
-const { data: stay, loading, error, status, load } = useTenantResource<MyStay | null>('/current-stay')
+const { data: stay, loading, error, status, load, refresh } = useTenantResource<MyStay | null>('/current-stay')
 void load()
+useLiveRefresh('property', () => !loading.value ? refresh() : false)
 </script>
 <template>
   <section class="management-page tenant-page tenant-workspace">
     <header class="management-header workflow-header">
       <div><span class="tenant-kicker">Nơi ở của bạn</span><h1>Phòng của tôi</h1><p>Xem giá thuê, dịch vụ và thông tin cư trú.</p></div>
-      <UiButton variant="secondary" :loading="loading" @click="load">Làm mới thông tin</UiButton>
+      <div class="button-row"><UiButton variant="ghost" :loading="loading" @click="load">Làm mới thông tin</UiButton><RouterLink v-if="stay && !loading" class="rb7-action" to="/tenant/invoices">Xem hóa đơn</RouterLink></div>
     </header>
     <UiPageState v-if="loading" kind="loading" skeleton="cards" />
-    <UiPageState v-else-if="error" :kind="status === 404 ? 'not-found' : 'error'" :title="status === 404 ? 'Chưa có hồ sơ liên kết' : 'Chưa tải được phòng của bạn'" :description="status === 404 ? 'Hãy liên hệ chủ trọ để liên kết tài khoản với hồ sơ người thuê.' : error"><UiButton @click="load">Thử lại</UiButton></UiPageState>
+    <UiPageState v-else-if="error" :kind="status === 404 ? 'not-found' : 'error'" :title="status === 404 ? 'Chưa có hồ sơ liên kết' : 'Chưa tải được phòng của bạn'" :description="status === 404 ? 'Hãy liên hệ chủ trọ để liên kết tài khoản với hồ sơ người thuê.' : error"><UiButton @click="load">Tải lại</UiButton></UiPageState>
     <template v-else-if="stay">
       <div class="room-sections">
         <article class="record-card tenant-room-hero tenant-highlight">
@@ -65,7 +68,10 @@ void load()
         </div>
       </div>
     </template>
-    <UiPageState v-else title="Bạn chưa có phòng đang cư trú" description="Khi chủ trọ ghi nhận bạn vào ở, thông tin phòng và dịch vụ sẽ xuất hiện tại đây." />
+    <UiPageState v-else title="Bạn chưa có phòng đang cư trú" description="Khi chủ trọ ghi nhận bạn vào ở, thông tin phòng và dịch vụ sẽ xuất hiện tại đây.">
+      <RouterLink class="record-link" to="/tenant/stays">Xem lịch sử cư trú</RouterLink>
+    </UiPageState>
+    <MyCheckoutRequests :stay="stay" />
   </section>
 </template>
 
@@ -74,7 +80,7 @@ void load()
 .tenant-room-hero h2 { margin: 8px 0 0; font-size: clamp(26px, 6vw, 39px); letter-spacing: -.04em; overflow-wrap: anywhere; }
 .tenant-rent { gap: 4px; }
 .tenant-rent > span { color: #c5cfd6; }
-.tenant-rent > strong { color: var(--color-action); }
+.tenant-rent > strong { color: var(--color-on-dark-accent, #b5c8ff); }
 .room-information { display: grid; align-items: start; gap: 14px; }
 .room-services { margin: 0 0 14px; }
 .room-services > div { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; padding: 10px 0; }

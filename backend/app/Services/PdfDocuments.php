@@ -94,6 +94,8 @@ class PdfDocuments
     {
         return [
             'id' => $invoice->id, 'number' => $invoice->invoice_number,
+            'invoice_kind' => $invoice->invoice_kind,
+            'rounding_amount' => InvoiceReports::money($invoice->rounding_amount ?? '0.00'),
             'room' => $invoice->occupancy->room->room_number,
             'group' => $invoice->occupancy->rentalGroup->group_code,
             'billing_month' => $invoice->billing_month->format('m/Y'),

@@ -142,7 +142,7 @@ test('CT7 failed refresh removes private details and a retry fetches the real re
   await expect(page.getByText('Nước rỉ ở van dưới bồn rửa.', { exact: true })).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Cập nhật xử lý', exact: true })).toHaveCount(0)
   await page.unroute('**/api/owner/maintenance-requests/1')
-  await page.getByRole('button', { name: 'Thử lại', exact: true }).click()
+  await page.getByRole('button', { name: 'Tải lại', exact: true }).click()
   await page.getByText('Nội dung báo hỏng và người gửi', { exact: true }).click()
   await expect(page.getByText('Nước rỉ ở van dưới bồn rửa.', { exact: true })).toBeVisible()
 })

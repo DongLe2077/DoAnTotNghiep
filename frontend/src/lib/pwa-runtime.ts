@@ -31,7 +31,10 @@ export function initializePwaRuntime() {
   })
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (updateLocked.value) { location.reload(); return }
-    if (controlled) { updateAvailable.value = true; updateMessage.value = 'Bản mới đã sẵn sàng. Bạn có thể tải lại khi hoàn tất công việc.' }
+    if (controlled) {
+      updateAvailable.value = true
+      updateMessage.value = 'Bản mới đã sẵn sàng. Cập nhật khi bạn hoàn tất công việc ở trang này.'
+    }
     controlled = true
   })
   void navigator.serviceWorker.register('/sw.js', { scope: '/', updateViaCache: 'none' }).then(value => {
@@ -48,10 +51,14 @@ export function initializePwaRuntime() {
 }
 async function applyUpdate() {
   const reason = reloadBlockReason()
-  if (reason || updateLocked.value) { updateMessage.value = reason; return }
+  if (reason || updateLocked.value || !navigator.onLine) {
+    updateMessage.value = reason || 'Cần có kết nối mạng để cập nhật.'
+    return
+  }
   const waiting = registration?.waiting
   if (!waiting) { location.reload(); return }
-  updateMessage.value = 'Đang kiểm tra các tab Nhà Trọ đang mở…'
+  const previousController = navigator.serviceWorker.controller
+  updateMessage.value = 'Đang chuẩn bị cập nhật…'
   const ready = await new Promise<boolean>(resolve => {
     const channel = new MessageChannel()
     const timer = setTimeout(() => { channel.port1.close(); resolve(false) }, 7000)
@@ -59,7 +66,9 @@ async function applyUpdate() {
     try { waiting.postMessage({ type: 'PWA_APPLY_UPDATE' }, [channel.port2]) }
     catch { clearTimeout(timer); channel.port1.close(); resolve(false) }
   })
-  if (!ready) updateMessage.value = 'Một tab còn đang thao tác hoặc chưa phản hồi. Hãy hoàn tất công việc, đóng tab không dùng rồi thử lại.'
+  if (!ready && previousController === navigator.serviceWorker.controller) {
+    updateMessage.value = reloadBlockReason() || 'Chưa cập nhật được. Chọn Cập nhật ngay để thực hiện lại.'
+  }
 }
 export function usePwaRuntime() {
   return { connection: readonly(connection), updateAvailable: readonly(updateAvailable), offlineReady, updateMessage: readonly(updateMessage), registrationError: readonly(registrationError), updateLocked: readonly(updateLocked), applyUpdate }

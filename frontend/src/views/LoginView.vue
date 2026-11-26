@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ApiError } from '@/lib/api'
-import { safeRedirect } from '@/router/navigation'
+import { api, ApiError } from '@/lib/api'
+import { marketRedirect, safeRedirect } from '@/router/navigation'
 import { useAuthStore } from '@/stores/auth'
 import PwaInstallButton from '@/components/pwa/PwaInstallButton.vue'
 
 const auth = useAuthStore()
 const route = useRoute()
 const router = useRouter()
-const isDemo = import.meta.env.VITE_DEMO_MODE === '1'
 const username = ref('')
 const password = ref('')
 const showPassword = ref(false)
@@ -18,6 +17,12 @@ const fieldErrors = ref<Record<string, string[]>>({})
 const errorMessage = ref('')
 const errorBox = ref<HTMLElement | null>(null)
 const retrySeconds = ref(0)
+const registrationEnabled = ref(false)
+onMounted(async () => {
+  try {
+    registrationEnabled.value = (await api.get<{ data: { enabled: boolean } }>('/auth/registration')).data.data.enabled
+  } catch { /* An older backend can still serve the login screen. */ }
+})
 let retryTimer: ReturnType<typeof setInterval> | undefined
 
 const notice = computed(() => {
@@ -53,7 +58,11 @@ async function submit() {
   try {
     const user = await auth.login(username.value.trim(), password.value)
     password.value = ''
-    await router.replace(safeRedirect(route.query.redirect, user.role))
+    const destination = safeRedirect(route.query.redirect, user.role)
+    await router.replace(
+      marketRedirect(route.query.redirect) ?? (user.needs_property ? '/properties'
+        : user.properties && user.role === 'tenant' && destination === '/tenant' ? '/tenant/workspace' : destination),
+    )
   } catch (error) {
     if (error instanceof ApiError) {
       fieldErrors.value = error.errors ?? {}
@@ -78,7 +87,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="login-page rentbase-graphite">
+  <div class="login-page rb7-theme">
     <header class="login-header">
       <a class="brand" href="/login" aria-label="RentBase — Đăng nhập">
         <img class="brand-mark" src="/icons/rentbase-mark.svg" alt="" width="44" height="44" />
@@ -88,30 +97,10 @@ onBeforeUnmount(() => {
     </header>
 
     <main class="login-main">
-      <section class="intro" aria-labelledby="intro-heading">
-        <div class="intro-copy">
-          <span class="intro-label">RENTBASE</span>
-          <h2 id="intro-heading">Quản lý nhà trọ</h2>
-          <p>Theo dõi phòng ở, hóa đơn và yêu cầu sửa chữa.</p>
-        </div>
-        <svg class="building" viewBox="0 0 468 280" fill="none" aria-hidden="true">
-          <g stroke="var(--color-action)" stroke-width="1" opacity=".24">
-            <path d="M0 42h468M0 91h468M0 140h468M0 189h468M0 238h468M38 0v280M87 0v280M136 0v280M185 0v280M234 0v280M283 0v280M332 0v280M381 0v280M430 0v280"/>
-          </g>
-          <path d="M87 91h147v98H87zM283 140h98v98h-98z" fill="var(--color-action)" opacity=".16"/>
-          <path d="M87 42h294v196H87zM87 91h147m0-49v98m0 49v49M136 189v49m147-98h98m-98 0v98M332 42v49" stroke="var(--color-action)" stroke-width="2" opacity=".68"/>
-          <path d="M87 189h98m49-49h49v49h-49m98-98h49M87 16v12m294-12v12M87 22h294M63 42H51m12 196H51m6-196v196" stroke="var(--color-action)" stroke-width="1" opacity=".48"/>
-          <path d="M234 140v49m98-49h49m-294-49v49" stroke="var(--color-action)" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="234" cy="140" r="5" fill="var(--color-action)"/>
-          <circle cx="332" cy="140" r="5" fill="var(--color-action)"/>
-          <circle cx="87" cy="91" r="5" fill="var(--color-action)"/>
-        </svg>
-      </section>
-
       <section class="form-area" aria-labelledby="login-heading">
         <div class="form-card">
           <h1 id="login-heading">Đăng nhập</h1>
-          <p class="form-intro">Sử dụng tài khoản đã được cấp.</p>
+          <p class="form-intro">Dùng tài khoản RentBase để tiếp tục.</p>
 
           <div v-if="notice" class="notice" role="status">
             <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m6 10 3 3 5-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.4"/></svg>
@@ -150,14 +139,14 @@ onBeforeUnmount(() => {
             </button>
           </form>
 
-          <p class="account-note">Cần hỗ trợ tài khoản? Hãy liên hệ chủ trọ.</p>
-          <aside v-if="isDemo" class="demo-guide" aria-label="Tài khoản dùng thử">
-            <strong>Tài khoản dùng thử</strong>
-            <dl>
-              <div><dt>Chủ trọ</dt><dd><code>admin / 123</code></dd></div>
-              <div><dt>Người thuê</dt><dd><code>user / 123</code></dd></div>
-            </dl>
-          </aside>
+          <div v-if="registrationEnabled" class="login-options">
+            <p class="account-note">Chưa có tài khoản?</p>
+            <div class="login-option-links">
+              <RouterLink class="record-link" :to="{ name: 'register', query: { redirect: marketRedirect(route.query.redirect) ?? undefined } }">Tạo tài khoản</RouterLink>
+              <RouterLink class="record-link" to="/find-rooms">Tìm phòng trọ</RouterLink>
+            </div>
+          </div>
+          <p v-else class="account-note">Cần hỗ trợ tài khoản? Hãy liên hệ chủ trọ.</p>
         </div>
       </section>
     </main>
@@ -166,10 +155,15 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .login-page {
+  --login-courtyard: url('@/assets/login-courtyard.webp');
   min-height: calc(100dvh - var(--pwa-notice-height, 0px));
   display: flex;
   flex-direction: column;
-  background: var(--color-bg);
+  background-color: var(--color-bg);
+  background-image: linear-gradient(180deg, rgb(249 248 244 / .94), rgb(249 248 244 / .16) 195px, rgb(249 248 244 / .12) 70%, rgb(249 248 244 / .24)), var(--login-courtyard);
+  background-position: center, center 48%;
+  background-size: cover;
+  background-repeat: no-repeat;
   color: var(--color-text);
 }
 
@@ -206,42 +200,13 @@ onBeforeUnmount(() => {
 
 .login-main {
   display: grid;
-  grid-template-columns: 1.05fr 1fr;
+  width: min(500px, calc(100% - 32px));
   margin-block: clamp(16px, 6vh, 72px) 32px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   background: var(--color-surface);
+  box-shadow: 0 14px 48px rgb(24 40 63 / .14);
 }
-
-.intro {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-width: 0;
-  padding: clamp(28px, 4vw, 52px);
-  border-radius: calc(var(--radius-card) - 1px) 0 0 calc(var(--radius-card) - 1px);
-  color: #f4f8fa;
-  background: var(--refresh-dark);
-}
-
-.intro-label {
-  color: var(--color-action);
-  font-size: 12px;
-  font-weight: 650;
-  letter-spacing: .14em;
-}
-
-.intro h2 {
-  max-width: 11ch;
-  margin: 14px 0 10px;
-  font-size: clamp(32px, 4.2vw, 56px);
-  font-weight: 650;
-  line-height: 1.18;
-  letter-spacing: -.04em;
-}
-
-.intro p { max-width: 32ch; margin: 0; color: #c5cfd6; }
-.building { width: 100%; max-height: 265px; margin-top: 38px; animation: reveal-plan 240ms var(--motion-ease) both; }
 
 .form-area {
   display: grid;
@@ -276,20 +241,8 @@ onBeforeUnmount(() => {
 .submit-button:disabled { opacity: .65; cursor: not-allowed; }
 .submit-button svg { width: 20px; height: 20px; }
 .account-note { margin: 16px 0 0; color: var(--color-text-secondary); font-size: 13px; }
-.demo-guide {
-  margin-top: 20px;
-  padding: 12px 14px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  color: var(--color-text-secondary);
-  background: var(--color-bg);
-  font-size: 13px;
-}
-.demo-guide strong { color: var(--color-text); }
-.demo-guide dl { margin: 6px 0 0; }
-.demo-guide dl div { display: flex; justify-content: space-between; gap: 8px; }
-.demo-guide dd { margin: 0; }
-.demo-guide code { color: var(--color-text); font: inherit; font-weight: 600; white-space: nowrap; }
+.login-option-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+.login-page .login-option-links .record-link { padding-inline: 6px; }
 
 .notice,
 .error-banner { margin-bottom: 24px; padding: 16px; border: 1px solid var(--color-border); border-radius: 10px; font-size: 14px; line-height: 1.7; }
@@ -300,20 +253,28 @@ onBeforeUnmount(() => {
 .retry-countdown { display: block; margin-top: 8px; font-weight: 600; }
 .field-error { margin: 8px 0 0; color: var(--color-danger); font-size: 14px; line-height: 1.6; }
 .spinner { width: 16px; height: 16px; border: 2px solid currentColor; border-inline-end-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; }
-@keyframes reveal-plan { from { opacity: .45; transform: translateY(4px); } }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 760px) {
+  .login-page { position: relative; isolation: isolate; background-image: none; }
+  .login-page::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: 0 0 auto;
+    height: 225px;
+    background-image: linear-gradient(180deg, rgb(249 248 244 / .95), rgb(249 248 244 / .28) 100px, var(--color-bg)), var(--login-courtyard);
+    background-position: center, left 70%;
+    background-size: cover;
+  }
   .login-header, .login-main { width: min(448px, calc(100% - 32px)); }
   .login-header { min-height: 72px; }
-  .login-main { display: block; margin-top: 8px; }
-  .intro { display: none; }
+  .login-main { display: block; margin-top: clamp(69px, 22vw, 99px); }
   .form-area { padding: 24px clamp(16px, 5vw, 28px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; }
-  .building { animation: none; }
   .spinner { animation-duration: 1.5s; }
 }
 </style>

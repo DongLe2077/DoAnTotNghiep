@@ -73,7 +73,7 @@ void loadEligibility()
     </header>
     <UiPageState v-if="checking" kind="loading" skeleton="report-form" title="Đang tải phòng có thể báo hỏng…" />
     <UiPageState v-else-if="eligibilityError" kind="error" :description="eligibilityError">
-      <UiButton @click="loadEligibility">Thử lại</UiButton>
+      <UiButton @click="loadEligibility">Tải lại</UiButton>
     </UiPageState>
     <UiPageState v-else-if="!eligible.length" kind="forbidden" title="Bạn chưa có quyền gửi báo hỏng mới" description="Chỉ đại diện hiện tại đang cư trú được gửi yêu cầu. Bạn vẫn xem được các yêu cầu đã gửi trước đây." />
     <template v-else>

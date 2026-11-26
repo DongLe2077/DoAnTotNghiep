@@ -17,7 +17,7 @@ const router = useRouter()
 const selectedNotification = ref<AppNotification | null>(null)
 const subjectOpen = ref(false)
 const openingId = ref<number | null>(null)
-const notificationTypes: NotificationType[] = ['maintenance_submitted', 'maintenance_updated', 'invoice_reminder', 'invoice_updated', 'owner_announcement']
+const notificationTypes: NotificationType[] = ['maintenance_submitted', 'maintenance_updated', 'invoice_reminder', 'invoice_updated', 'owner_announcement', 'welcome']
 let activeRoute = ''
 let activeIdentity = ''
 let routeLoadPending = false
@@ -194,7 +194,7 @@ async function openSubject(item: AppNotification) {
 
       <UiEmptyState v-if="notifications.loading" tone="loading" title="Đang tải thông báo…" />
       <UiEmptyState v-else-if="notifications.error" tone="error" title="Chưa tải được thông báo" :description="notifications.error">
-        <UiButton variant="secondary" @click="notifications.refresh()">Thử lại</UiButton>
+        <UiButton variant="secondary" @click="notifications.refresh()">Tải lại</UiButton>
       </UiEmptyState>
       <UiEmptyState v-else-if="!notifications.items.length" :title="unreadOnly ? 'Không có thông báo chưa đọc' : 'Chưa có thông báo phù hợp'" :description="unreadOnly || selectedType ? 'Thử xem tất cả thông báo.' : 'Các cập nhật mới sẽ hiển thị tại đây.'">
         <UiButton v-if="unreadOnly || selectedType" variant="secondary" @click="updateFilters({ unreadOnly: false, type: '' })">Xem tất cả thông báo</UiButton>
@@ -211,7 +211,7 @@ async function openSubject(item: AppNotification) {
             <h2 :id="`notification-title-${item.id}`">{{ item.data.title }}</h2>
             <p class="notification-body">{{ item.data.body }}</p>
             <div class="item-actions">
-              <UiButton variant="secondary" :loading="openingId === item.id" :disabled="actionsPending || notifications.busyIds.includes(item.id)"
+              <UiButton v-if="item.type !== 'welcome'" variant="secondary" :loading="openingId === item.id" :disabled="actionsPending || notifications.busyIds.includes(item.id)"
                 :aria-label="`${subjectLabel(item)}: ${item.data.title}`" @click="openSubject(item)">{{ subjectLabel(item) }}</UiButton>
               <UiButton v-if="!item.is_read" variant="ghost" class="mark-read-button"
                 :loading="notifications.busyIds.includes(item.id) && openingId !== item.id" :disabled="actionsPending || notifications.busyIds.includes(item.id)"

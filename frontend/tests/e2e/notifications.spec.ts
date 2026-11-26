@@ -216,7 +216,7 @@ test('failed refresh hides old private cards and an explicit retry loads real da
   await expect(page.getByText('Báo hỏng cần xem 18', { exact: true })).toHaveCount(0)
   await screenshot(page, 'notifications-error')
   await page.unroute(listUrl)
-  await page.getByRole('button', { name: 'Thử lại', exact: true }).click()
+  await page.getByRole('button', { name: 'Tải lại', exact: true }).click()
   await expect(page.getByRole('article')).toHaveCount(15)
   await expect(page.getByRole('heading', { name: 'Báo hỏng cần xem 18', exact: true })).toBeVisible()
 })

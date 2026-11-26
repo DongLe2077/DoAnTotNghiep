@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useLiveRefresh } from '@/composables/useLiveRefresh'
 import PdfDownloadButton from '@/components/billing/PdfDownloadButton.vue'
 import PayosInvoiceCheckout from '@/components/billing/PayosInvoiceCheckout.vue'
 import { computed, ref, watch } from 'vue'
@@ -27,7 +28,7 @@ function returnToList(event: MouseEvent) {
   router.back()
 }
 const notifications = useNotificationsStore()
-const { data: invoice, loading, error, status, load } = useTenantResource<Invoice>(() => `/invoices/${route.params.id}`)
+const { data: invoice, loading, error, status, load, refresh } = useTenantResource<Invoice>(() => `/invoices/${route.params.id}`)
 const hasBalance = computed(() => invoice.value ? tenantHasBalance(invoice.value.payment_status) : false)
 const paidReceipts = computed(() => invoice.value?.payment_status === 'paid'
   ? invoice.value.payments?.filter(payment => payment.status !== 'voided') ?? [] : [])
@@ -44,16 +45,17 @@ function showInvoiceDocuments() {
 }
 watch(() => route.params.id, () => void load(), { immediate: true })
 watch(confirmedPayment, payment => { if (payment) void notifications.refreshCount(true) })
+useLiveRefresh('property', () => !loading.value ? refresh() : false)
 </script>
 <template>
   <section class="management-page tenant-page tenant-workspace tenant-invoice">
     <RouterLink class="back-link" :to="previousList ?? '/tenant/invoices'" @click.capture="returnToList">← Hóa đơn của tôi</RouterLink>
     <UiPageState v-if="loading" kind="loading" skeleton="invoice-detail" title="Đang tải chi tiết hóa đơn…" />
-    <UiPageState v-else-if="error" :kind="status === 403 || status === 404 ? 'not-found' : 'error'" :title="status === 403 || status === 404 ? 'Hóa đơn không còn khả dụng' : 'Chưa tải được hóa đơn'" :description="status === 403 || status === 404 ? 'Hóa đơn không tồn tại hoặc chủ trọ đã thu hồi quyền xem của bạn.' : error"><UiButton @click="load">Thử lại</UiButton></UiPageState>
+    <UiPageState v-else-if="error" :kind="status === 403 || status === 404 ? 'not-found' : 'error'" :title="status === 403 || status === 404 ? 'Hóa đơn không còn khả dụng' : 'Chưa tải được hóa đơn'" :description="status === 403 || status === 404 ? 'Hóa đơn không tồn tại hoặc chủ trọ đã thu hồi quyền xem của bạn.' : error"><UiButton @click="load">Tải lại</UiButton></UiPageState>
     <template v-else-if="invoice">
       <header class="management-header workflow-header">
         <div>
-          <h1>Hóa đơn phòng {{ invoice.room.room_number }}</h1>
+          <h1>{{ invoice.invoice_kind === 'one_time' ? 'Khoản thu riêng phòng' : 'Hóa đơn phòng' }} {{ invoice.room.room_number }}</h1>
           <p>Tháng {{ invoice.billing_month.slice(5) }}/{{ invoice.billing_month.slice(0, 4) }} <span aria-hidden="true">·</span> {{ invoice.invoice_number }}</p>
         </div>
       </header>
@@ -82,14 +84,29 @@ watch(confirmedPayment, payment => { if (payment) void notifications.refreshCoun
             <details v-if="hasBalance" class="workflow-disclosure" :open="!invoice.payos_configured">
               <summary>Trả trực tiếp cho chủ trọ</summary>
               <div class="workflow-disclosure-body">
-                <p class="help-text">Trả tiền mặt hoặc chuyển khoản theo thông tin trong PDF hóa đơn.</p>
-                <p class="help-text"><strong>Khi chuyển khoản,</strong> ghi mã <strong>{{ invoice.invoice_number }}</strong> trong nội dung.</p>
+                <p class="help-text">Bạn có thể trả tiền mặt cho chủ trọ. Nếu muốn chuyển khoản, hãy dùng số tài khoản do chủ trọ cung cấp hoặc xem trong PDF hóa đơn.</p>
+                <p class="help-text">Ghi mã <strong>{{ invoice.invoice_number }}</strong> vào nội dung chuyển khoản. Chủ trọ sẽ cập nhật hóa đơn sau khi đối chiếu khoản tiền đã nhận.</p>
                 <UiButton variant="secondary" @click="showInvoiceDocuments">Mở phần PDF hóa đơn</UiButton>
               </div>
             </details>
           </section>
         </article>
 
+        <details ref="invoiceDocuments" class="workflow-disclosure wide invoice-documents">
+          <summary>Chi tiết các khoản và PDF hóa đơn</summary>
+          <div class="workflow-disclosure-body">
+            <dl class="record-facts">
+              <div><dt>Tổng hóa đơn</dt><dd>{{ formatMoney(invoice.total_amount) }}</dd></div>
+              <div><dt>Đã thanh toán</dt><dd>{{ formatMoney(invoice.paid_amount) }}</dd></div>
+            </dl>
+            <InvoiceLines :items="invoice.items ?? []" />
+            <dl v-if="invoice.rounding_amount && invoice.rounding_amount !== '0.00'" class="record-facts">
+              <div><dt>Chênh lệch làm tròn đến 1.000 đ</dt><dd>{{ formatMoney(invoice.rounding_amount) }}</dd></div>
+            </dl>
+            <p class="help-text">Nhóm {{ invoice.group.group_code }} · Phát hành {{ formatDateTime(invoice.issued_at) }}</p>
+            <PdfDownloadButton :path="`/tenant/invoices/${invoice.id}/pdf`" :filename="`hoa-don-${invoice.id}.pdf`" label="Tải PDF hóa đơn" />
+          </div>
+        </details>
         <article class="record-card invoice-history">
           <header>
             <h2>Lịch sử thanh toán</h2>
@@ -103,18 +120,6 @@ watch(confirmedPayment, payment => { if (payment) void notifications.refreshCoun
           </ul>
         </article>
 
-        <details ref="invoiceDocuments" class="workflow-disclosure wide invoice-documents">
-          <summary>Chi tiết các khoản và PDF hóa đơn</summary>
-          <div class="workflow-disclosure-body">
-            <dl class="record-facts">
-              <div><dt>Tổng hóa đơn</dt><dd>{{ formatMoney(invoice.total_amount) }}</dd></div>
-              <div><dt>Đã thanh toán</dt><dd>{{ formatMoney(invoice.paid_amount) }}</dd></div>
-            </dl>
-            <InvoiceLines :items="invoice.items ?? []" />
-            <p class="help-text">Nhóm {{ invoice.group.group_code }} · Phát hành {{ formatDateTime(invoice.issued_at) }}</p>
-            <PdfDownloadButton :path="`/tenant/invoices/${invoice.id}/pdf`" :filename="`hoa-don-${invoice.id}.pdf`" label="Tải PDF hóa đơn" />
-          </div>
-        </details>
         <details class="workflow-disclosure wide">
           <summary>Lịch sử điều chỉnh</summary>
           <div class="workflow-disclosure-body"><InvoiceHistory :invoice="invoice" /></div>
@@ -154,7 +159,7 @@ watch(confirmedPayment, payment => { if (payment) void notifications.refreshCoun
 .invoice-documents { scroll-margin-top: calc(var(--pwa-notice-height, 0px) + 135px); }
 .invoice-history > header { flex-wrap: wrap; align-items: center; gap: 2px 12px; margin: 0 0 4px; }
 .invoice-history > header .ui-button { padding-inline: 0; min-height: 44px; }
-.payment-confirmation { color: var(--color-action); }
+.payment-confirmation { color: var(--color-on-dark-accent, #b5c8ff); }
 
 @media (max-width: 680px) {
   .invoice-summary:has(.invoice-payment) { grid-template-columns: minmax(0, 1fr); }

@@ -86,9 +86,82 @@ test('overdue filter and grouped summary agree, tenant sees days late, and owner
 
 test('issuing a new invoice includes the chosen due date in review and persists it', async ({ page }) => {
   await login(page); const { stay } = await fixture(page, 'CONTROL-ISSUE')
-  await page.goto(`/owner/invoices/new?occupancy_id=${stay.id}`); await page.getByLabel('Tháng tính tiền (bắt buộc)').fill('2026-02'); await page.getByLabel('Hạn thanh toán (không bắt buộc)').fill('2030-12-20')
-  await page.getByRole('button', { name: 'Xem trước hóa đơn', exact: true }).click(); await page.getByRole('button', { name: 'Kiểm tra và phát hành', exact: true }).click()
+  let releaseDetails!: () => void
+  const detailsMayLoad = new Promise<void>(resolve => { releaseDetails = resolve })
+  await page.route(`**/api/owner/occupancies/${stay.id}`, async route => {
+    await detailsMayLoad
+    await route.continue()
+  })
+  await page.goto(`/owner/invoices/new?occupancy_id=${stay.id}`)
+  try {
+    await page.getByLabel('Tháng tính tiền (bắt buộc)').fill('2026-02')
+    await page.getByLabel('Hạn thanh toán (không bắt buộc)').fill('2030-12-20')
+    await expect(page.getByRole('button', { name: 'Xem trước hóa đơn', exact: true })).toBeDisabled()
+  } finally {
+    releaseDetails()
+  }
+  await page.getByRole('button', { name: 'Xem trước hóa đơn', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Bản xem trước hóa đơn', exact: true })).toBeFocused()
+  await page.getByRole('button', { name: 'Kiểm tra và phát hành', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Xác nhận phát hành hóa đơn', exact: true })).toBeFocused()
   await expect(page.getByText('20/12/2030', { exact: true })).toBeVisible(); await page.getByRole('checkbox', { name: 'Tôi đã kiểm tra thời gian, chỉ số và các khoản tính tiền.' }).check()
   await page.getByRole('button', { name: 'Xác nhận phát hành hóa đơn', exact: true }).click(); await expect(page).toHaveURL(/\/owner\/invoices\/\d+\?issued=1$/)
   await expect(page.getByText('20/12/2030', { exact: false }).first()).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Tải PDF hóa đơn', exact: true })).toBeVisible()
+  const invoicePath = new URL(page.url()).pathname
+  await page.goto(`/owner/invoices/new?occupancy_id=${stay.id}`)
+  await page.getByLabel('Tháng tính tiền (bắt buộc)').fill('2026-02')
+  await page.getByRole('button', { name: 'Xem trước hóa đơn', exact: true }).click()
+  await expect(page.getByText('Kỳ này đã có hóa đơn', { exact: true })).toBeInViewport()
+  await expect(page.getByRole('button', { name: 'Kiểm tra và phát hành', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Xem hóa đơn đã phát hành', exact: true })).toHaveAttribute('href', invoicePath)
+})
+
+test('one-time invoice shares a month and safely retries a lost issue response', async ({ page }) => {
+  await login(page)
+  const { invoice, stay, username } = await fixture(page, 'CONTROL-ONE-TIME')
+  await page.goto(`/owner/invoices/new?occupancy_id=${stay.id}`)
+  await expect(page.getByRole('button', { name: 'Đổi đợt thuê' })).toBeVisible()
+  await page.getByLabel('Tháng tính tiền (bắt buộc)').fill('2026-01')
+  await page.getByLabel('Loại hóa đơn').selectOption('one_time')
+  await page.getByLabel('Nội dung khoản thu (bắt buộc)').fill('Phí cấp lại chìa khóa')
+  await page.getByLabel('Số tiền (đ) (bắt buộc)').fill('1999.5')
+  await page.getByRole('button', { name: 'Xem trước hóa đơn', exact: true }).click()
+  await expect(page.getByText('Chênh lệch làm tròn đến 1.000 đ', { exact: true })).toBeVisible()
+
+  const review = page.getByRole('button', { name: 'Kiểm tra và phát hành', exact: true })
+  const confirm = page.getByRole('button', { name: 'Xác nhận phát hành hóa đơn', exact: true })
+  const checked = page.getByRole('checkbox', { name: 'Tôi đã kiểm tra đợt thuê, nội dung và số tiền.' })
+  await review.click()
+  await checked.check()
+  let chargedId: number | undefined
+  await page.route('**/api/owner/occupancies/*/invoices/one-time', async (route) => {
+    const response = await route.fetch()
+    expect(response.status(), await response.text()).toBe(201)
+    chargedId = (await response.json()).data.id
+    await route.abort('failed')
+  }, { times: 1 })
+  await confirm.click()
+  await expect.poll(() => chargedId, { timeout: 35_000 }).toBeDefined()
+  await expect(review).toBeVisible()
+  await review.click()
+  await checked.check()
+  await confirm.click()
+  expect(chargedId).toBeDefined()
+  expect(chargedId).not.toBe(invoice.id)
+  await expect(page).toHaveURL(`/owner/invoices/${chargedId}?issued=1`)
+  await expect(page.getByRole('heading', { name: 'Khoản thu riêng phòng CONTROL-ONE-TIME' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Tải PDF hóa đơn', exact: true })).toBeVisible()
+
+  await page.context().clearCookies()
+  await login(page, username)
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto(`/tenant/invoices/${chargedId}`)
+  await expect(page.getByRole('heading', { name: 'Khoản thu riêng phòng CONTROL-ONE-TIME' })).toBeVisible()
+  await page.getByText('Chi tiết các khoản và PDF hóa đơn', { exact: true }).click()
+  await expect(page.getByText('Phí cấp lại chìa khóa', { exact: true })).toBeVisible()
+  await expect(page.getByText('Chênh lệch làm tròn đến 1.000 đ', { exact: true })).toBeVisible()
+  const pendingDownload = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Tải PDF hóa đơn', exact: true }).click()
+  expect((await pendingDownload).suggestedFilename()).toBe(`hoa-don-${chargedId}.pdf`)
 })

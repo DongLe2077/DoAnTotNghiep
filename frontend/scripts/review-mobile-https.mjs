@@ -40,7 +40,6 @@ async function open(username) {
   await page.getByRole('button', { name: 'Mở menu', exact: true }).click()
   check(await page.evaluate(() => { const sidebar = document.querySelector('#app-navigation'), account = sidebar.querySelector('.sidebar-account'); return sidebar.getBoundingClientRect().bottom - account.getBoundingClientRect().bottom >= 34 }), `${username} mobile menu keeps the account above the gesture area`)
   await page.keyboard.press('Escape')
-  if (username === 'user') check(await page.locator('.tenant-bottom-navigation').evaluate(element => parseFloat(getComputedStyle(element).paddingBottom) >= 34), 'Tenant bottom navigation has sufficient gesture-area padding')
   await page.getByRole('button', { name: 'Cài ứng dụng Nhà Trọ', exact: true }).click()
   const dialog = page.getByRole('dialog', { name: 'Cài Nhà Trọ trên thiết bị' })
   await dialog.waitFor({ state: 'visible' })

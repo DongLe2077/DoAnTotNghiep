@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MaintenanceExpenseLink extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     protected $fillable = ['cash_transaction_id', 'maintenance_request_id', 'is_active', 'revision'];
 
     protected function casts(): array

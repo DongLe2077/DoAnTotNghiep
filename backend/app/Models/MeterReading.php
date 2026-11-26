@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class MeterReading extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     public const CREATED_AT = 'recorded_at';
 
     public const UPDATED_AT = null;

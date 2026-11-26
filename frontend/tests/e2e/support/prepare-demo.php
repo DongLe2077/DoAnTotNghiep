@@ -58,6 +58,9 @@ if (! Schema::hasTable('rental_properties')) {
 if (! Schema::hasTable('meter_reading_requests')) {
     DB::transaction(fn () => (require $backend.'/database/migrations/2026_10_28_000002_create_meter_reading_requests.php')->up());
 }
+if (! Schema::hasTable('scheduled_deletions')) {
+    DB::transaction(fn () => (require $backend.'/database/migrations/2026_11_13_000001_create_scheduled_deletions.php')->up());
+}
 
 // Adopt previous demo uploads into stable manual-demo storage, matching each stored hash.
 foreach (DB::table('maintenance_photos')->get() as $photo) {
@@ -77,7 +80,8 @@ foreach (DB::table('maintenance_photos')->get() as $photo) {
 }
 
 $newRoom = null;
-DB::transaction(function () use (&$newRoom) {
+$accountsSeeded = $root.DIRECTORY_SEPARATOR.'demo-accounts-seeded';
+DB::transaction(function () use (&$newRoom, $accountsSeeded) {
     $admin = User::firstOrCreate(['username' => 'admin'], ['password_hash' => Hash::make('123'), 'role' => 'owner', 'is_active' => true]);
     if ($admin->role !== 'owner') {
         throw new RuntimeException('The demo admin name belongs to another role.');
@@ -90,7 +94,7 @@ DB::transaction(function () use (&$newRoom) {
         $admin->update(['password_hash' => Hash::make('123'), 'is_active' => true]);
         $user?->update(['password_hash' => Hash::make('123'), 'is_active' => true]);
     }
-    if ($user !== null) {
+    if ($user !== null || is_file($accountsSeeded)) {
         return;
     }
     $tenant = Tenant::create(['full_name' => 'Người thuê dùng thử', 'phone_number' => '0900000123']);
@@ -129,4 +133,5 @@ DB::transaction(function () use (&$newRoom) {
     app(MaintenanceManagement::class)->submit($stay->id, ['title' => 'Vòi nước cần kiểm tra (mẫu)', 'description' => 'Nước rỉ ở van bồn rửa. Đây là yêu cầu mẫu để thử cập nhật sửa chữa.'], $user);
     $newRoom = $room->room_number;
 });
+touch($accountsSeeded);
 echo json_encode(['demo_accounts_ready' => true, 'created_sample_room' => $newRoom, 'existing_demo_data_retained' => true], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR).PHP_EOL;

@@ -26,12 +26,15 @@ class InvoicePayos
     public function state(Invoice $invoice): array
     {
         $checkout = $this->latest($invoice);
+        if (app(ScheduledDeletions::class)->anyCoversInvoice($invoice->id)) {
+            return ['status' => 'queued_for_deletion', 'payment_id' => null, 'checkout_url' => null, 'can_start' => false];
+        }
         $status = $checkout?->status ?? 'idle';
         $currentVersion = $checkout && $checkout->invoice_version === InvoiceControls::version($invoice);
         if ($status === 'pending') {
             $status = $checkout->expires_at->isPast() ? 'expired' : ($currentVersion ? 'pending' : 'stale');
         }
-        $paymentId = $status === 'paid' ? DB::table('invoice_payos_transfers')->where('checkout_id', $checkout->id)->whereNotNull('payment_id')->value('payment_id') : null;
+        $paymentId = $status === 'paid' ? \App\Services\Tenancy\PropertyDatabase::table('invoice_payos_transfers')->where('checkout_id', $checkout->id)->whereNotNull('payment_id')->value('payment_id') : null;
 
         return [
             'status' => $status,
@@ -62,6 +65,7 @@ class InvoicePayos
             }
             $checkout = DB::transaction(function () use ($invoiceId, $tenantId) {
                 Invoice::query()->lockForUpdate()->findOrFail($invoiceId);
+                abort_if(app(ScheduledDeletions::class)->anyCoversInvoice($invoiceId), 409, 'Hóa đơn đang chờ xóa.');
                 $invoice = $this->invoices->query(tenantUserId: $tenantId)->findOrFail($invoiceId);
                 $amount = $this->payableAmount($invoice);
                 abort_if($amount === null, 409, 'Hóa đơn này chưa thể thanh toán qua payOS.');
@@ -141,13 +145,13 @@ class InvoicePayos
             return;
         }
 
-        $key = hash('sha256', $reference);
+        $key = hash('sha256', app(\App\Services\Tenancy\PropertyContext::class)->enabled() && app(\App\Services\Tenancy\PropertyContext::class)->requireId() !== (int) config('tenancy.legacy_payos_property_id') ? app(\App\Services\Tenancy\PropertyContext::class)->requireId().':'.$reference : $reference);
         try {
             DB::transaction(function () use ($checkout, $key, $linkId, $amount, $date, $reference) {
                 $invoice = Invoice::query()->lockForUpdate()->findOrFail($checkout->invoice_id);
                 $locked = PayosCheckout::query()->lockForUpdate()->findOrFail($checkout->id);
                 abort_unless($locked->link_id === null || $locked->link_id === $linkId, 409, 'Mã link thanh toán không khớp.');
-                if (DB::table('invoice_payos_transfers')->where('reference_key', $key)->exists()) {
+                if (\App\Services\Tenancy\PropertyDatabase::table('invoice_payos_transfers')->where('reference_key', $key)->exists()) {
                     return;
                 }
 
@@ -178,7 +182,7 @@ class InvoicePayos
                     }
                 }
 
-                DB::table('invoice_payos_transfers')->insert([
+                \App\Services\Tenancy\PropertyDatabase::table('invoice_payos_transfers')->insert([
                     'checkout_id' => $locked->id, 'reference_key' => $key, 'reference' => $reference,
                     'amount' => $amount, 'paid_at' => $date, 'payment_id' => $payment?->id,
                     'review_reason' => $reason, 'created_at' => now(),
@@ -189,7 +193,7 @@ class InvoicePayos
                 }
             }, 3);
         } catch (UniqueConstraintViolationException $error) {
-            if (! DB::table('invoice_payos_transfers')->where('reference_key', $key)->exists()) {
+            if (! \App\Services\Tenancy\PropertyDatabase::table('invoice_payos_transfers')->where('reference_key', $key)->exists()) {
                 throw $error;
             }
         }
@@ -197,7 +201,7 @@ class InvoicePayos
 
     public function reviewTransfers(Invoice $invoice): array
     {
-        return DB::table('invoice_payos_transfers as transfers')
+        return \App\Services\Tenancy\PropertyDatabase::table('invoice_payos_transfers as transfers')
             ->join('invoice_payos_checkouts as checkouts', 'checkouts.id', '=', 'transfers.checkout_id')
             ->where('checkouts.invoice_id', $invoice->id)->whereNotNull('transfers.review_reason')
             ->orderByDesc('transfers.id')->limit(20)

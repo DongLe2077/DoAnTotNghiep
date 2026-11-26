@@ -15,6 +15,7 @@ use App\Models\Service;
 use App\Models\Tenant;
 use App\Models\TenantStay;
 use App\Models\User;
+use App\Services\InvoiceReports;
 use Tests\Concerns\CreatesBillingSchema;
 use Tests\TestCase;
 
@@ -59,9 +60,36 @@ class InvoiceBillingTest extends TestCase
         $this->reading($water, '20', '23.500');
         $electric->service()->update(['default_unit_price' => '99000', 'name' => 'Điện mới']);
         $preview = $this->preview($occupancy)->assertOk()->assertJsonPath('data.can_issue', true)
-            ->assertJsonPath('data.total_amount', '3203437.50')->assertJsonPath('data.items.1.unit_price', '3500.0000')
+            ->assertJsonPath('data.subtotal_amount', '3203437.50')->assertJsonPath('data.total_amount', '3203000.00')
+            ->assertJsonPath('data.items.1.unit_price', '3500.0000')
             ->assertJsonPath('data.items.1.quantity', '40.125')->assertJsonPath('data.items.2.quantity', '3.500');
-        $this->issue($occupancy, $preview->json('data.preview_token'))->assertCreated()->assertJsonPath('data.total_amount', '3203437.50');
+        $this->issue($occupancy, $preview->json('data.preview_token'))->assertCreated()->assertJsonPath('data.total_amount', '3203000.00');
+    }
+
+    public function test_monthly_invoice_only_charges_selected_services_and_requires_the_same_preview(): void
+    {
+        $occupancy = $this->occupancy();
+        $this->service($occupancy);
+        $parking = $this->service($occupancy, 'per_room', '80000', 'Phí giữ xe');
+        $unrelatedParking = $this->service($this->occupancy(), 'per_room', '80000', 'Phí giữ xe');
+        $path = "/api/owner/occupancies/{$occupancy->id}/invoices";
+        $month = ['billing_month' => '2026-01'];
+
+        $this->postJson($path.'/preview', $month + ['service_ids' => [$unrelatedParking->service_id]])->assertUnprocessable();
+        $this->postJson($path.'/preview', $month + ['service_ids' => []])->assertOk()
+            ->assertJsonPath('data.can_issue', true)->assertJsonCount(1, 'data.items')
+            ->assertJsonPath('data.total_amount', '3000000.00');
+        $preview = $this->postJson($path.'/preview', $month + ['service_ids' => [$parking->service_id]])->assertOk()
+            ->assertJsonPath('data.can_issue', true)->assertJsonCount(2, 'data.items')
+            ->assertJsonPath('data.items.1.occupancy_service_id', $parking->id)
+            ->assertJsonPath('data.total_amount', '3080000.00');
+
+        $publish = $month + ['preview_token' => $preview->json('data.preview_token')];
+        $this->postJson($path, $publish + ['service_ids' => []])->assertConflict();
+        $this->assertSame(0, Invoice::count());
+        $this->postJson($path, $publish + ['service_ids' => [$parking->service_id]])->assertCreated()
+            ->assertJsonPath('data.total_amount', '3080000.00');
+        $this->assertSame(2, InvoiceItem::count());
     }
 
     public function test_missing_reading_blocks_publication_and_does_not_create_partial_invoice(): void
@@ -104,8 +132,9 @@ class InvoiceBillingTest extends TestCase
         $this->service($occupancy, 'per_room', '100000', 'Internet', '2026-01-31 00:00:00');
         $preview = $this->preview($occupancy)->assertOk()->assertJsonPath('data.can_issue', true)
             ->assertJsonPath('data.items.1.quantity', '1.000')->assertJsonPath('data.items.1.unit_price', '3225.8065')
-            ->assertJsonPath('data.items.1.source_unit_price', '100000.0000')->assertJsonPath('data.total_amount', '3003225.81');
-        $this->issue($occupancy, $preview->json('data.preview_token'))->assertCreated()->assertJsonPath('data.total_amount', '3003225.81');
+            ->assertJsonPath('data.items.1.source_unit_price', '100000.0000')->assertJsonPath('data.items.1.line_total', '3225.81')
+            ->assertJsonPath('data.subtotal_amount', '3003225.81')->assertJsonPath('data.total_amount', '3003000.00');
+        $this->issue($occupancy, $preview->json('data.preview_token'))->assertCreated()->assertJsonPath('data.total_amount', '3003000.00');
     }
 
     public function test_changed_flat_service_prices_are_split_at_the_effective_time(): void
@@ -273,6 +302,70 @@ class InvoiceBillingTest extends TestCase
         auth('web')->forgetUser();
         auth('web')->logout();
         $this->postJson('/api/owner/occupancies/999999/invoices/preview', [])->assertUnauthorized();
+    }
+
+    public function test_one_time_charge_uses_the_existing_representative_and_can_share_a_month(): void
+    {
+        $occupancy = $this->occupancy();
+        $path = "/api/owner/occupancies/{$occupancy->id}/invoices/one-time";
+        $payload = ['billing_month' => '2026-01', 'description' => 'Phí cấp lại chìa khóa', 'amount' => '2000',
+            'idempotency_key' => 'test-one-time-202601'];
+        $token = $this->postJson($path.'/preview', $payload)->assertOk()->assertJsonPath('data.can_issue', true)
+            ->assertJsonPath('data.total_amount', '2000.00')->json('data.preview_token');
+        $this->assertDatabaseCount('invoices', 0);
+        $payload['preview_token'] = $token;
+        $oneTimeId = $this->postJson($path, $payload)->assertCreated()->assertJsonPath('data.invoice_kind', 'one_time')
+            ->assertJsonPath('data.items.0.description', $payload['description'])->json('data.id');
+        $this->postJson($path, $payload)->assertOk()->assertJsonPath('data.id', $oneTimeId);
+        $this->postJson($path, array_replace($payload, ['description' => 'Phí khác']))->assertConflict();
+        $this->assertStringStartsWith('KT-202601-', Invoice::findOrFail($oneTimeId)->invoice_number);
+
+        $monthly = $this->preview($occupancy)->assertOk()->assertJsonPath('data.can_issue', true)
+            ->assertJsonPath('data.total_amount', '3000000.00');
+        $this->issue($occupancy, $monthly->json('data.preview_token'))->assertCreated()->assertJsonPath('data.invoice_kind', 'monthly');
+        $this->preview($occupancy)->assertOk()->assertJsonPath('data.can_issue', false);
+        $payload = array_replace($payload, ['description' => 'Phí chìa khóa thứ hai', 'idempotency_key' => 'second-charge-202601']);
+        $payload['preview_token'] = $this->postJson($path.'/preview', $payload)->assertOk()->assertJsonPath('data.can_issue', true)->json('data.preview_token');
+        $this->postJson($path, $payload)->assertCreated();
+        $this->assertDatabaseCount('invoices', 3);
+        $this->assertDatabaseCount('invoice_access_grants', 3);
+
+        $this->postJson($path.'/preview', array_replace($payload, ['billing_month' => '2026-03']))
+            ->assertOk()->assertJsonPath('data.can_issue', true);
+        $tenantUser = User::whereNotNull('tenant_id')->sole();
+        $this->actingAs($tenantUser, 'web')->getJson('/api/tenant/invoices/'.$oneTimeId)->assertOk()
+            ->assertJsonPath('data.total_amount', '2000.00');
+    }
+
+    public function test_new_invoice_totals_round_half_up_without_changing_line_amounts(): void
+    {
+        foreach ([
+            ['3000499.99', '3000000.00', '-499.99'],
+            ['3000500.00', '3001000.00', '500.00'],
+            ['3000500.01', '3001000.00', '499.99'],
+        ] as [$raw, $rounded, $difference]) {
+            $occupancy = $this->occupancy(['monthly_rent' => $raw]);
+            $preview = $this->preview($occupancy)->assertOk()->assertJsonPath('data.total_amount', $rounded)
+                ->assertJsonPath('data.rounding_amount', $difference)->assertJsonPath('data.items.0.line_total', $raw);
+            $this->issue($occupancy, $preview->json('data.preview_token'))->assertCreated()
+                ->assertJsonPath('data.total_amount', $rounded)->assertJsonPath('data.rounding_amount', $difference)
+                ->assertJsonPath('data.items.0.line_total', $raw);
+        }
+    }
+
+    public function test_rounding_is_included_when_recording_partial_and_final_payments(): void
+    {
+        $occupancy = $this->occupancy(['monthly_rent' => '3000499.99']);
+        $preview = $this->preview($occupancy)->assertOk();
+        $id = $this->issue($occupancy, $preview->json('data.preview_token'))->assertCreated()->json('data.id');
+        $path = '/api/owner/invoices/'.$id;
+        $receipt = ['paid_at' => now()->toDateTimeString(), 'payment_method' => 'cash'];
+        $this->postJson($path.'/payments', $receipt + ['amount' => '1000000', 'idempotency_key' => 'round-partial'])->assertCreated();
+        $this->getJson($path)->assertOk()->assertJsonPath('data.outstanding_amount', '2000000.00');
+        $this->assertSame('2000000.00', app(InvoiceReports::class)->summary(['billing_month' => '2026-01'])['outstanding_amount']);
+        $this->postJson($path.'/payments', $receipt + ['amount' => '2000000.01', 'idempotency_key' => 'round-overpay'])->assertConflict();
+        $this->postJson($path.'/payments', $receipt + ['amount' => '2000000', 'idempotency_key' => 'round-final'])->assertCreated();
+        $this->getJson($path)->assertOk()->assertJsonPath('data.payment_status', 'paid');
     }
 
     private function preview(Occupancy $occupancy, string $month = '2026-01')

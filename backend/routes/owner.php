@@ -6,6 +6,7 @@ use App\Http\Controllers\Owner\BillingRepresentativeController;
 use App\Http\Controllers\Owner\BulkMeterReadingController;
 use App\Http\Controllers\Owner\CashFlowController;
 use App\Http\Controllers\Owner\CashTransactionController;
+use App\Http\Controllers\Owner\CheckoutApplicationController;
 use App\Http\Controllers\Owner\DashboardController;
 use App\Http\Controllers\Owner\InvoiceController;
 use App\Http\Controllers\Owner\InvoiceIssueController;
@@ -20,11 +21,24 @@ use App\Http\Controllers\Owner\ReceivableController;
 use App\Http\Controllers\Owner\RentalGroupController;
 use App\Http\Controllers\Owner\RentalPropertyController;
 use App\Http\Controllers\Owner\RoomController;
+use App\Http\Controllers\Owner\ScheduledDeletionController;
 use App\Http\Controllers\Owner\ServiceController;
 use App\Http\Controllers\Owner\TenantController;
+use App\Services\DeletionPlan;
 use Illuminate\Support\Facades\Route;
 
 // Included inside the authenticated, active owner route group.
+Route::prefix('scheduled-deletions')->name('scheduled-deletions.')->group(function () {
+    Route::get('/', [ScheduledDeletionController::class, 'index'])->name('index');
+    Route::delete('{job}', [ScheduledDeletionController::class, 'destroy'])->whereNumber('job')->name('destroy');
+    Route::get('{job}/purge/preview', [ScheduledDeletionController::class, 'previewPurge'])->whereNumber('job')->name('purge.preview');
+    Route::post('{job}/purge', [ScheduledDeletionController::class, 'purge'])->whereNumber('job')->name('purge');
+    Route::group(['where' => ['type' => implode('|', array_keys(DeletionPlan::TARGETS)), 'id' => '[0-9]+']], function () {
+        Route::get('{type}/{id}', [ScheduledDeletionController::class, 'show'])->name('show');
+        Route::get('{type}/{id}/preview', [ScheduledDeletionController::class, 'preview'])->name('preview');
+        Route::post('{type}/{id}', [ScheduledDeletionController::class, 'store'])->name('store');
+    });
+});
 Route::get('dashboard', DashboardController::class)->name('dashboard');
 Route::get('meter-readings/bulk', [BulkMeterReadingController::class, 'index'])->name('meter-readings.bulk.index');
 Route::post('meter-readings/bulk/rows', [BulkMeterReadingController::class, 'store'])->name('meter-readings.bulk.store');
@@ -63,6 +77,9 @@ Route::post('occupancies/{occupancy}/services', [OccupancyController::class, 'ap
 Route::post('occupancies/{occupancy}/services/{period}/end', [OccupancyController::class, 'endService'])->name('occupancies.services.end');
 Route::post('occupancies/{occupancy}/transfer', [OccupancyController::class, 'transfer'])->name('occupancies.transfer');
 Route::post('occupancies/{occupancy}/checkout', [OccupancyController::class, 'checkOut'])->name('occupancies.checkout');
+Route::get('checkout-requests', [CheckoutApplicationController::class, 'index'])->name('checkout-requests.index');
+Route::post('checkout-requests/{checkoutApplication}/confirm', [CheckoutApplicationController::class, 'confirm'])->whereNumber('checkoutApplication')->name('checkout-requests.confirm');
+Route::post('checkout-requests/{checkoutApplication}/reject', [CheckoutApplicationController::class, 'reject'])->whereNumber('checkoutApplication')->name('checkout-requests.reject');
 Route::post('occupancies/{occupancy}/billing-representative', BillingRepresentativeController::class)->name('occupancies.billing-representative');
 
 Route::get('occupancies/{occupancy}/meter-readings', [MeterReadingController::class, 'index'])->name('meter-readings.index');
@@ -71,6 +88,8 @@ Route::put('occupancies/{occupancy}/meter-readings/{reading}', [MeterReadingCont
 Route::delete('occupancies/{occupancy}/meter-readings/{reading}', [MeterReadingController::class, 'destroy'])->name('meter-readings.destroy');
 Route::post('occupancies/{occupancy}/invoices/preview', [InvoiceIssueController::class, 'preview'])->name('invoices.preview');
 Route::post('occupancies/{occupancy}/invoices', [InvoiceIssueController::class, 'store'])->name('invoices.store');
+Route::post('occupancies/{occupancy}/invoices/one-time/preview', [InvoiceIssueController::class, 'previewOneTime'])->name('invoices.one-time.preview');
+Route::post('occupancies/{occupancy}/invoices/one-time', [InvoiceIssueController::class, 'storeOneTime'])->name('invoices.one-time.store');
 Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
 Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
 Route::post('invoices/{invoice}/changes', [InvoiceController::class, 'change'])->name('invoices.changes');

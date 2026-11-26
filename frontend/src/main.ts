@@ -12,6 +12,7 @@ import { initializeMobileViewport } from '@/lib/mobile-viewport'
 import './styles/main.css'
 import './styles/management.css'
 import './styles/tenant.css'
+import './redesign/workspace.css'
 
 initializePwaInstall()
 initializePwaRuntime()

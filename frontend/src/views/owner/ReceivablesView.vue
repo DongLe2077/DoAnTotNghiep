@@ -75,7 +75,7 @@ filter()
       </details>
     </form>
     <UiPageState v-if="loading" kind="loading" />
-    <UiPageState v-else-if="error" kind="error" :description="error"><UiButton @click="load()">Thử lại</UiButton></UiPageState>
+    <UiPageState v-else-if="error" kind="error" :description="error"><UiButton @click="load()">Tải lại</UiButton></UiPageState>
     <template v-else-if="summary">
       <div class="management-grid workflow-grid">
         <article class="stat-card"><span>Tổng còn cần thu</span><strong class="stat-money">{{ formatMoney(summary.outstanding_amount) }}</strong><small>{{ scopeDescription }} · {{ summary.open_invoice_count }} hóa đơn</small></article>

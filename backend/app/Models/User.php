@@ -38,6 +38,28 @@ class User extends Authenticatable
         return 'password_hash';
     }
 
+    public function getRoleAttribute($value)
+    {
+        $context = app(\App\Services\Tenancy\PropertyContext::class);
+        if (!$context->enabled() || $context->id() === null) return $value;
+        $membership = \Illuminate\Support\Facades\DB::table('property_memberships')->where('property_id', $context->id())->where('user_id', $this->id)->where('status', 'approved')->whereNull('revoked_at')->first();
+        if (!$membership) return null;
+        return \Illuminate\Support\Facades\DB::table('rental_properties')->where('id', $context->id())->where('owner_user_id', $this->id)->exists() ? self::ROLE_OWNER : self::ROLE_TENANT;
+    }
+
+    public function getTenantIdAttribute($value)
+    {
+        $context = app(\App\Services\Tenancy\PropertyContext::class);
+        if (!$context->enabled() || $context->id() === null) return $value === null ? null : (int) $value;
+        $id = \Illuminate\Support\Facades\DB::table('property_memberships')->where('property_id', $context->id())->where('user_id', $this->id)->where('status', 'approved')->whereNull('revoked_at')->value('tenant_id');
+        return $id === null ? null : (int) $id;
+    }
+
+    public function canCreateRentalProperty(): bool
+    {
+        return $this->getRawOriginal('role') === self::ROLE_OWNER;
+    }
+
     public function hasRole(string ...$roles): bool
     {
         return in_array($this->role, $roles, true);

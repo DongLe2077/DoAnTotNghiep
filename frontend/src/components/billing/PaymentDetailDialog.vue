@@ -35,7 +35,7 @@ onBeforeUnmount(() => { alive = false; sequence++ })
 <template>
   <UiDialog v-if="!correcting" :open="!!paymentId" title="Chi tiết lần thu" @update:open="value => { if (!value) emit('close') }">
     <UiPageState v-if="loading" kind="loading" />
-    <UiPageState v-else-if="error" kind="error" :description="error"><UiButton @click="load">Thử lại</UiButton></UiPageState>
+    <UiPageState v-else-if="error" kind="error" :description="error"><UiButton @click="load">Tải lại</UiButton></UiPageState>
     <template v-else-if="payment">
       <PaymentReceiptSummary :payment="payment" show-actor /><PdfDownloadButton :path="`/owner/payments/${payment.id}/pdf`" :filename="`phieu-thu-${payment.id}.pdf`" label="Tải PDF phiếu thu" />
       <dl class="record-facts"><div><dt>Hóa đơn</dt><dd>{{ payment.invoice_number }}</dd></div><div><dt>Phòng / nhóm</dt><dd>{{ payment.room.room_number }} / {{ payment.group.group_code }}</dd></div><div><dt>Tháng hóa đơn</dt><dd>{{ payment.billing_month }}</dd></div><div><dt>Ghi nhận lúc</dt><dd>{{ formatDateTime(payment.recorded_at) }}</dd></div></dl>

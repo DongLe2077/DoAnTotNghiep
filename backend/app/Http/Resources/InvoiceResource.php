@@ -18,6 +18,8 @@ class InvoiceResource extends JsonResource
         return [
             'id' => $this->id,
             'invoice_number' => $this->invoice_number,
+            'invoice_kind' => $this->invoice_kind,
+            'rounding_amount' => $this->money($this->rounding_amount ?? '0.00'),
             'occupancy_id' => $this->occupancy_id,
             'billing_month' => $this->billing_month->format('Y-m'),
             'issued_at' => $this->issued_at->format('Y-m-d H:i:s'),
@@ -49,6 +51,7 @@ class InvoiceResource extends JsonResource
             'items' => $this->whenLoaded('items', fn () => $this->items->map(fn ($item) => [
                 'id' => $item->id,
                 'item_type' => $item->item_type,
+                'billing_method' => $item->occupancyService?->billing_method,
                 'description' => $item->description,
                 'unit' => $item->unit,
                 'quantity' => $item->quantity,

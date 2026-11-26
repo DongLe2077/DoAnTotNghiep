@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class PayosCheckout extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     protected $table = 'invoice_payos_checkouts';
 
     protected $fillable = [

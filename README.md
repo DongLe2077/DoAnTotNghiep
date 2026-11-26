@@ -1,41 +1,193 @@
-# Hệ thống quản lý nhà trọ
+# RentBase — Hệ thống Quản lý Nhà trọ & Sàn Tìm phòng Trực tuyến
 
-**Phạm vi khóa luận:** không thực hiện quản lý hợp đồng. [Các đề xuất nghiệp vụ mới](docs/additional-feature-ideas-2026-10-30.md).
+Hệ thống quản lý nhà trọ hiện đại, hỗ trợ mô hình **Đa khu trọ (Multi-Tenancy)**, **Sàn tìm phòng công khai (Room Marketplace)**, **Tự đăng ký & Mã mời (Onboarding & Invites)**, **Thanh toán trực tuyến payOS theo khu**, **Xóa an toàn chờ 3 ngày (Scheduled Deletions)**, **Báo cáo cư trú & tài chính theo tháng (Monthly Snapshots)**, **Đồng bộ thời gian thực (Live Updates / Pusher & Polling fallback)** và ứng dụng di động **PWA (Progressive Web App)**.
 
-Hướng mobile đã chọn: [PWA cài từ website lên màn hình chính](docs/pwa-mobile-plan-2026-10-30.md). Đã có manifest/icon/nút cài, mở lại khung khi mất mạng và cập nhật có xác nhận giữa các tab. Người dùng xác nhận đã cài Android ngày 02/11; còn đối chiếu camera/PDF và các luồng trên thiết bị thật. [Cài trên Android](frontend/docs/mobile-android-guide.md), [nghiệm thu/bàn giao ngày 01/11](frontend/docs/pwa-mobile-acceptance-2026-11-01.md).
+> [!IMPORTANT]
+> **Phạm vi khóa luận tốt nghiệp:** Dự án tập trung vào quản lý vận hành, cư trú, dịch vụ, hóa đơn, thanh toán trực tuyến, thu chi, sửa chữa, thông báo và trải nghiệm tìm phòng công khai; **không thực hiện quản lý hợp đồng pháp lý** (theo phạm vi đã thống nhất). Chi tiết xem tại [Các đề xuất nghiệp vụ](docs/additional-feature-ideas-2026-10-30.md).
 
-Đã triển khai bản dữ liệu mẫu lên **https://rentbase.alwaysdata.net/login**, Vue/Laravel và **MariaDB 11.8.9 trên Alwaysdata**. Ngày 03/11 đã chuyển khỏi Aiven sang một CSDL `rentbase_rental_management`, giữ dữ liệu/ảnh và địa chỉ PWA; bản online không phụ thuộc máy Windows. [Nghiệm thu chuyển CSDL, sao lưu và Workbench](docs/mariadb-migration-acceptance-2026-11-03.md), [hướng dẫn hosting và Android](docs/hosting-rentbase-2026-11-01.md). [Dữ liệu mô phỏng](docs/scheduler-and-demo-audit-2026-11-02.md) phân biệt các tình huống đã có/chưa có mẫu. Tiếp theo đối chiếu thiết bị thật và các lượt lịch theo giờ, chốt bản trình giảng viên.
-Mã nguồn đồ án quản lý phòng, người thuê, quá trình thuê và thu chi.
+---
 
-## Cấu trúc
+## Mục lục
 
-- `backend/`: Laravel 12, PHP 8.2+; MySQL 8.0 cho phát triển, MariaDB 11.8.9 trên hosting; xác thực bằng cookie session và CSRF.
-- `frontend/`: Vue 3 + TypeScript + Vite; xác thực/tài khoản/thông báo và CT1–CT8 chủ trọ đã nối API, gồm phòng/người thuê, điện nước/hóa đơn/thu tiền, công nợ, thu chi/hoàn tác, sửa chữa và tổng quan. NT1–NT4 người thuê đã có phòng/hồ sơ/lịch sử, hóa đơn/biên nhận, báo hỏng/ảnh và thông báo. [Tự kiểm tra người thuê](frontend/docs/tenant-self-test.md). [Các màn hình](frontend/docs/owner-management.md), [bản dùng thử và tự kiểm tra](frontend/docs/owner-self-test.md).
+- [Hiện trạng & Triển khai thực tế](#hiện-trạng--triển-khai-thực-tế)
+- [Tiến độ nâng cấp RentBase Redesign (Lộ trình 8 đợt)](#tiến-độ-nâng-cấp-rentbase-redesign-lộ-trình-8-đợt)
+- [Kiến trúc & Công nghệ](#kiến-trúc--công-nghệ)
+- [Tính năng hệ thống](#tính-năng-hệ-thống)
+- [Cấu trúc mã nguồn](#cấu-trúc-mã-nguồn)
+- [Hướng dẫn cài đặt & Khởi chạy](#hướng-dẫn-cài-đặt--khởi-chạy)
+- [Kiểm thử & Đảm bảo chất lượng](#kiểm-thử--đảm-bảo-chất-lượng)
+- [Danh mục tài liệu chi tiết](#danh-mục-tài-liệu-chi-tiết)
 
-## Chức năng backend
+---
 
-- Đăng nhập, phân quyền chủ trọ/người thuê và đổi mật khẩu.
-- Phòng, dịch vụ và đơn giá theo thời gian.
-- Hồ sơ người thuê, nhóm thuê, nhận/chuyển/trả phòng và lịch sử cư trú.
-- Chỉ số điện nước, hóa đơn, công nợ, thu tiền một phần/toàn bộ.
-- Thu chi, nhật ký chỉnh sửa, hoàn tác và khôi phục khoản xóa nhầm.
-- Báo hỏng/sửa chữa, ảnh riêng tư và thông báo trong ứng dụng.
-- Lịch sử xử lý sửa chữa: trạng thái/ghi chú trước sau, người thực hiện, thời điểm và mốc dữ liệu cũ.
-- Thông báo chung của chủ trọ: gửi toàn bộ/theo phòng, xem trước người nhận, chống gửi trùng và theo dõi đã đọc.
-- Trang tổng quan và báo cáo theo tháng.
+## Hiện trạng & Triển khai thực tế
 
-## Chạy backend
+- **Bản trực tuyến đang chạy:** Triển khai tại **https://rentbase.alwaysdata.net/login** trên nền tảng Alwaysdata, kết nối CSDL **MariaDB 11.8.9** (`rentbase_rental_management`). Môi trường online hoạt động độc lập, không phụ thuộc vào máy trạm cục bộ.
+- **Ứng dụng di động PWA:** Hỗ trợ cài đặt trực tiếp từ trình duyệt Chrome lên màn hình chính thiết bị Android/iOS mà không cần qua kho ứng dụng. Đã tích hợp Web App Manifest, Service Worker mở khung khi mất kết nối và cơ chế xác nhận cập nhật giữa các tab. Đã kiểm thử nghiệm thu cài đặt trên Android. Xem [Hướng dẫn cài trên Android](frontend/docs/mobile-android-guide.md), [Nghiệm thu PWA Mobile](frontend/docs/pwa-mobile-acceptance-2026-11-01.md), [Nghiệm thu chuyển CSDL Alwaysdata](docs/mariadb-migration-acceptance-2026-11-03.md).
 
-Ứng dụng sử dụng CSDL `rental_management` có sẵn 16 bảng gốc. 11 migration trong mã nguồn bổ sung phần mở rộng. Với MySQL cloud rỗng, dùng baseline đầy đủ và lệnh khởi tạo có kiểm soát trong [hướng dẫn hosting](docs/hosting-rentbase-2026-11-01.md). Kho mã nguồn không chứa dữ liệu người thuê hoặc mật khẩu kết nối.
+---
+
+## Tiến độ nâng cấp RentBase Redesign (Lộ trình 8 đợt)
+
+Tháng 11/2026, dự án chuyển đổi mô hình từ quản lý đơn khu trọ sang nền tảng **Đa khu trọ (Multi-Property Workspace)** với sàn tìm phòng và thiết kế giao diện hoàn toàn mới theo [Kế hoạch tổng thể RentBase sau đợt 2](docs/rentbase-plan-after-phase-2-2026-11-14.md):
+
+| Đợt                   | Nội dung thực hiện                                                                                                                                                                                                                                               | Trạng thái         | Tài liệu đối chiếu                                                                                                                                  |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Đợt 1**             | Khảo sát mã nguồn, chuẩn hóa vị trí nút Sửa/Xóa/Hủy, rà soát tính năng desktop & mobile.                                                                                                                                                                         | Hoàn thành         | [Báo cáo rà soát đợt 1](docs/phase-one-review-2026-11-14.md)                                                                                        |
+| **Đợt 2 & 2 bổ sung** | Dựng 4 màn hình mẫu xem thử Redesign Preview (`/preview-v2`), mô phỏng luồng đăng ký, tạo khu, mã mời, duyệt thành viên và tổng quan tháng.                                                                                                                      | Hoàn thành         | [Báo cáo đợt 2](docs/phase-two-review-2026-11-14.md) · [Đợt 2 bổ sung](docs/phase-two-extra-review-2026-11-14.md)                                   |
+| **Đợt 3**             | Xây dựng nền tảng Multi-Tenancy: quan hệ khu trọ (`rental_properties`), phân quyền thành viên (`property_memberships`), cách ly dữ liệu triệt để (phòng, người thuê, hóa đơn, PDF, ảnh, thông báo), cấu hình payOS riêng từng khu, migration chuyển đổi CSDL cũ. | Hoàn thành         | [Tiến độ & Kết quả đợt 3](docs/phase-3-progress-2026-11-15.md)                                                                                      |
+| **Đợt 4**             | Tự đăng ký tài khoản (`/register`), Onboarding tạo khu trọ mới, cơ chế tạo/quản lý mã mời có thời hạn & giới hạn lượt, gửi yêu cầu tham gia, luồng duyệt/từ chối/thu hồi quyền thành viên, liên kết hồ sơ cư trú.                                                | Hoàn thành         | [Báo cáo nghiệm thu đợt 4](docs/phase-four-review-2026-11-16.md)                                                                                    |
+| **Đợt 5**             | Sàn tìm phòng công khai (`/find-rooms`), bộ lọc khu vực/giá/sức chứa/ở ghép, tin đăng phòng có ảnh, đặt lịch xem phòng, gửi yêu cầu thuê, duyệt nhận phòng thời gian thực kèm duyệt thành viên.                                                                  | Hoàn thành         | [Báo cáo kết quả đợt 5](docs/phase-five-review-2026-11-16.md)                                                                                       |
+| **Đợt 6**             | Báo cáo cư trú & vận hành theo tháng, lưu trữ snapshot tổng kết (`monthly_report_snapshots`), đồng bộ thời gian thực 2 tầng: Pusher WebSocket và Revision polling fallback khi tab hoạt động.                                                                    | Hoàn thành         | [Kiểm thử PhaseSixTest](backend/tests/Feature/PhaseSixTest.php)                                                                                     |
+| **Đợt 7**             | Tái thiết kế toàn diện giao diện RentBase cho khách, chủ trọ và người thuê (Navigation, Design tokens, Forms, Tables, Mobile Drawer, Responsive 320–1366px).                                                                                                     | Đang hoàn thiện    | [Mục 7 Kế hoạch RentBase](docs/rentbase-plan-after-phase-2-2026-11-14.md#7-thiết-kế-lại-toàn-bộ-giao-diện-rentbase)                                 |
+| **Đợt 8**             | Nghiệm thu trên môi trường MariaDB Alwaysdata & thiết bị Android thực tế, kiểm tra payOS theo khu, sao lưu/phục hồi và bàn giao tài liệu tự kiểm thử hai vai trò.                                                                                                | Kế hoạch tiếp theo | [Mục 12 Kịch bản kiểm thử](docs/rentbase-plan-after-phase-2-2026-11-14.md#12-bàn-giao-hướng-dẫn-tự-kiểm-thử-hai-vai-trò-sau-khi-hoàn-thành-các-đợt) |
+
+---
+
+## Kiến trúc & Công nghệ
+
+### Backend
+
+- **Framework:** Laravel 12, PHP 8.2+
+- **CSDL:** MySQL 8.0 (phát triển local), MariaDB 11.8.9 (hosting Alwaysdata)
+- **Kiến trúc dữ liệu:** Hơn 35 bảng nghiệp vụ, mô hình Multi-Tenancy cô lập theo `property_id` và middleware `SelectProperty`.
+- **Bảo mật & Phiên:** Session Cookie HttpOnly, CSRF token, phân quyền RBAC theo khu trọ, bảo vệ truy cập ảnh/chứng từ riêng tư.
+- **Thanh toán trực tuyến:** Tích hợp payOS API với webhook định tuyến riêng theo khu, mã hóa cấu hình bảo mật phía máy chủ.
+- **Sự kiện & Đồng bộ:** Pusher Channels / Laravel Broadcasting, kết hợp Revision endpoint cho cơ chế Polling dự phòng.
+- **Xuất chứng từ:** Snappy / DomPDF xuất PDF hóa đơn và phiếu thu chuyên nghiệp theo nhận diện khu trọ.
+
+### Frontend
+
+- **Công nghệ nền tảng:** Vue 3 (Composition API, `<script setup>`), TypeScript, Vite
+- **Quản lý trạng thái & Định tuyến:** Pinia Store, Vue Router 4
+- **Giao diện & Thành phần:** Hệ thống Design System tự xây dựng, Lucide Icons, tiện ích responsive Tailwind/PostCSS, bảng màu hiện đại (than chì, xanh ngọc, trắng ấm).
+- **Ứng dụng di động PWA:** Service Worker, Web App Manifest, Cache First cho khung tĩnh, Network First cho dữ liệu API, điều hướng tối ưu cho màn hình cảm ứng (Mobile Navigation Drawer & Bottom Bar).
+
+---
+
+## Tính năng hệ thống
+
+### 1. Khách vãng lai & Người tìm phòng
+
+- **Sàn tìm phòng công khai (`/find-rooms`):** Khám phá danh sách phòng trọ cho thuê mà không cần đăng nhập; xem ảnh, diện tích, giá thuê, các khoản phí dịch vụ minh bạch, tiện nghi và quy định.
+- **Bộ lọc linh hoạt:** Lọc theo khu vực, tầm giá, diện tích, sức chứa, số chỗ còn nhận và tùy chọn tìm phòng cho ở ghép.
+- **Đặt lịch xem phòng (Viewing Appointments):** Chọn ngày, khung giờ hẹn, số người dự kiến và ghi chú liên hệ.
+- **Gửi yêu cầu thuê phòng (Rental Applications):** Điền nguyện vọng thuê và ngày dọn vào dự kiến. Lưu biểu mẫu nháp qua xác thực (đăng ký/đăng nhập mà không bị mất thông tin đang điền).
+- **Theo dõi yêu cầu của tôi (`/my-room-requests`):** Theo dõi phản hồi từ chủ trọ (xác nhận lịch, đề xuất đổi giờ hẹn, chấp thuận thuê, lý do từ chối), chủ động đồng ý giờ hẹn mới hoặc rút yêu cầu.
+- **Tự đăng ký tài khoản (`/register`):** Đăng ký bằng họ tên, tên đăng nhập, số điện thoại và mật khẩu; lựa chọn "Quản lý nhà trọ" để tạo khu trọ mới hoặc "Nhập mã khu trọ" để xin vào khu đang thuê.
+
+### 2. Chủ trọ (Owner Portal)
+
+- **Đa khu trọ (Multi-Property Workspace):** Tạo nhiều khu trọ, chuyển đổi ngữ cảnh quản lý tức thì (`/properties`). Dữ liệu giữa các khu được cách ly tuyệt đối.
+- **Tiếp nhận & Quản lý tin đăng (`/owner/marketplace/listings`):** Tạo và cập nhật tin đăng phòng, quản lý ảnh công khai, bật/tắt trạng thái đăng hoặc cho ở ghép.
+- **Lịch xem & Yêu cầu thuê (`/owner/marketplace/requests`):** Tiếp nhận yêu cầu từ khách; xác nhận, đề xuất đổi giờ hoặc hủy lịch hẹn; chấp thuận hoặc từ chối yêu cầu thuê; ghi nhận khách đã đến hay vắng mặt.
+- **Xác nhận nhận phòng tức thì:** Chuyển đổi trực tiếp từ yêu cầu thuê sang đợt cư trú thực tế; tự động kiểm tra sức chứa thời gian thực, hỗ trợ duyệt thành viên khu trọ ngay trong cùng thao tác.
+- **Thành viên & Mã mời (`/owner/members`):** Tạo mã mời khu trọ có thời hạn (mặc định 7 ngày), giới hạn số lượt duyệt, hỗ trợ đổi hoặc thu hồi mã; phê duyệt hoặc từ chối yêu cầu tham gia; liên kết tài khoản thành viên với hồ sơ người thuê.
+- **Quản lý danh mục:** Quản lý phòng, dịch vụ và đơn giá theo thời gian; theo dõi trạng thái vận hành (trống, đang ở, bảo trì, chờ xóa).
+- **Quản lý cư trú:** Hồ sơ người thuê, nhóm thuê, đợt cư trú, chỉ định đại diện phòng, thêm/rời thành viên, chuyển phòng và trả phòng có lưu lịch sử.
+- **Điện nước & Hóa đơn:** Ghi chỉ số đơn lẻ hoặc nhập chỉ số nhiều phòng (`/owner/meters/bulk`); xem trước, phát hành hóa đơn theo kỳ, xuất file PDF hóa đơn/phiếu thu; điều chỉnh hoặc hủy hóa đơn có ghi nhật ký kiểm toán.
+- **Thanh toán & Công nợ:** Thu tiền mặt hoặc chuyển khoản nhiều lần, cấp biên nhận, sửa sai phiếu thu có đối chiếu, theo dõi công nợ quá hạn theo từng phòng và từng hóa đơn.
+- **Sổ quỹ thu chi:** Quản lý khoản thu khác và chi phí vận hành; tự động liên kết chi phí sửa chữa với sổ quỹ; nhật ký chỉnh sửa, hoàn tác và khôi phục khoản chi.
+- **Báo hỏng & Sửa chữa:** Tiếp nhận sự cố từ người thuê, xem ảnh chụp riêng tư, cập nhật trạng thái xử lý, lưu lịch sử từng mốc xử lý và liên kết chi phí khắc phục.
+- **Thông báo chung:** Soạn và gửi thông báo toàn khu hoặc theo từng phòng cụ thể; xem trước danh sách người nhận, chống gửi trùng và thống kê số người đã đọc.
+- **Chờ xóa an toàn 3 ngày (`/owner/pending-deletions`):** Cơ chế hoãn xóa an toàn (grace period) cho phòng, người thuê, nhóm, dịch vụ, hóa đơn, thu chi; hiển thị cảnh báo tác động liên đới; cho phép hủy xóa/khôi phục trong 3 ngày trước khi xóa vĩnh viễn.
+- **Báo cáo & Tổng kết tháng:** Thống kê hiện tại và tổng kết lịch sử cư trú (số người vào/ra/chuyển, số người ở cuối tháng, số phòng trống cuối tháng); đối chiếu doanh thu, thực thu, chi phí và công nợ; lưu snapshot báo cáo cố định.
+
+### 3. Người thuê (Tenant Portal)
+
+- **Khu trọ của tôi (`/tenant/workspace`):** Xem thông tin liên hệ của chủ trọ, quy định chung và các thông báo nội bộ của khu.
+- **Phòng của tôi (`/tenant`):** Xem thông tin phòng đang cư trú, danh sách bạn cùng phòng, người đại diện, các dịch vụ đăng ký sử dụng và lịch sử cư trú.
+- **Hóa đơn & Thanh toán trực tuyến (`/tenant/invoices`):** Xem danh sách hóa đơn theo quyền truy cập, hiển thị hạn thanh toán, số dư còn nợ, chi tiết từng khoản mục phí, lịch sử thanh toán, tải PDF hóa đơn/biên nhận.
+- **Thanh toán QR payOS:** Tạo mã VietQR động trực tiếp trên hóa đơn, chuyển khoản qua ứng dụng ngân hàng và hệ thống tự động gạch nợ sau khi nhận webhook từ payOS.
+- **Báo hỏng sự cố (`/tenant/maintenance`):** Gửi yêu cầu sửa chữa kèm mô tả và ảnh chụp thực tế từ camera/thiết bị; theo dõi tiến độ xử lý và phản hồi từ chủ trọ.
+- **Hộp thông báo cá nhân (`/notifications`):** Nhận thông báo nhắc hạn thanh toán, xác nhận biên nhận, cập nhật tiến độ sửa chữa và thông báo chung từ chủ trọ.
+- **Quản lý tài khoản cá nhân (`/account`):** Xem thông tin cá nhân và đổi mật khẩu an toàn.
+
+---
+
+## Cấu trúc mã nguồn
+
+```text
+d:\KLTN-redesign\
+├── backend/                         # Ứng dụng Backend Laravel 12
+│   ├── app/
+│   │   ├── Console/Commands/        # Lệnh Artisan (nhắc nợ, audit quyền, xóa 3 ngày, payOS)
+│   │   ├── Http/Controllers/        # API Controllers (Auth, Onboarding, Marketplace, Live...)
+│   │   ├── Http/Middleware/         # Middleware (SelectProperty, RBAC...)
+│   │   ├── Models/                  # Eloquent Models (Room, Tenant, Invoice, ScheduledDeletion...)
+│   │   └── Services/                # Nghiệp vụ lõi (Tenancy, Billing, LiveUpdates, Marketplace...)
+│   ├── config/                      # Cấu hình hệ thống (tenancy.php, database.php...)
+│   ├── database/migrations/         # Migrations CSDL (Multi-tenancy, Onboarding, Deletions...)
+│   └── tests/                       # Bộ kiểm thử Unit & Feature (450+ tests)
+│
+├── frontend/                        # Ứng dụng Frontend Vue 3 + Vite + TypeScript
+│   ├── public/                      # Static assets, PWA manifest, icons
+│   ├── src/
+│   │   ├── assets/ & styles/        # CSS variables, Design tokens, animations
+│   │   ├── components/              # Vue components dùng chung (Owner, Tenant, Design, Modals...)
+│   │   ├── composables/             # Vue Composables (useLiveRefresh, useTenantApi...)
+│   │   ├── layouts/                 # AppLayout, AuthLayout, Navigation Drawers
+│   │   ├── lib/                     # Utilities (API client, property-selection, date, formatters)
+│   │   ├── router/                  # Vue Router (Phân quyền route, guard ngữ cảnh khu trọ)
+│   │   ├── stores/                  # Pinia stores (Auth, PropertyContext...)
+│   │   ├── types/                   # TypeScript interfaces & types
+│   │   └── views/                   # Các màn hình chính (Marketplace, Owner, Tenant, Onboarding...)
+│   └── tests/e2e/                   # Bộ kiểm thử Playwright trình duyệt E2E
+│
+└── docs/                            # Tài liệu phân tích, lộ trình & biên bản nghiệm thu
+```
+
+---
+
+## Hướng dẫn cài đặt & Khởi chạy
+
+### Yêu cầu môi trường
+
+- **PHP:** 8.2 trở lên (yêu cầu extensions: `pdo_mysql`, `curl`, `mbstring`, `openssl`, `zip`)
+- **Composer:** 2.2 trở lên
+- **Node.js:** 20.x hoặc 22.x và **npm**
+- **CSDL:** MySQL 8.0+ hoặc MariaDB 10.4+/11.8+
+
+---
+
+### 1. Cài đặt Backend
+
+Di chuyển vào thư mục `backend/`:
 
 ```powershell
 cd backend
 composer install
-Copy-Item .env.example .env # Chỉ khi chưa có .env
-php artisan key:generate   # Chỉ khi APP_KEY chưa được đặt
+Copy-Item .env.example .env    # Tạo tệp .env nếu chưa có
+php artisan key:generate      # Tạo khóa ứng dụng
 ```
 
-Điền kết nối MySQL vào `.env`, sau đó:
+Cấu hình thông số kết nối CSDL trong tệp `.env`:
+
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=rental_management
+DB_USERNAME=root
+DB_PASSWORD="your_password"
+
+# Bật tính năng đa khu trọ (Multi-Tenancy)
+PROPERTY_TENANCY_ENABLED=true
+
+# Cấu hình thanh toán trực tuyến payOS (tùy chọn)
+PAYOS_ENABLED=false
+PAYOS_CLIENT_ID=
+PAYOS_API_KEY=
+PAYOS_CHECKSUM_KEY=
+
+# Cấu hình đồng bộ thời gian thực Pusher Channels (tùy chọn)
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
+PUSHER_APP_CLUSTER=ap1
+```
+
+Chạy migration và khởi động máy chủ Laravel:
 
 ```powershell
 php artisan migrate
@@ -43,58 +195,148 @@ php artisan rental:verify-database
 php artisan serve
 ```
 
-Để chạy lịch nhắc thanh toán lúc 08:00 mỗi ngày, mở terminal riêng trong `backend/` và chạy `php artisan schedule:work`.
+Máy chủ backend chạy tại địa chỉ: `http://127.0.0.1:8000`.
 
-## Chạy frontend
+> [!TIP]
+> **Các tiến trình nền tự động:**
+>
+> - Để chạy lịch nhắc nợ tự động lúc 08:00 và dọn dẹp các đối tượng quá hạn 3 ngày chờ xóa, mở một terminal riêng trong `backend/` và chạy:
+>   ```powershell
+>   php artisan schedule:work
+>   ```
+> - Kiểm tra và kiểm toán quyền sở hữu khu trọ:
+>   ```powershell
+>   php artisan rental:audit-property-ownership
+>   ```
 
-Giữ backend ở `http://127.0.0.1:8000`, mở terminal khác:
+---
+
+### 2. Cài đặt Frontend
+
+Mở một cửa sổ terminal mới và di chuyển vào thư mục `frontend/`:
 
 ```powershell
-cd D:\KLTN\frontend
+cd frontend
 npm ci
 npm run dev
 ```
 
-Mở `http://127.0.0.1:5173/login`, đăng nhập bằng tài khoản ứng dụng đã có. Frontend proxy `/api` đến Laravel, dùng cookie session/CSRF hiện tại. [Hướng dẫn frontend và kiểm thử](frontend/README.md).
+Ứng dụng frontend chạy tại: `http://127.0.0.1:5173`.
+Vite tự động proxy các yêu cầu `/api` sang backend Laravel tại cổng 8000 và bảo toàn cookie phiên HttpOnly/CSRF.
 
-Nâng cấp ngày 27/10/2026: đã có liên kết chi phí sửa chữa và sửa sai phiếu thu có đối chiếu; giữ dữ liệu/phiếu gốc. Backend 364 kiểm thử, frontend 127 kiểm thử và bản đóng gói đạt. MySQL 26 bảng nghiệp vụ/95 quan hệ/3 view; kiểm tra đồng thời riêng 61 bước đạt. [Kết quả Chrome và giới hạn từng lượt](frontend/docs/financial-upgrades-acceptance.md).
+---
 
-Hoàn thiện ngày 30/10/2026: thông tin nhà trọ, PDF hóa đơn/phiếu thu theo quyền và nhập chỉ số nhiều phòng có chống gửi trùng. Backend 399 kiểm thử, frontend 131 kiểm thử, đóng gói và 14 kịch bản Chrome liên quan đạt; MySQL xác minh 28 bảng/100 quan hệ/3 view. [Phạm vi, kết quả và giới hạn nghiệm thu](frontend/docs/property-pdf-bulk-acceptance.md).
+### 3. Bản chạy thử độc lập (Offline Demo Mode)
 
-Đợt tiếp theo cùng ngày: đã chuẩn bị bản trình riêng và hoàn thiện phản hồi/hiệu ứng giao diện; **94/94 kịch bản Chrome toàn bộ**, 131 kiểm thử frontend và đóng gói đạt. Có dữ liệu nhiều tình huống, mốc mã nguồn/CSDL/ảnh và công cụ khôi phục sau tập demo. [Hướng dẫn trình](frontend/docs/presentation-guide.md), [biên bản nghiệm thu](frontend/docs/presentation-polish-acceptance.md).
+Nếu muốn trải nghiệm nhanh toàn bộ giao diện và luồng nghiệp vụ trên CSDL SQLite cục bộ (không cần cài đặt MySQL):
 
-## Kiểm tra và tài liệu
+```powershell
+cd frontend
+npm run demo
+```
+
+Mở trình duyệt tại:
+
+- **Cổng chủ trọ dùng thử:** `http://127.0.0.1:5174/owner` (đăng nhập: `admin` / `123`)
+- **Cổng người thuê dùng thử:** `http://127.0.0.1:5174/tenant` (đăng nhập: `user` / `123`)
+- **Xem trước thiết kế mới (Redesign Preview):** `http://127.0.0.1:5173/preview-v2` hoặc `http://127.0.0.1:5174/preview-v2`
+
+---
+
+## Kiểm thử & Đảm bảo chất lượng
+
+Dự án áp dụng quy trình kiểm thử nghiêm ngặt đa tầng để đảm bảo tính an toàn dữ liệu tài chính và sự ổn định của hệ thống:
+
+### 1. Kiểm thử Backend (PHPUnit / Pest)
+
+Bao phủ toàn bộ quy tắc tính toán hóa đơn, thanh toán, chống gửi trùng, cách ly đa khu trọ, lịch xem phòng, xóa an toàn 3 ngày và đồng bộ Live Updates:
 
 ```powershell
 cd backend
 php artisan test
-php vendor/bin/pint --test
+php vendor/bin/pint --test    # Kiểm tra quy chuẩn mã nguồn PHP PSR-12
 ```
 
-Ngày 24/10/2026: 328 kiểm thử backend, 119 kiểm thử frontend và 27 kịch bản Chrome liên quan thông báo chung/hộp thông báo/đăng nhập đạt; đóng gói TypeScript/Vite và quy chuẩn PHP đạt. Kiểm tra mới trên MySQL cho thông báo chung đạt 15 bước, giữ nguyên dữ liệu sau rollback. CSDL hiện có 22 bảng nghiệp vụ, 78 quan hệ và 3 view; bảng `migrations` theo dõi nâng cấp. Bộ 66 kịch bản trình duyệt toàn bộ trước đó đã đạt ngày 23/10/2026.
+- **Kết quả:** Đạt **453 bài kiểm thử**, hơn **4.860+ lượt kiểm tra (assertions)** pass hoàn toàn.
 
-Nghiệm thu giao diện 25/10/2026: đã sửa ô ngày giờ tràn ở 320px, hướng dẫn tài khoản/vai trò, bộ chọn lặp nhãn và nội dung demo; đã kiểm tra lại các luồng hai vai trò. [Biên bản, kết quả từng lượt và giới hạn nghiệm thu](frontend/docs/ui-acceptance.md).
+### 2. Kiểm thử Frontend (Vitest)
 
-Bổ sung lịch sử sửa chữa 25/10/2026: 336 kiểm thử backend, 119 frontend, 25 kịch bản Chrome liên quan và bản đóng gói đạt. Kiểm tra MySQL mới đạt 14 bước, dữ liệu 23 bảng giữ nguyên sau rollback. CSDL hiện tại có 23 bảng nghiệp vụ, 81 quan hệ và 3 view; dữ liệu cũ giữ nguyên khi nâng cấp.
+Kiểm tra định dạng tiền tệ, xử lý ngày tháng, logic Pinia Store, bảo mật phiên và tính tương phản màu sắc giao diện:
 
-- [Hướng dẫn backend và các API](backend/README.md)
-- [Nhật ký thu chi, ảnh báo hỏng và thông báo](backend/docs/audit-photos-notifications.md)
-- [Tình trạng và việc còn lại](backend/docs/backend-readiness.md)
-- [Chống gửi trùng thu khác/chi phí](backend/docs/cash-idempotency.md)
-- [Thông báo chung: quy tắc/API](backend/docs/announcements.md), [tự kiểm tra trên giao diện](frontend/docs/announcements-self-test.md)
-- [Lịch sử sửa chữa: quy tắc/API](backend/docs/maintenance-history.md), [tự kiểm tra](frontend/docs/maintenance-history-self-test.md)
-- [Chi phí sửa chữa: quy tắc/API](backend/docs/maintenance-expenses.md), [tự kiểm tra](frontend/docs/repair-expenses-self-test.md)
-- [Sửa sai phiếu thu: quy tắc/API](backend/docs/payment-corrections.md), [tự kiểm tra](frontend/docs/payment-corrections-self-test.md)
-- [Nghiệm thu chi phí sửa chữa/sửa sai phiếu thu ngày 27/10](frontend/docs/financial-upgrades-acceptance.md)
-- [Thông tin nhà trọ/PDF: tự kiểm tra](frontend/docs/property-pdf-self-test.md), [quy tắc cấu hình](backend/docs/rental-property.md), [PDF](backend/docs/pdf-documents.md)
-- [Nhập chỉ số nhiều phòng: tự kiểm tra](frontend/docs/bulk-meters-self-test.md), [quy tắc/API](backend/docs/bulk-meter-readings.md)
-- [Kế hoạch giao diện frontend](backend/docs/frontend-plan.md)
-- [Kế hoạch chuẩn bị sản phẩm để giảng viên đánh giá đầu tháng 11/2026](docs/initial-report-plan-2026-11.md)
-- [Kế hoạch bổ sung và nâng cấp chức năng ngày 27/10/2026](docs/feature-upgrade-plan-2026-10-27.md)
-- [Bản trình sản phẩm: chạy CMD, tài khoản, dữ liệu và sao lưu/khôi phục](frontend/docs/presentation-guide.md)
-- [Nghiệm thu bản trình và hoàn thiện giao diện ngày 30/10](frontend/docs/presentation-polish-acceptance.md)
-- [Thứ tự nâng cấp sau ngày 30/10](docs/next-upgrade-plan-2026-10-30.md)
+```powershell
+cd frontend
+npm test
+npm run build                 # Đóng gói và kiểm tra toàn bộ kiểu dữ liệu TypeScript
+```
 
-`.env`, dữ liệu tải lên, thư viện cài đặt và các tệp chạy tạm được giữ ngoài Git.
+- **Kết quả:** Đạt **134 bài kiểm thử unit/integration**, bản build Vite/PWA thành công không có lỗi.
 
-Cập nhật 23/10/2026: đã có điều chỉnh/hủy/khôi phục hóa đơn có lịch sử, hạn thanh toán và công nợ quá hạn. Xem [nghiệm thu nghiệp vụ](frontend/docs/business-acceptance.md) và [quy tắc hóa đơn](backend/docs/invoice-controls.md).
+### 3. Kiểm thử Trình duyệt E2E (Playwright)
+
+Kiểm thử tự động các luồng tương tác thực tế của người dùng trên cả desktop (1366px) và mobile (360px, 390px):
+
+```powershell
+cd frontend
+npm run test:e2e
+```
+
+---
+
+## Danh mục tài liệu chi tiết
+
+### Tài liệu Lộ trình & Nghiệm thu Đợt nâng cấp RentBase
+
+- [Kế hoạch tổng thể RentBase sau đợt 2 (Lộ trình 8 đợt)](docs/rentbase-plan-after-phase-2-2026-11-14.md)
+- [Báo cáo rà soát đợt 1 (14/11/2026)](docs/phase-one-review-2026-11-14.md)
+- [Báo cáo nghiệm thu đợt 2](docs/phase-two-review-2026-11-14.md) · [Nghiệm thu đợt 2 bổ sung](docs/phase-two-extra-review-2026-11-14.md)
+- [Tiến độ & Kết quả đợt 3 — Đa khu trọ & Cách ly quyền (15/11/2026)](docs/phase-3-progress-2026-11-15.md)
+- [Báo cáo nghiệm thu đợt 4 — Đăng ký, Tạo khu & Mã mời (16/11/2026)](docs/phase-four-review-2026-11-16.md)
+- [Báo cáo kết quả đợt 5 — Sàn tìm phòng & Đặt lịch xem (16/11/2026)](docs/phase-five-review-2026-11-16.md)
+
+### Tài liệu Nghiệp vụ & API Backend
+
+- [Hướng dẫn Backend & Tổng quan API](backend/README.md)
+- [Xác thực & Quản lý phiên](backend/docs/authentication.md)
+- [Quy tắc phòng & Dịch vụ](backend/docs/rooms-services.md)
+- [Quy trình cư trú & Nhận/trả phòng](backend/docs/tenant-occupancy.md)
+- [Chỉ số điện nước & Lập hóa đơn](backend/docs/meter-readings-invoices.md)
+- [Quy tắc điều chỉnh & Hủy hóa đơn](backend/docs/invoice-controls.md)
+- [Thanh toán hóa đơn & Biên nhận](backend/docs/invoice-payments.md)
+- [Sửa sai phiếu thu có đối chiếu](backend/docs/payment-corrections.md)
+- [Sổ quỹ thu chi, Hoàn tác & Chống gửi trùng](backend/docs/cash-book.md) · [Chống gửi trùng](backend/docs/cash-idempotency.md)
+- [Báo hỏng, Ảnh riêng tư & Lịch sử sửa chữa](backend/docs/maintenance-history.md) · [Chi phí sửa chữa](backend/docs/maintenance-expenses.md)
+- [Thông báo chung toàn khu / theo phòng](backend/docs/announcements.md)
+- [Cấu hình thông tin nhà trọ](backend/docs/rental-property.md) & [Xuất chứng từ PDF](backend/docs/pdf-documents.md)
+- [Nhập chỉ số điện nước nhiều phòng](backend/docs/bulk-meter-readings.md)
+
+### Tài liệu Giao diện & Hướng dẫn Tự kiểm tra Frontend
+
+- [Hướng dẫn Frontend & Cấu hình Vite](frontend/README.md)
+- [Quy chuẩn thiết kế giao diện (Design System)](frontend/docs/design-system.md)
+- [Hướng dẫn màn hình chủ trọ](frontend/docs/owner-management.md) & [Tự kiểm tra CT4–CT8](frontend/docs/owner-self-test.md)
+- [Hướng dẫn tự kiểm tra người thuê NT1–NT4](frontend/docs/tenant-self-test.md)
+- [Tự kiểm tra Thông báo chung](frontend/docs/announcements-self-test.md)
+- [Tự kiểm tra Lịch sử sửa chữa](frontend/docs/maintenance-history-self-test.md) & [Chi phí sửa chữa](frontend/docs/repair-expenses-self-test.md)
+- [Tự kiểm tra Sửa sai phiếu thu](frontend/docs/payment-corrections-self-test.md)
+- [Tự kiểm tra Thông tin nhà trọ & PDF](frontend/docs/property-pdf-self-test.md)
+- [Tự kiểm tra Nhập chỉ số nhiều phòng](frontend/docs/bulk-meters-self-test.md)
+- [Kịch bản trình diễn sản phẩm (Presentation Guide)](frontend/docs/presentation-guide.md)
+
+### Tài liệu Triển khai Alwaysdata & Ứng dụng Di động PWA
+
+- [Hướng dẫn cài đặt và sử dụng PWA trên Android](frontend/docs/mobile-android-guide.md)
+- [Kế hoạch phát triển PWA Mobile](docs/pwa-mobile-plan-2026-10-30.md)
+- [Nghiệm thu PWA Mobile trên Android](frontend/docs/pwa-mobile-acceptance-2026-11-01.md)
+- [Nghiệm thu kiểm thử Chrome Mobile](docs/chrome-mobile-acceptance-2026-11-06.md)
+- [Hướng dẫn Hosting Alwaysdata & CSDL MariaDB](docs/hosting-rentbase-2026-11-01.md)
+- [Nghiệm thu chuyển đổi MariaDB Alwaysdata](docs/mariadb-migration-acceptance-2026-11-03.md)
+- [Kế hoạch sao lưu và khôi phục CSDL](docs/alwaysdata-database-migration-plan-2026-11-03.md)
+- [Kích hoạt thanh toán trực tuyến payOS](docs/payos-activation.md)
+
+---
+
+## Bảo mật & Giấy phép
+
+- Tệp cấu hình môi trường `.env`, khóa bí mật `APP_KEY`, thông tin kết nối CSDL, tài liệu chứng từ PDF và tệp tải lên của người dùng được lưu trữ an toàn và cấu hình loại trừ khỏi kho mã nguồn Git (`.gitignore`).
+- Dữ liệu người thuê thực tế và chứng từ ngân hàng không được lưu trữ trong mã nguồn hoặc tệp seed mẫu.
+- Dự án được phát triển phục vụ mục đích Khóa luận tốt nghiệp ngành Công nghệ Thông tin. Mọi quyền được bảo lưu.

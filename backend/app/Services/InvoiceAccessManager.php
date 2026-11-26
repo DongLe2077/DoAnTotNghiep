@@ -26,7 +26,7 @@ class InvoiceAccessManager
             }
             $stay = $assignment->tenantStay()->firstOrFail();
             Tenant::query()->lockForUpdate()->findOrFail($stay->tenant_id);
-            $user = User::query()->where('tenant_id', $stay->tenant_id)->lockForUpdate()->first();
+            $user = Tenant::query()->findOrFail($stay->tenant_id)->user()->lockForUpdate()->first();
             if ($user === null || ! $user->is_active || ! $user->hasRole(User::ROLE_TENANT)) {
                 throw ValidationException::withMessages(['representative_assignment_id' => 'Người đại diện cần tài khoản người thuê đang hoạt động.']);
             }

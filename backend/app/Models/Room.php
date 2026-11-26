@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Room extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     protected $table = 'rooms';
 
     protected $fillable = [

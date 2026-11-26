@@ -6,6 +6,7 @@ use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Resources\AuthUserResource;
 use App\Services\AccountPassword;
+use App\Services\AppNotifications;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,13 +19,14 @@ class AuthController extends Controller
         return response()->noContent();
     }
 
-    public function login(LoginRequest $request): JsonResponse
+    public function login(LoginRequest $request, AppNotifications $notifications): JsonResponse
     {
         if (Auth::guard('web')->check()) {
             return response()->json(['message' => 'Bạn đã đăng nhập. Vui lòng đăng xuất trước khi đổi tài khoản.'], 409);
         }
 
         $request->authenticate();
+        $notifications->publishPreparedWelcome($request->user('web'));
         $request->session()->regenerate();
 
         return response()->json([

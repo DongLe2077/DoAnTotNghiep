@@ -60,7 +60,7 @@
     @endif
 </div>
 
-<h1>{{ $kind === 'invoice' ? 'HÓA ĐƠN TIỀN THUÊ' : 'PHIẾU THU' }}</h1>
+<h1>{{ $kind === 'invoice' ? (($invoice['invoice_kind'] ?? 'monthly') === 'one_time' ? 'HÓA ĐƠN KHOẢN THU RIÊNG' : 'HÓA ĐƠN TIỀN THUÊ') : 'PHIẾU THU' }}</h1>
 <p class="muted break">{{ $text($kind === 'invoice' ? $invoice['number'] : $receipt['number']) }} · Kỳ hóa đơn {{ $invoice['billing_month'] }}</p>
 
 @if($kind === 'invoice')
@@ -108,6 +108,9 @@
 <table class="totals"><tbody>
     @if($kind === 'invoice')
         <tr><td>Tổng các khoản gốc</td><td class="number">{{ $money($invoice['original_amount']) }}</td></tr>
+        @if(($invoice['rounding_amount'] ?? '0.00') !== '0.00')
+            <tr><td>Chênh lệch làm tròn đến 1.000 đ</td><td class="number">{{ $money($invoice['rounding_amount']) }}</td></tr>
+        @endif
         <tr><td>Điều chỉnh tăng / giảm</td><td class="number">{{ $money($invoice['adjustment_amount']) }}</td></tr>
     @endif
     <tr><td>Tổng hóa đơn có hiệu lực</td><td class="number">{{ $money($invoice['total_amount']) }}</td></tr>

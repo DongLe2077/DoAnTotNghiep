@@ -10,6 +10,7 @@ class OccupancyIndexRequest extends OwnerRequest
     {
         return [
             'status' => ['sometimes', Rule::in(['active', 'ended'])],
+            'billing_month' => ['sometimes', 'date_format:Y-m', 'regex:/^[1-9]\d{3}-(0[1-9]|1[0-2])$/D'],
             'room_id' => ['sometimes', 'integer', 'min:1'],
             'rental_group_id' => ['sometimes', 'integer', 'min:1'],
             'tenant_id' => ['sometimes', 'integer', 'min:1'],

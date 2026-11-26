@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ScheduledDeleteButton from '@/components/owner/ScheduledDeleteButton.vue'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -74,9 +75,9 @@ onBeforeUnmount(() => { alive = false; sequence++; request.value = null; window.
   <section class="management-page">
     <RouterLink class="back-link" :to="{ path: '/owner/maintenance', state: { savedMaintenanceId: savedUpdate ? id : null } }">← Yêu cầu sửa chữa</RouterLink>
     <UiPageState v-if="loading" kind="loading" title="Đang tải yêu cầu sửa chữa…" />
-    <UiPageState v-else-if="loadError" :kind="loadStatus === 404 ? 'not-found' : loadStatus === 403 ? 'forbidden' : 'error'" :title="loadStatus === 404 ? 'Không tìm thấy yêu cầu sửa chữa' : undefined" :description="loadError"><UiButton v-if="![403, 404].includes(loadStatus)" @click="load">Thử lại</UiButton></UiPageState>
+    <UiPageState v-else-if="loadError" :kind="loadStatus === 404 ? 'not-found' : loadStatus === 403 ? 'forbidden' : 'error'" :title="loadStatus === 404 ? 'Không tìm thấy yêu cầu sửa chữa' : undefined" :description="loadError"><UiButton v-if="![403, 404].includes(loadStatus)" @click="load">Tải lại</UiButton></UiPageState>
     <template v-else-if="request">
-      <header class="management-header workflow-header"><div><h1>{{ request.title }}</h1><p>Phòng {{ request.room.room_number }} · Yêu cầu #{{ request.id }}</p></div></header>
+      <header class="management-header workflow-header"><div><h1>{{ request.title }}</h1><p>Phòng {{ request.room.room_number }} · Yêu cầu #{{ request.id }}</p></div><ScheduledDeleteButton kind="maintenance" :id="request.id" :label="request.title" button-label="Xóa báo hỏng" /></header>
       <UiNotice v-if="notice" tone="success">{{ notice }}</UiNotice>
       <div class="detail-sections workflow-sections">
         <section class="record-card workflow-summary" :class="{ 'recently-saved': savedUpdate }">

@@ -62,7 +62,7 @@ class MaintenanceManagement
             ->whereHas('representativeAssignments', fn ($query) => $query->whereNull('ended_at')->where('started_at', '<=', $at)
                 ->whereHas('tenantStay', fn ($query) => $query->whereColumn('tenant_stays.occupancy_id', 'representative_assignments.occupancy_id')
                     ->whereNull('moved_out_at')->where('moved_in_at', '<=', $at)
-                    ->whereHas('tenant.user', fn ($query) => $query->whereKey($actorId)->where('role', User::ROLE_TENANT)->where('is_active', true))))
+                    ->whereHas('tenant.user', fn ($query) => $query->whereKey($actorId)->when(!app(\App\Services\Tenancy\PropertyContext::class)->enabled(), fn ($q) => $q->where('role', User::ROLE_TENANT))->where('is_active', true))))
             ->with('room:id,room_number', 'rentalGroup:id,group_code')->orderBy('id');
     }
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useLiveRefresh } from '@/composables/useLiveRefresh'
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -18,6 +19,7 @@ const { items, loading, loadError, page, lastPage, total, load } = useOwnerList<
 function filter() { const query: Record<string, string> = {}; for (const [key, value] of Object.entries(filters())) query[key] = String(value); const next = router.resolve({ path: route.path, query }); if (next.fullPath === route.fullPath) void load(1, filters()); else void router.replace(next.fullPath) }
 function clearStay() { occupancyId.value = null; filter() }
 watch(() => route.query, query => { dueStatus.value = typeof query.due_status === 'string' && ['overdue', 'upcoming', 'not_set'].includes(query.due_status) ? query.due_status : ''; month.value = typeof query.billing_month === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(query.billing_month) ? query.billing_month : ''; status.value = typeof query.payment_status === 'string' && ['unpaid', 'partially_paid', 'paid', 'inconsistent', 'cancelled'].includes(query.payment_status) ? query.payment_status : ''; const room = positiveId(query.room_id), group = positiveId(query.rental_group_id); rooms.value = room ? [room] : []; groups.value = group ? [group] : []; occupancyId.value = positiveId(query.occupancy_id); void load(1, filters()) }, { immediate: true })
+useLiveRefresh('property', () => !loading.value ? load(page.value) : false)
 </script>
 <template>
   <section class="management-page">
@@ -25,7 +27,7 @@ watch(() => route.query, query => { dueStatus.value = typeof query.due_status ==
       <div><h1>Hóa đơn</h1></div>
       <div class="button-row">
         <RouterLink class="workflow-card-link" to="/owner/payments">Lịch sử thu tiền</RouterLink>
-        <RouterLink class="workflow-card-link" to="/owner/invoices/new">+ Lập hóa đơn</RouterLink>
+        <RouterLink class="rb7-action" to="/owner/invoices/new">+ Lập hóa đơn</RouterLink>
       </div>
     </header>
     <p v-if="occupancyId" class="help-text">Đang lọc theo đợt thuê. <UiButton variant="ghost" @click="clearStay">Bỏ lọc đợt thuê</UiButton></p>
@@ -50,10 +52,10 @@ watch(() => route.query, query => { dueStatus.value = typeof query.due_status ==
       </details>
     </form>
     <UiPageState v-if="loading" kind="loading" skeleton="cards" />
-    <UiPageState v-else-if="loadError" kind="error" :description="loadError"><UiButton @click="load()">Thử lại</UiButton></UiPageState>
+    <UiPageState v-else-if="loadError" kind="error" :description="loadError"><UiButton @click="load()">Tải lại</UiButton></UiPageState>
     <UiPageState v-else-if="!items.length" title="Chưa có hóa đơn phù hợp" description="Thử đổi bộ lọc hoặc lập hóa đơn cho kỳ đã kết thúc." />
-    <div v-else class="management-grid workflow-grid">
-      <article v-for="invoice in items" :key="invoice.id" class="record-card workflow-list-card">
+    <div v-else class="management-grid workflow-grid rb7-record-list">
+      <article v-for="invoice in items" :key="invoice.id" class="record-card workflow-list-card rb7-record-row">
         <header>
           <div><h2>Phòng {{ invoice.room.room_number }}</h2><span class="help-text">{{ invoice.invoice_number }} · Kỳ {{ invoice.billing_month }}</span></div>
           <UiBadge :tone="invoice.payment_status === 'paid' ? 'success' : invoice.payment_status === 'inconsistent' ? 'danger' : invoice.payment_status === 'cancelled' ? 'neutral' : 'warning'">{{ paymentStatusLabel(invoice.payment_status) }}</UiBadge>
@@ -61,12 +63,12 @@ watch(() => route.query, query => { dueStatus.value = typeof query.due_status ==
         <div class="workflow-list-amount">
           <span class="workflow-caption">{{ invoice.payment_status === 'paid' ? 'Đã thu' : invoice.payment_status === 'cancelled' || invoice.payment_status === 'inconsistent' ? 'Tổng hóa đơn' : 'Còn phải thu' }}</span>
           <strong class="workflow-amount">{{ formatMoney(invoice.payment_status === 'paid' ? invoice.paid_amount : invoice.payment_status === 'cancelled' || invoice.payment_status === 'inconsistent' ? invoice.total_amount : invoice.outstanding_amount) }}</strong>
+          <p v-if="invoice.payment_status === 'unpaid' || invoice.payment_status === 'partially_paid'" class="workflow-deadline">
+            <strong>{{ invoice.due_date ? `Hạn ${dueDateText(invoice.due_date)}` : 'Chưa đặt hạn' }}</strong>
+            <span v-if="invoice.due_status === 'overdue'">{{ dueStatusLabel(invoice) }}</span>
+          </p>
         </div>
-        <p v-if="invoice.payment_status === 'unpaid' || invoice.payment_status === 'partially_paid'" class="workflow-deadline">
-          <strong>{{ invoice.due_date ? `Hạn ${dueDateText(invoice.due_date)}` : 'Chưa đặt hạn' }}</strong>
-          <span v-if="invoice.due_status === 'overdue'">{{ dueStatusLabel(invoice) }}</span>
-        </p>
-        <footer><RouterLink class="workflow-card-link" :to="`/owner/invoices/${invoice.id}`">Xem hóa đơn {{ invoice.invoice_number }}</RouterLink></footer>
+        <footer><RouterLink class="workflow-card-link" :to="`/owner/invoices/${invoice.id}`" :aria-label="`Xem hóa đơn ${invoice.invoice_number}`">Xem hóa đơn</RouterLink></footer>
       </article>
     </div>
     <OwnerPager v-if="!loadError && total" :page="page" :last-page="lastPage" :total="total" :loading="loading" @change="load($event)" />

@@ -1,7 +1,8 @@
+import { selectProperty } from '@/lib/property-selection'
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { advanceSessionRevision, api, ApiError, prepareCsrf, toApiError } from '@/lib/api'
-import { isUser, type PasswordChange, type User } from '@/types/auth'
+import { isUser, type PasswordChange, type Registration, type User } from '@/types/auth'
 
 type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'anonymous' | 'error'
 
@@ -18,6 +19,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (!isUser(value)) throw new ApiError(502, 'Thông tin tài khoản từ máy chủ không hợp lệ. Vui lòng thử lại.')
     advanceSessionRevision()
     user.value = value
+    selectProperty(value.property_id ?? null)
     status.value = 'authenticated'
     connectionError.value = ''
     return value
@@ -27,6 +29,7 @@ export const useAuthStore = defineStore('auth', () => {
     revision++
     advanceSessionRevision()
     user.value = null
+    selectProperty(null)
     status.value = 'anonymous'
     connectionError.value = ''
   }
@@ -69,6 +72,15 @@ export const useAuthStore = defineStore('auth', () => {
     return signedIn
   }
 
+  async function register(input: Registration): Promise<User> {
+    await prepareCsrf()
+    const response = await api.post<{ data: unknown }>('/auth/registration', input)
+    revision++
+    const signedIn = setUser(response.data.data)
+    channel?.postMessage('session-changed')
+    return signedIn
+  }
+
   async function logout(): Promise<void> {
     try {
       await prepareCsrf()
@@ -96,5 +108,5 @@ export const useAuthStore = defineStore('auth', () => {
     return () => { channel?.close(); channel = null }
   }
 
-  return { user, status, isAuthenticated, connectionError, initialize, login, logout, changePassword, clearSession, listenForSessionChanges }
+  return { user, status, isAuthenticated, connectionError, initialize, login, register, logout, changePassword, clearSession, listenForSessionChanges }
 })

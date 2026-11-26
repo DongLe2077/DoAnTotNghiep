@@ -4,12 +4,29 @@ namespace App\Http\Controllers;
 
 use App\Services\InvoicePayos;
 use App\Services\PayosGateway;
+use App\Services\Tenancy\PropertyContext;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
 class PayosWebhookController extends Controller
 {
     public function __invoke(Request $request, PayosGateway $gateway, InvoicePayos $payments): Response
+    {
+        $context = app(PropertyContext::class);
+        if (! $context->enabled()) {
+            abort_if($request->route('property') !== null, 404);
+
+            return $this->verifyAndReceive($request, $gateway, $payments);
+        }
+
+        $id = (int) ($request->route('property') ?? config('tenancy.legacy_payos_property_id'));
+        abort_unless(DB::table('rental_properties')->where('id', $id)->whereNotNull('owner_user_id')->exists(), 404);
+
+        return $context->run($id, fn () => $this->verifyAndReceive($request, $gateway, $payments));
+    }
+
+    private function verifyAndReceive(Request $request, PayosGateway $gateway, InvoicePayos $payments): Response
     {
         abort_unless($gateway->configured(), 404);
         $body = $request->getContent();

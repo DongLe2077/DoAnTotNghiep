@@ -18,7 +18,7 @@ void load()
     <UiPageState v-if="loading" kind="loading" />
     <UiPageState v-else-if="error" :kind="status === 404 ? 'not-found' : 'error'"
       :description="status === 404 ? 'Thông báo không tồn tại hoặc không nằm trong danh sách gửi cho tài khoản của bạn.' : error">
-      <UiButton @click="load">Thử lại</UiButton>
+      <UiButton @click="load">Tải lại</UiButton>
     </UiPageState>
     <template v-else-if="data">
       <header class="management-header">

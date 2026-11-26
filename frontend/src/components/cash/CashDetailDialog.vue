@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ScheduledDeleteButton from '@/components/owner/ScheduledDeleteButton.vue'
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import UiDialog from '@/components/ui/UiDialog.vue'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -21,17 +22,17 @@ const client = useOwnerApi(), current = ref<CashTransaction | null>(null), histo
 const auth = useAuthStore()
 const loading = ref(false), error = ref(''), notice = ref(''), conflict = ref(false), uncertain = ref(false)
 const page = ref(1), lastPage = ref(1), total = ref(0)
-const mode = ref<'view' | 'edit' | 'delete' | 'revert'>('view'), review = ref(false)
+const mode = ref<'view' | 'edit' | 'revert'>('view'), review = ref(false)
 const intendedHistoryId = ref<number | null>(null)
 const form = reactive({ transaction_type: 'expense' as CashType, amount: '', occurred_at: '', description: '', reason: '' })
 let sequence = 0, alive = true
 const latest = computed(() => page.value === 1 ? histories.value[0] : null)
 const canRevert = computed(() => Boolean(latest.value && current.value && latest.value.revision === current.value.revision))
-const modeLabel = computed(() => ({ view: 'Chi tiết và nhật ký thu chi', edit: 'Sửa khoản thu chi', delete: 'Xóa khoản thu chi', revert: 'Hoàn tác thao tác mới nhất' })[mode.value])
+const modeLabel = computed(() => ({ view: 'Chi tiết và nhật ký thu chi', edit: 'Sửa khoản thu chi', revert: 'Hoàn tác thao tác mới nhất' })[mode.value])
 const desired = computed(() => {
   if (!current.value) return null
   if (mode.value === 'edit') return { ...current.value, transaction_type: form.transaction_type, amount: form.amount, occurred_at: eventPayload(form.occurred_at), description: form.description }
-  if (mode.value === 'delete' || mode.value === 'revert' && !latest.value?.before) return { ...current.value, deleted_at: localEventTime() }
+  if (mode.value === 'revert' && !latest.value?.before) return { ...current.value, deleted_at: localEventTime() }
   return latest.value?.before ?? current.value
 })
 async function load(nextPage = page.value) {
@@ -53,7 +54,7 @@ watch(() => [props.open, props.id] as const, () => {
 onBeforeUnmount(() => { alive = false; sequence++ })
 watch(() => auth.user ? `${auth.user.id}:${auth.user.role}` : '', () => { sequence++; current.value = null; histories.value = []; mode.value = 'view'; review.value = false; notice.value = ''; form.reason = ''; emit('close') }, { flush: 'sync' })
 function close() { if (!client.busy.value) emit('close') }
-function start(next: 'edit' | 'delete' | 'revert') {
+function start(next: 'edit' | 'revert') {
   if (!current.value || client.busy.value || next === 'revert' && !canRevert.value) return
   Object.assign(form, { transaction_type: current.value.transaction_type, amount: current.value.amount, occurred_at: current.value.occurred_at.replace(' ', 'T'), description: current.value.description, reason: '' })
   mode.value = next; review.value = false; conflict.value = false; uncertain.value = false; notice.value = ''; client.clearError()
@@ -76,7 +77,6 @@ async function confirm() {
   const id = current.value.id, token = current.value.version_token
   try {
     if (mode.value === 'edit') await client.write('patch', `/cash-transactions/${id}`, { version_token: token, transaction_type: form.transaction_type, amount: form.amount, occurred_at: eventPayload(form.occurred_at), description: form.description.trim(), reason: form.reason.trim() || null })
-    else if (mode.value === 'delete') await client.write('delete', `/cash-transactions/${id}`, { version_token: token, reason: form.reason.trim() || null })
     else {
       if (!canRevert.value || !latest.value || latest.value.id !== intendedHistoryId.value) return
       await client.write('post', `/cash-transactions/${id}/revert`, { version_token: token, history_id: latest.value.id, reason: form.reason.trim() })
@@ -103,21 +103,21 @@ async function confirm() {
         <div class="button-row"><UiBadge :tone="current.is_deleted ? 'neutral' : current.transaction_type === 'expense' ? 'warning' : 'success'">{{ current.is_deleted ? 'Đã xóa' : cashTypeLabel(current.transaction_type) }}</UiBadge><strong class="cash-detail-amount">{{ cashMoney(current.amount) }}</strong></div>
         <dl class="record-facts"><div><dt>Nội dung</dt><dd>{{ current.description }}</dd></div><div><dt>Phát sinh (giờ Việt Nam)</dt><dd>{{ formatDateTime(current.occurred_at) }}</dd></div><div><dt>Ghi nhận lần đầu</dt><dd>{{ formatDateTime(current.recorded_at) }}</dd></div><div v-if="current.deleted_at"><dt>Thời điểm xóa</dt><dd>{{ formatDateTime(current.deleted_at) }}</dd></div></dl>
         <UiNotice v-if="current.maintenance_link?.is_active" tone="info">Khoản chi này đang liên kết với yêu cầu sửa chữa #{{ current.maintenance_link.maintenance_request_id }}: {{ current.maintenance_link.title }}. Thay đổi khoản gốc sẽ cập nhật chi phí sửa chữa tương ứng.<RouterLink class="record-link" :to="`/owner/maintenance/${current.maintenance_link.maintenance_request_id}`" @click="close">Mở yêu cầu sửa chữa →</RouterLink></UiNotice>
-        <div class="button-row cash-detail-actions"><UiButton v-if="!current.is_deleted" variant="secondary" @click="start('edit')">Sửa khoản này</UiButton><UiButton v-if="!current.is_deleted" variant="danger" @click="start('delete')">Xóa khoản này</UiButton><UiButton v-if="canRevert" variant="secondary" @click="start('revert')">{{ current.is_deleted ? 'Hoàn tác để khôi phục' : 'Hoàn tác mới nhất' }}</UiButton><UiButton v-else-if="page !== 1" variant="secondary" @click="load(1)">Về nhật ký mới nhất</UiButton></div>
+        <div class="button-row cash-detail-actions"><UiButton v-if="!current.is_deleted" variant="secondary" @click="start('edit')">Sửa khoản này</UiButton><ScheduledDeleteButton kind="cash" :id="current.id" :label="current.description" button-label="Xóa khoản này" /><UiButton v-if="canRevert" variant="secondary" @click="start('revert')">{{ current.is_deleted ? 'Hoàn tác để khôi phục' : 'Hoàn tác mới nhất' }}</UiButton><UiButton v-else-if="page !== 1" variant="secondary" @click="load(1)">Về nhật ký mới nhất</UiButton></div>
         <h3 class="cash-history-title">Nhật ký chỉnh sửa</h3>
         <p v-if="!histories.length" class="help-text">Chưa có nhật ký. Các khoản cũ bắt đầu lưu nhật ký từ lần thay đổi đầu tiên sau nâng cấp.</p>
         <ol v-else class="cash-history"><li v-for="item in histories" :key="item.id"><header><strong>{{ cashActionLabel(item.action) }}</strong><span>{{ formatDateTime(item.created_at) }}</span></header><p>{{ item.actor?.username || 'Tài khoản đã ghi nhận' }}<span v-if="item.reason"> · {{ item.reason }}</span></p><details><summary>Xem thay đổi trước và sau</summary><CashHistoryDelta :before="item.before" :after="item.after" /></details></li></ol>
         <OwnerPager v-if="total > 0" :page="page" :last-page="lastPage" :total="total" :loading="loading" @change="load($event)" />
       </template>
       <template v-else-if="review">
-        <UiNotice :tone="mode === 'edit' ? 'info' : 'warning'">{{ mode === 'delete' ? 'Khoản sẽ không còn tính vào sổ thu chi. Bạn có thể khôi phục qua nhật ký.' : mode === 'revert' ? 'Chỉ đảo thao tác mới nhất. Thao tác này cũng được ghi vào nhật ký.' : 'Kiểm tra nội dung thay đổi trước khi lưu.' }}</UiNotice>
+        <UiNotice :tone="mode === 'edit' ? 'info' : 'warning'">{{ mode === 'revert' ? 'Chỉ đảo thao tác mới nhất. Thao tác này cũng được ghi vào nhật ký.' : 'Kiểm tra nội dung thay đổi trước khi lưu.' }}</UiNotice>
         <CashHistoryDelta v-if="desired" :before="current" :after="desired" />
         <p class="help-text">Lý do: {{ form.reason || 'Không có' }}</p>
       </template>
       <form v-else id="cash-change-form" class="form-grid" @submit.prevent="prepare">
         <fieldset class="form-grid" :disabled="client.busy.value || conflict || uncertain">
           <template v-if="mode === 'edit'"><label class="select-field">Loại khoản thu chi<select v-model="form.transaction_type" class="ui-select" :disabled="Boolean(current.maintenance_link?.is_active)"><option value="expense">Chi phí</option><option value="other_income">Thu khác</option></select></label><OwnerField v-model="form.amount" label="Số tiền (VNĐ)" name="amount" :errors="client.errors.value" hint="Số dương, tối đa 2 số lẻ, không dùng dấu phân cách hàng nghìn." required :max-length="19" /><OwnerField v-model="form.occurred_at" label="Thời điểm phát sinh (giờ Việt Nam)" name="occurred_at" type="datetime-local" step="1" :max="localEventTime()" :errors="client.errors.value" required /><OwnerField v-model="form.description" label="Nội dung thu chi" name="description" :max-length="255" :errors="client.errors.value" required /></template>
-          <template v-else><p>{{ current.description }} · <strong>{{ cashMoney(current.amount) }}</strong></p><UiNotice tone="warning">{{ mode === 'delete' ? 'Khoản xóa được giữ trong nhật ký để có thể khôi phục.' : latest?.before === null ? 'Hoàn tác tạo sẽ đưa khoản này sang đã xóa.' : latest?.before?.deleted_at ? 'Hoàn tác này sẽ đưa khoản về trạng thái đã xóa.' : current.is_deleted ? 'Khoản sẽ được khôi phục và tính lại vào sổ thu chi.' : 'Dữ liệu được đưa về trước thao tác mới nhất.' }}</UiNotice></template>
+          <template v-else><p>{{ current.description }} · <strong>{{ cashMoney(current.amount) }}</strong></p><UiNotice tone="warning">{{ latest?.before === null ? 'Hoàn tác tạo sẽ đưa khoản này sang đã xóa.' : latest?.before?.deleted_at ? 'Hoàn tác này sẽ đưa khoản về trạng thái đã xóa.' : current.is_deleted ? 'Khoản sẽ được khôi phục và tính lại vào sổ thu chi.' : 'Dữ liệu được đưa về trước thao tác mới nhất.' }}</UiNotice></template>
           <OwnerField v-model="form.reason" label="Lý do thay đổi" name="reason" :max-length="1000" :errors="client.errors.value" :required="mode === 'revert'" />
         </fieldset>
       </form>

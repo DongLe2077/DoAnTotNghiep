@@ -16,7 +16,7 @@ void load()
     <UiPageState v-else-if="error" :kind="status === 404 ? 'not-found' : 'error'"
       :title="status === 404 ? 'Chưa có hồ sơ liên kết' : 'Chưa tải được hồ sơ'"
       :description="status === 404 ? 'Liên hệ chủ trọ để kiểm tra hồ sơ gắn với tài khoản của bạn.' : error">
-      <UiButton @click="load">Thử lại</UiButton>
+      <UiButton @click="load">Tải lại</UiButton>
     </UiPageState>
     <div v-else-if="profile" class="record-card tenant-profile-card">
       <header><div><span class="tenant-kicker">Hồ sơ người thuê</span><h2>{{ profile.full_name }}</h2></div></header>

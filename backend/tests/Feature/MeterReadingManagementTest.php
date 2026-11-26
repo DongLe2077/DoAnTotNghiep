@@ -14,12 +14,12 @@ use App\Models\Service;
 use App\Models\Tenant;
 use App\Models\TenantStay;
 use App\Models\User;
-use Tests\Concerns\CreatesTenancySchema;
+use Tests\Concerns\CreatesBillingSchema;
 use Tests\TestCase;
 
 class MeterReadingManagementTest extends TestCase
 {
-    use CreatesTenancySchema;
+    use CreatesBillingSchema;
 
     private User $owner;
 
@@ -30,7 +30,7 @@ class MeterReadingManagementTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->createTenancySchema();
+        $this->createBillingSchema();
         $this->owner = User::factory()->create();
         $this->actingAs($this->owner, 'web');
         $this->occupancy = $this->occupancy();
@@ -183,6 +183,14 @@ class MeterReadingManagementTest extends TestCase
             'period_start' => '2026-01-15 00:00:00', 'previous_reading' => '140.250', 'current_reading' => '180.000',
         ]))->assertStatus(409);
         $this->assertSame(1, MeterReading::count());
+    }
+
+    public function test_one_time_invoice_does_not_freeze_meter_readings_for_its_month(): void
+    {
+        $this->invoice('2026-01-01')->update(['invoice_kind' => Invoice::KIND_ONE_TIME]);
+
+        $id = $this->postJson($this->url(), $this->payload())->assertCreated()->json('data.id');
+        $this->deleteJson($this->url(MeterReading::findOrFail($id)))->assertNoContent();
     }
 
     public function test_reading_cannot_be_moved_into_an_invoiced_month(): void

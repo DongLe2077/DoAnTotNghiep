@@ -6,7 +6,7 @@ import { NavigationRoute, registerRoute } from 'workbox-routing'
 declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: Array<{ url: string; revision: string | null }> }
 setCacheNameDetails({ prefix: 'nhatro-public', suffix: 'v1' })
 // Only build-time public files. There is deliberately no runtime cache or write queue.
-precacheAndRoute(self.__WB_MANIFEST.filter(entry => /^(?:\/?index\.html|\/?favicon\.svg|\/?assets\/[^?]+\.(?:js|css)|\/?fonts\/[^?]+\.woff2|\/?icons\/[^?]+\.(?:png|svg))$/.test(typeof entry === 'string' ? entry : entry.url)))
+precacheAndRoute(self.__WB_MANIFEST.filter(entry => /^(?:\/?index\.html|\/?favicon\.svg|\/?assets\/[^?]+\.(?:js|css)|\/?assets\/login-courtyard-[\w-]+\.webp|\/?fonts\/[^?]+\.woff2|\/?icons\/[^?]+\.(?:png|svg))$/.test(typeof entry === 'string' ? entry : entry.url)))
 cleanupOutdatedCaches()
 registerRoute(new NavigationRoute(createHandlerBoundToURL('/index.html'), {
   allowlist: [/^\/(?:$|login(?:\?|$)|account(?:\?|$)|notifications(?:\?|$)|forbidden(?:\?|$)|connection-error(?:\?|$)|owner(?:\/|\?|$)|tenant(?:\/|\?|$))/],
@@ -20,7 +20,12 @@ function prepare(client: Client, token: string): Promise<boolean> {
     const finish = (ready: boolean) => { clearTimeout(timer); channel.port1.close(); resolve(ready) }
     const timer = setTimeout(() => finish(false), 4000)
     channel.port1.onmessage = event => finish(event.data?.ready === true)
-    client.postMessage({ type: 'PWA_PREPARE_UPDATE', token }, [channel.port2])
+    try {
+      client.postMessage({ type: 'PWA_PREPARE_UPDATE', token }, [channel.port2])
+    } catch {
+      channel.port2.close()
+      finish(false)
+    }
   })
 }
 self.addEventListener('message', event => {
@@ -30,18 +35,23 @@ self.addEventListener('message', event => {
     if (applying) { reply.postMessage({ ready: false }); return }
     applying = true
     const token = crypto.randomUUID()
-    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+    const client = event.source && 'id' in event.source ? event.source : null
     try {
-      const sender = event.source && 'id' in event.source ? event.source.id : null
-      if (!clients.length || !clients.some(client => client.id === sender) || !(await Promise.all(clients.map(client => prepare(client, token)))).every(Boolean)) {
-        clients.forEach(client => client.postMessage({ type: 'PWA_RELEASE_UPDATE', token }))
-        reply.postMessage({ ready: false }); return
+      // Only the tab that requested the update may reload automatically.
+      // Background tabs can be suspended indefinitely on mobile.
+      if (!client || !(await prepare(client, token))) {
+        client?.postMessage({ type: 'PWA_RELEASE_UPDATE', token })
+        reply.postMessage({ ready: false })
+        return
       }
-      reply.postMessage({ ready: true })
       await self.skipWaiting()
+      reply.postMessage({ ready: true })
     } catch {
-      clients.forEach(client => client.postMessage({ type: 'PWA_RELEASE_UPDATE', token }))
+      client?.postMessage({ type: 'PWA_RELEASE_UPDATE', token })
       reply.postMessage({ ready: false })
-    } finally { applying = false; reply.close() }
+    } finally {
+      applying = false
+      reply.close()
+    }
   })())
 })

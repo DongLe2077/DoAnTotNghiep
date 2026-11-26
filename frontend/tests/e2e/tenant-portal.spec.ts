@@ -69,7 +69,7 @@ test('NT1 shows own agreed room/services/profile/history and keeps other residen
   await page.goto('/tenant/stays'); await expect(page.getByRole('heading', { name: `Phòng ${c.room.room_number}`, exact: true })).toBeVisible()
   await page.setViewportSize({ width: 390, height: 844 }); await page.goto('/tenant')
   await expect(page.getByRole('heading', { name: `Phòng ${c.room.room_number}`, exact: true })).toBeVisible()
-  await expect(page.getByRole('navigation', { name: 'Điều hướng người thuê', exact: true })).toBeVisible(); await noOverflow(page)
+  await expect(page.getByRole('button', { name: 'Mở menu', exact: true })).toBeVisible(); await noOverflow(page)
   await page.getByRole('heading', { name: 'Phòng của tôi', exact: true }).click()
   await page.screenshot({ path: resolve(shots, 'nt1-room-mobile.png'), animations: 'disabled' })
   await page.getByRole('button', { name: 'Đăng xuất', exact: true }).click(); await expect(page).toHaveURL(/\/login/); await login(page, c.other.username)
@@ -87,7 +87,7 @@ test('NT1 empty and unlinked profiles are clear and a failed refresh removes pri
   await page.getByRole('button', { name: 'Làm mới hồ sơ', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Chưa tải được hồ sơ', exact: true })).toBeVisible()
   await expect(page.getByText('Người thuê chưa có thông báo', { exact: true })).toHaveCount(0)
-  await page.unroute('**/api/tenant/profile'); await page.getByRole('button', { name: 'Thử lại', exact: true }).click()
+  await page.unroute('**/api/tenant/profile'); await page.getByRole('button', { name: 'Tải lại', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Người thuê chưa có thông báo', exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Đăng xuất', exact: true }).click(); await expect(page).toHaveURL(/\/login/); await login(page, 'e2e_unlinked_tenant')
   await expect(page.getByRole('heading', { name: 'Chưa có hồ sơ liên kết', exact: true })).toBeVisible()
@@ -173,7 +173,7 @@ test('NT2 restores the filtered invoice page and scroll after returning from a d
     if (useBrowserBack) {
       failNext = true
       await page.goBack()
-      await page.getByRole('button', { name: 'Thử lại', exact: true }).click()
+      await page.getByRole('button', { name: 'Tải lại', exact: true }).click()
     }
     else await page.getByRole('link', { name: '← Hóa đơn của tôi', exact: true }).click()
     await expect(page).toHaveURL('/tenant/invoices?due_status=overdue&page=2')
@@ -340,4 +340,83 @@ test('NT tenant privacy, account expiry and owner role guards apply to all new s
   for (const path of ['/tenant', '/tenant/profile', '/tenant/stays', '/tenant/invoices', '/tenant/invoices/1', '/tenant/maintenance', '/tenant/maintenance/new', '/tenant/maintenance/1']) { await page.goto(path); await expect(page).toHaveURL('/forbidden') }
   await owner(request)
   expect((await request.get('/api/tenant/profile')).status()).toBe(403)
+})
+
+test('representative and owner complete checkout from their workspaces', async ({ page, request, browser }) => {
+  const c = await context(request, 'CHECKOUT-ROOM')
+  const invoicePath = '/owner/occupancies/' + c.stay.id + '/invoices'
+  const bill = { billing_month: '2026-01' }
+  const preview = (await apiWrite(request, 'POST', invoicePath + '/preview', bill)).data
+  const invoice = (await apiWrite(request, 'POST', invoicePath, { ...bill, preview_token: preview.preview_token })).data
+  await apiWrite(request, 'POST', '/owner/invoices/' + invoice.id + '/payments', {
+    idempotency_key: crypto.randomUUID(), amount: '1000', paid_at: invoice.issued_at, payment_method: 'cash',
+  })
+  const ownerInvoicePath = '/api/owner/invoices/' + invoice.id
+  const before = (await (await request.get(ownerInvoicePath)).json()).data
+  expect(before.payment_status).toBe('partially_paid')
+  await page.setViewportSize({ width: 390, height: 844 })
+  await login(page, c.tenant.username)
+  const tenantRequests = page.getByRole('region', { name: 'Yêu cầu trả phòng' })
+  const send = async () => {
+    await tenantRequests.getByRole('button', { name: 'Gửi yêu cầu trả phòng', exact: true }).click()
+    await page.getByRole('dialog').getByRole('button', { name: 'Gửi yêu cầu', exact: true }).click()
+    await expect(tenantRequests.getByRole('button', { name: 'Rút yêu cầu trả phòng' })).toBeVisible()
+  }
+  await send()
+  await expect(page.getByRole('heading', { name: 'Phòng ' + c.room.room_number, exact: true })).toBeVisible()
+  const currentStay = await page.request.get('/api/tenant/current-stay')
+  expect(currentStay.ok()).toBe(true)
+  expect((await currentStay.json()).data.room.room_number).toBe(c.room.room_number)
+  await tenantRequests.getByRole('button', { name: 'Rút yêu cầu trả phòng' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Xác nhận rút' }).click()
+  await expect(tenantRequests.getByText('Đã rút yêu cầu', { exact: true })).toBeVisible()
+  await send()
+
+  const ownerContext = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  try {
+    const ownerPage = await ownerContext.newPage()
+    await login(ownerPage, 'e2e_owner')
+    await ownerPage.goto('/owner/work')
+    const ownerRequests = ownerPage.getByRole('region', { name: 'Yêu cầu trả phòng' })
+    const pending = ownerRequests.getByRole('listitem').filter({ hasText: c.room.room_number })
+    await pending.getByRole('button', { name: 'Từ chối', exact: true }).click()
+    const reject = ownerPage.getByRole('dialog', { name: 'Từ chối yêu cầu trả phòng' })
+    await reject.getByLabel('Lý do từ chối').fill('Chưa bàn giao chìa khóa')
+    await reject.getByRole('button', { name: 'Gửi lý do từ chối' }).click()
+    await expect(pending).toHaveCount(0)
+
+    await page.reload()
+    await expect(tenantRequests.getByText(/Chưa bàn giao chìa khóa/)).toBeVisible()
+    await send()
+
+    await ownerPage.reload()
+    await pending.getByRole('button', { name: 'Xác nhận trả phòng' }).click()
+    const confirm = ownerPage.getByRole('dialog', { name: 'Xác nhận trả phòng' })
+    await expect(confirm.getByLabel('Thời điểm trả phòng thực tế (giờ Việt Nam)')).not.toHaveValue('')
+    await noOverflow(ownerPage)
+    await confirm.getByRole('button', { name: 'Xác nhận', exact: true }).click()
+    await expect(ownerRequests.getByText('Đã xác nhận trả phòng.', { exact: true })).toBeVisible()
+    await ownerRequests.getByRole('button', { name: 'Lịch sử', exact: true }).click()
+    await expect(ownerRequests.getByText('Đã xác nhận trả phòng', { exact: true })).toBeVisible()
+
+    await page.reload()
+    await expect(page.getByRole('heading', { name: 'Bạn chưa có phòng đang cư trú' })).toBeVisible()
+    await expect(tenantRequests.getByText('Đã xác nhận trả phòng', { exact: true })).toBeVisible()
+    await page.getByRole('link', { name: 'Xem lịch sử cư trú' }).click()
+    await expect(page.getByRole('heading', { name: `Phòng ${c.room.room_number}`, exact: true })).toBeVisible()
+
+    const ownerResponse = await request.get(ownerInvoicePath)
+    expect(ownerResponse.ok()).toBe(true)
+    expect((await ownerResponse.json()).data).toMatchObject({
+      id: invoice.id, paid_amount: before.paid_amount, outstanding_amount: before.outstanding_amount,
+      payment_status: 'partially_paid', payments: [{ id: before.payments[0].id }],
+    })
+    const tenantResponse = await page.request.get('/api/tenant/invoices/' + invoice.id)
+    expect(tenantResponse.ok()).toBe(true)
+    expect((await tenantResponse.json()).data).toMatchObject({
+      id: invoice.id, outstanding_amount: before.outstanding_amount, payment_status: 'partially_paid',
+    })
+  } finally {
+    await ownerContext.close()
+  }
 })

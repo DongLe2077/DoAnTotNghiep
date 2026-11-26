@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { getRoleHome } from './navigation'
+import { getRoleHome, marketRedirect } from './navigation'
 import type { Role } from '@/types/auth'
 
 declare module 'vue-router' {
@@ -17,17 +17,29 @@ declare module 'vue-router' {
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
+    { path: '/', name: 'market-home', component: () => import('@/views/RoomMarketplaceView.vue'), meta: { title: 'Tìm phòng trọ' } },
+    { path: '/find-rooms', name: 'room-marketplace', component: () => import('@/views/RoomMarketplaceView.vue'), meta: { title: 'Tìm phòng trọ' } },
+    { path: '/find-rooms/:id(\\d+)', name: 'public-room', component: () => import('@/views/RoomMarketplaceView.vue'), meta: { title: 'Chi tiết tin phòng' } },
+    { path: '/my-room-requests', name: 'my-room-requests', component: () => import('@/views/MyRoomRequestsView.vue'), meta: { title: 'Yêu cầu của tôi', requiresAuth: true } },
+    { path: '/preview-v2', name: 'redesign-preview', component: () => import('@/views/RedesignPreviewView.vue'), meta: { title: 'RentBase · Bản thiết kế mới' } },
     { path: '/design', name: 'design', component: () => import('@/views/DesignView.vue'), meta: { title: 'Thiết kế chung' } },
+    { path: '/properties', name: 'properties', component: () => import('@/views/PropertiesView.vue'), meta: { title: 'Khu trọ của bạn', requiresAuth: true } },
+    { path: '/register', name: 'register', component: () => import('@/views/RegisterView.vue'), meta: { title: 'Tạo tài khoản' } },
     { path: '/login', name: 'login', component: () => import('@/views/LoginView.vue'), meta: { title: 'Đăng nhập' } },
     { path: '/connection-error', name: 'connection-error', component: () => import('@/views/ConnectionView.vue'), meta: { title: 'Kiểm tra kết nối' } },
     {
       path: '/', component: () => import('@/layouts/AppLayout.vue'), meta: { title: 'Nhà Trọ', requiresAuth: true },
       children: [
-        { path: '', name: 'home', redirect: () => { const user = useAuthStore().user; return user ? getRoleHome(user.role) : '/login' } },
         { path: 'account', name: 'account', component: () => import('@/views/AccountView.vue'), meta: { title: 'Tài khoản' } },
         { path: 'notifications', name: 'notifications', component: () => import('@/views/NotificationsView.vue'), meta: { title: 'Thông báo' } },
         { path: 'forbidden', name: 'forbidden', component: () => import('@/views/ForbiddenView.vue'), meta: { title: 'Không có quyền truy cập' } },
+        { path: 'owner/work', name: 'owner-work-preview', component: () => import('@/redesign/OwnerPreview.vue'), meta: { title: 'Việc cần làm', requiresAuth: true, role: 'owner' } },
+        { path: 'owner/finance', name: 'owner-finance-preview', component: () => import('@/redesign/OwnerPreview.vue'), meta: { title: 'Tài chính', requiresAuth: true, role: 'owner' } },
         { path: 'owner', name: 'owner-home', component: () => import('@/views/owner/DashboardView.vue'), meta: { title: 'Tổng quan', role: 'owner' } },
+        { path: 'owner/marketplace/listings', component: () => import('@/views/owner/OwnerRoomListingsView.vue'), meta: { title: 'Tin phòng cho thuê', role: 'owner' } },
+        { path: 'owner/marketplace/requests', component: () => import('@/views/owner/OwnerRoomRequestsView.vue'), meta: { title: 'Lịch xem và yêu cầu thuê', role: 'owner' } },
+        { path: 'owner/members', component: () => import('@/views/owner/PropertyOnboardingView.vue'), meta: { title: 'Thành viên khu trọ', role: 'owner' } },
+        { path: 'owner/pending-deletions', component: () => import('@/views/owner/PendingDeletionsView.vue'), meta: { title: 'Chờ xóa', role: 'owner' } },
         { path: 'owner/property', component: () => import('@/views/owner/PropertyView.vue'), meta: { title: 'Thông tin nhà trọ', role: 'owner' } },
         { path: 'owner/meters/bulk', component: () => import('@/views/owner/BulkMetersView.vue'), meta: { title: 'Nhập chỉ số nhiều phòng', role: 'owner' } },
         { path: 'owner/announcements', component: () => import('@/views/owner/AnnouncementsView.vue'), meta: { title: 'Thông báo chung', role: 'owner' } },
@@ -52,6 +64,7 @@ export const router = createRouter({
         { path: 'owner/maintenance', component: () => import('@/views/owner/MaintenanceView.vue'), meta: { title: 'Sửa chữa', role: 'owner' } },
         { path: 'owner/maintenance/:id(\\d+)', component: () => import('@/views/owner/MaintenanceDetailView.vue'), meta: { title: 'Chi tiết sửa chữa', role: 'owner' } },
         { path: 'tenant', name: 'tenant-home', component: () => import('@/views/tenant/MyRoomView.vue'), meta: { title: 'Phòng của tôi', role: 'tenant' } },
+        { path: 'tenant/workspace', component: () => import('@/views/tenant/MyPropertyView.vue'), meta: { title: 'Khu trọ của tôi', role: 'tenant' } },
         { path: 'tenant/profile', component: () => import('@/views/tenant/MyProfileView.vue'), meta: { title: 'Thông tin cá nhân', role: 'tenant' } },
         { path: 'tenant/stays', component: () => import('@/views/tenant/MyStaysView.vue'), meta: { title: 'Lịch sử cư trú', role: 'tenant' } },
         { path: 'tenant/invoices', name: 'tenant-invoices', component: () => import('@/views/tenant/MyInvoicesView.vue'), meta: { title: 'Hóa đơn của tôi', role: 'tenant' } },
@@ -71,12 +84,19 @@ export const router = createRouter({
 })
 
 router.beforeEach(async to => {
-  if (to.name === 'connection-error' || to.name === 'design') return true
+  if (to.name === 'connection-error' || to.name === 'design' || to.name === 'redesign-preview') return true
   const auth = useAuthStore()
+  const publicMarket = to.name === 'market-home' || to.name === 'room-marketplace' || to.name === 'public-room'
   try { await auth.initialize() }
-  catch { return { name: 'connection-error', query: { redirect: to.fullPath } } }
+  catch { return publicMarket ? true : { name: 'connection-error', query: { redirect: to.fullPath } } }
+  if (publicMarket) return true
   if (to.meta.requiresAuth && !auth.user) return { name: 'login', query: { redirect: to.fullPath } }
-  if (auth.user && to.name === 'login') return getRoleHome(auth.user.role)
+  if (auth.user && (to.name === 'login' || to.name === 'register')) {
+    const destination = marketRedirect(to.query.redirect)
+    if (destination) return destination
+  }
+  if (auth.user?.needs_property && to.name !== 'properties' && to.name !== 'account' && to.name !== 'notifications' && to.name !== 'my-room-requests') return { name: 'properties' }
+  if (auth.user && (to.name === 'login' || to.name === 'register')) return auth.user.properties && auth.user.role === 'tenant' ? '/tenant/workspace' : getRoleHome(auth.user.role)
   if (auth.user && to.meta.role && to.meta.role !== auth.user.role) return { name: 'forbidden' }
   return true
 })

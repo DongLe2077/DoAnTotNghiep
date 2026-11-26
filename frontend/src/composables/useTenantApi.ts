@@ -18,14 +18,16 @@ export function useTenantApi() {
     try { const result = await api.get<T>(`/tenant${path}`, { params, signal: controller.signal }); check(scope); return result.data }
     finally { controllers.delete(controller) }
   }
-  async function post<T>(path: string, data: unknown): Promise<T> {
+  async function write<T>(method: 'post' | 'delete', path: string, data?: unknown): Promise<T> {
     if (busy.value) throw new ApiError(409, 'Đang gửi thao tác trước. Vui lòng chờ.')
     const scope = revision; busy.value = true; clearError()
-    try { check(scope); await prepareCsrf(); check(scope); const result = await api.post<T>(`/tenant${path}`, data); check(scope); return result.data }
+    try { check(scope); await prepareCsrf(); check(scope); const result = await api.request<T>({ method, url: `/tenant${path}`, data }); check(scope); return result.data }
     catch (caught) { const normalized = toApiError(caught); if (alive && scope === revision) { error.value = normalized.message; errors.value = normalized.errors }; throw normalized }
     finally { if (alive && scope === revision) busy.value = false }
   }
-  return { get, post, busy, error, errors, clearError }
+  const post = <T>(path: string, data: unknown) => write<T>('post', path, data)
+  const remove = <T>(path: string) => write<T>('delete', path)
+  return { get, post, remove, busy, error, errors, clearError }
 }
 
 export function useTenantResource<T>(path: string | (() => string), refreshOnFocus = true) {
@@ -34,16 +36,19 @@ export function useTenantResource<T>(path: string | (() => string), refreshOnFoc
   function clear() { sequence++; data.value = null; error.value = ''; status.value = 0 }
   watch(() => auth.user ? `${auth.user.id}:${auth.user.role}` : '', clear, { flush: 'sync' })
   onBeforeUnmount(() => { alive = false; clear() })
-  async function load() {
-    const current = ++sequence; data.value = null; error.value = ''; status.value = 0; loading.value = true
-    try { const result = await client.get<{ data: T }>(typeof path === 'string' ? path : path()); if (alive && current === sequence) data.value = result.data as typeof data.value }
-    catch (caught) { if (alive && current === sequence) { const normalized = toApiError(caught); error.value = normalized.message; status.value = normalized.status } }
+  async function request(background: boolean) {
+    const current = ++sequence
+    if (!background) { data.value = null; error.value = ''; status.value = 0; loading.value = true }
+    try { const result = await client.get<{ data: T }>(typeof path === 'string' ? path : path()); if (alive && current === sequence) { data.value = result.data as typeof data.value; error.value = ''; status.value = 0 } }
+    catch (caught) { if (alive && current === sequence) { const normalized = toApiError(caught); if (!background || [401, 403, 404].includes(normalized.status)) { data.value = null; error.value = normalized.message; status.value = normalized.status } } }
     finally { if (alive && current === sequence) loading.value = false }
   }
+  const load = () => request(false)
+  const refresh = () => request(data.value !== null)
   function refreshVisible() { if (refreshOnFocus && document.visibilityState === 'visible') void load() }
   onMounted(() => { window.addEventListener('focus', refreshVisible) })
   onBeforeUnmount(() => { window.removeEventListener('focus', refreshVisible) })
-  return { data, loading, error, status, load }
+  return { data, loading, error, status, load, refresh }
 }
 
 export function useTenantList<T>(path: string) {

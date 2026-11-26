@@ -51,7 +51,7 @@ void load()
     <header class="management-header"><div><span class="eyebrow">Thông tin dùng chung trên chứng từ</span><h1>Thông tin nhà trọ</h1><p>Cấu hình thông tin liên hệ và nhận tiền để hiển thị trên hóa đơn, phiếu thu PDF.</p></div></header>
     <UiNotice v-if="notice" tone="success">{{ notice }}</UiNotice>
     <UiPageState v-if="loading" kind="loading" />
-    <UiPageState v-else-if="loadError" kind="error" :description="loadError"><UiButton @click="load">Thử lại</UiButton></UiPageState>
+    <UiPageState v-else-if="loadError" kind="error" :description="loadError"><UiButton @click="load">Tải lại</UiButton></UiPageState>
     <template v-else-if="profile">
       <UiNotice v-if="!profile.configured" tone="info">Chưa cấu hình thông tin nhà trọ. Điền thông tin thực tế để các chứng từ xuất tiếp theo đầy đủ hơn.</UiNotice>
       <p class="help-text">Thông tin bên dưới được chia sẻ trên PDF của người có quyền xem. Email này là địa chỉ liên hệ trên chứng từ.</p>

@@ -20,10 +20,10 @@ async function topbarInsideViewport(page: Page) {
   await page.evaluate(() => document.fonts.ready)
   // Read one layout frame: separate calls can straddle a font or viewport update.
   await expect.poll(() => page.evaluate(() => {
-    const bar = document.querySelector('.topbar')?.getBoundingClientRect()
+    const bar = document.querySelector('.rb7-top')?.getBoundingClientRect()
     const notice = document.querySelector('.pwa-notices')?.getBoundingClientRect()
-    const heading = document.querySelector('.topbar .page-heading')?.getBoundingClientRect()
-    const actions = document.querySelector('.topbar-actions')?.getBoundingClientRect()
+    const heading = document.querySelector('.rb7-brand')?.getBoundingClientRect()
+    const actions = document.querySelector('.rb7-session')?.getBoundingClientRect()
     return {
       topAligned: !!bar && Math.abs(bar.top - (notice?.height ?? 0)) <= 1,
       inside: !!bar && bar.left >= 0 && bar.right <= innerWidth + 1,
@@ -42,7 +42,7 @@ test('header stays reachable after scrolling, including a changing PWA notice an
     await page.evaluate(() => window.scrollTo(0, 1100))
     await expect.poll(() => page.evaluate(() => scrollY)).toBe(await page.evaluate(() => Math.min(1100, Math.max(0, document.documentElement.scrollHeight - innerHeight))))
     await topbarInsideViewport(page)
-    if (width < 1024) {
+    if (width <= 800) {
       await page.getByRole('button', { name: 'Mở menu', exact: true }).click()
       const menu = page.getByRole('dialog', { name: 'Điều hướng chính', exact: true })
       await expect(menu).toBeVisible()
@@ -55,7 +55,7 @@ test('header stays reachable after scrolling, including a changing PWA notice an
   await context.setOffline(true)
   await expect(page.getByRole('region', { name: 'Trạng thái kết nối', exact: true })).toBeVisible()
   await expect.poll(async () => {
-    const bar = await page.locator('.topbar').boundingBox()
+    const bar = await page.locator('.rb7-top').boundingBox()
     const notice = await page.locator('.pwa-notices').boundingBox()
     return Math.abs(bar!.y - notice!.height)
   }).toBeLessThanOrEqual(1)
@@ -102,7 +102,7 @@ test('month control and update button fit phones and align on tablet and desktop
   await page.screenshot({ path: resolve(screenshots, 'receivables-aligned-desktop.png'), animations: 'disabled' })
 })
 
-test('tenant header and bottom navigation stay usable on a narrow phone', async ({ page }) => {
+test('tenant header and side menu stay usable on a narrow phone', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 })
   await login(page, 'e2e_notify_tenant')
   await page.goto('/tenant/invoices/1')
@@ -110,7 +110,7 @@ test('tenant header and bottom navigation stay usable on a narrow phone', async 
   await page.evaluate(() => window.scrollTo(0, 900))
   await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(100)
   await topbarInsideViewport(page)
-  await expect(page.getByRole('navigation', { name: 'Điều hướng người thuê', exact: true })).toBeInViewport()
+  await expect(page.getByRole('button', { name: 'Mở menu', exact: true })).toBeInViewport()
   await page.getByRole('button', { name: 'Mở menu', exact: true }).click()
   const menu = page.getByRole('dialog', { name: 'Điều hướng chính', exact: true })
   await menu.getByRole('link', { name: 'Lịch sử cư trú', exact: true }).click()

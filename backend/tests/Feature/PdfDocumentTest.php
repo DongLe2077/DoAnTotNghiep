@@ -55,6 +55,26 @@ class PdfDocumentTest extends TestCase
         $this->assertGreaterThan(10000, strlen($bytes));
     }
 
+    public function test_one_time_charge_pdf_keeps_the_original_amount_and_shows_rounding(): void
+    {
+        [$invoice, $tenant] = $this->invoice();
+        $path = '/api/owner/occupancies/'.$invoice->occupancy_id.'/invoices/one-time';
+        $charge = ['billing_month' => '2026-10', 'description' => 'Phí làm lại chìa khóa', 'amount' => '1999.50',
+            'idempotency_key' => 'one-time-pdf-1999'];
+        $token = $this->postJson($path.'/preview', $charge)->assertOk()->json('data.preview_token');
+        $id = $this->postJson($path, $charge + ['preview_token' => $token])->assertCreated()->json('data.id');
+        $documents = app(PdfDocuments::class);
+        $snapshot = $documents->snapshot($id, null, $tenant->id);
+        $this->assertSame('1999.50', $snapshot['invoice']['original_amount']);
+        $this->assertSame('0.50', $snapshot['invoice']['rounding_amount']);
+        $this->assertSame('2000.00', $snapshot['invoice']['outstanding_amount']);
+        $html = $documents->html($snapshot);
+        $this->assertStringContainsString('HÓA ĐƠN KHOẢN THU RIÊNG', $html);
+        $this->assertStringContainsString('Phí làm lại chìa khóa', $html);
+        $this->assertStringContainsString('Chênh lệch làm tròn đến 1.000 đ', $html);
+        $this->actingAs($tenant, 'web')->get('/api/tenant/invoices/'.$id.'/pdf')->assertOk()->assertHeader('Content-Type', 'application/pdf');
+    }
+
     public function test_tenant_pdf_checks_current_grant_and_receipt_invoice_binding(): void
     {
         [$invoice, $tenant] = $this->invoice();

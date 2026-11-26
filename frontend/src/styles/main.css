@@ -63,34 +63,6 @@
   --radius-control: 8px;
 }
 
-.rentbase-graphite {
-  --color-bg: #f5f7f8;
-  --color-text: #262b37;
-  --color-text-secondary: #566172;
-  --color-text-muted: #566172;
-  --color-border: #dce2e7;
-  --color-input-border: #8390a0;
-  --color-primary: #353f50;
-  --color-primary-hover: #1d222d;
-  --color-primary-soft: #e5f5f1;
-  --color-success: #245550;
-  --color-success-soft: #e5f5f1;
-  --color-action: #8addd1;
-  --color-action-hover: #76cfc2;
-  --color-action-text: #262b37;
-  --color-focus: #286d76;
-  --radius-card: 12px;
-  --radius-control: 8px;
-  --shadow-popover: 0 16px 48px rgb(38 43 55 / 16%);
-  --refresh-dark: #262b37;
-  --owner-header: #1d222d;
-  --owner-width: 1184px;
-  --color-chart-main: #262b37;
-  --color-chart-secondary: #62bcb0;
-}
-
-.rentbase-graphite ::selection { background: var(--color-action); color: var(--color-action-text); }
-
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
 button, input, select, textarea { font: inherit; }
@@ -117,14 +89,13 @@ textarea:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--colo
 .ui-input[aria-invalid='true'], .ui-textarea[aria-invalid='true'] { border-color: var(--color-danger); }
 .ui-input:disabled, .ui-select:disabled, .ui-textarea:disabled { background: #f0f2ee; color: var(--color-text-secondary); }
 input, textarea, select { scroll-margin-block: calc(var(--pwa-notice-height, 0px) + 96px) 96px; }
-.keyboard-open .tenant-bottom-navigation { display: none !important; }
 .keyboard-open .ui-dialog[open] { position: fixed; inset: calc(var(--visual-top, 0px) + 12px) 0 auto; margin: 0 auto; max-height: calc(var(--app-viewport-height, 100dvh) - 24px); }
 .ui-textarea { min-height: 112px; resize: vertical; }
 .ui-checkbox { width: 20px; height: 20px; accent-color: var(--color-primary); }
 .ui-card { padding: var(--space-6); border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface); }
 .ui-money { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
 
-.boot-screen { min-height: 100dvh; display: grid; place-content: center; justify-items: center; gap: 16px; color: var(--color-text-secondary); }
+.boot-screen { min-height: calc(100dvh - var(--pwa-notice-height, 0px) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); display: grid; place-content: center; justify-items: center; gap: 16px; color: var(--color-text-secondary); }
 .boot-mark { display: grid; place-items: center; background: var(--color-primary); color: #fff; border-radius: 16px; width: 56px; height: 56px; font-size: 36px; }
 .boot-screen p { margin: 0; }
 @media (max-width: 640px) { .ui-input, .ui-select, .ui-textarea { font-size: 16px; } }

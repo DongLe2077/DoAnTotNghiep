@@ -51,8 +51,8 @@ const rooms = computed(() => [
         <span class="chart-kicker">Mọi kỳ</span>
         <h2 id="tracking-title">Cần theo dõi</h2>
         <dl class="record-facts">
-          <div><dt><RouterLink to="/owner/receivables?due_status=overdue">Công nợ quá hạn</RouterLink></dt><dd>{{ formatMoney(data.receivables.overdue_amount ?? '0.00') }}</dd></div>
-          <div><dt><RouterLink to="/owner/maintenance">Yêu cầu sửa chữa đang mở</RouterLink></dt><dd>{{ data.maintenance.open_count }}</dd></div>
+          <div><dt><RouterLink class="record-link" to="/owner/receivables?due_status=overdue">Công nợ quá hạn</RouterLink></dt><dd>{{ formatMoney(data.receivables.overdue_amount ?? '0.00') }}</dd></div>
+          <div><dt><RouterLink class="record-link" to="/owner/maintenance">Yêu cầu sửa chữa đang mở</RouterLink></dt><dd>{{ data.maintenance.open_count }}</dd></div>
         </dl>
       </section>
     </div>
@@ -76,7 +76,7 @@ const rooms = computed(() => [
 .chart-grid h2.chart-kicker { margin: 0; font-size: 11px; line-height: inherit; letter-spacing: .13em; }
 .rooms-panel > header { margin-bottom: 0; align-items: flex-start; }
 .rooms-panel > header a { display: inline-flex; align-items: center; min-height: 44px; }
-.finance-panel { background: var(--refresh-dark); color: white; border-color: var(--refresh-dark); }
+.finance-panel { background: #edf3ff; color: var(--color-text); border-color: #cbd9f4; }
 .finance-panel .chart-kicker, .finance-amount { color: var(--color-action); }
 .finance-amount { display: inline-flex; align-items: center; min-height: 44px; text-decoration-thickness: 1px; }
 .finance-amount:focus-visible { outline-color: var(--color-action); }
@@ -85,8 +85,7 @@ const rooms = computed(() => [
 .record-facts { gap: 0; margin: 12px 0 0; }
 .record-facts > div { padding: 8px 0; border-bottom: 1px solid var(--color-border); }
 .record-facts dd { font-weight: 650; }
-.finance-panel .record-facts > div { border-color: #4a5566; }
-.finance-panel .record-facts dt { color: #ced7e1; }
+.finance-panel .record-facts > div { border-color: #cbd9f4; }
 .tracking-panel a { text-decoration-color: transparent; }
 .tracking-panel a:hover, .tracking-panel a:focus-visible { text-decoration-color: currentColor; }
 .trend-heading { margin: 18px 0 10px; }

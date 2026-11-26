@@ -42,7 +42,7 @@ function actionLabel(item: MaintenanceHistoryEntry) {
   <section class="record-card maintenance-history" aria-label="Lịch sử xử lý sửa chữa">
     <header class="history-heading"><div><h2>Lịch sử xử lý</h2><p class="help-text">Các lần cập nhật được giữ lại, mới nhất ở trên.</p></div><UiButton variant="secondary" :loading="loading" @click="load()">Làm mới lịch sử</UiButton></header>
     <UiPageState v-if="loading" kind="loading" heading-level="h3" title="Đang tải lịch sử xử lý…" />
-    <UiPageState v-else-if="error" :kind="[403, 404].includes(status) ? 'not-found' : 'error'" heading-level="h3" :description="[403, 404].includes(status) ? 'Bạn không có quyền xem lịch sử yêu cầu này hoặc yêu cầu không còn khả dụng.' : error"><UiButton v-if="![403, 404].includes(status)" @click="load()">Thử lại lịch sử</UiButton></UiPageState>
+    <UiPageState v-else-if="error" :kind="[403, 404].includes(status) ? 'not-found' : 'error'" heading-level="h3" :description="[403, 404].includes(status) ? 'Bạn không có quyền xem lịch sử yêu cầu này hoặc yêu cầu không còn khả dụng.' : error"><UiButton v-if="![403, 404].includes(status)" @click="load()">Tải lại lịch sử</UiButton></UiPageState>
     <template v-else>
       <UiNotice v-if="baseline" tone="info">Lịch sử chi tiết được lưu từ {{ formatDateTime(baseline) }}. Những cập nhật trước mốc này chỉ còn trạng thái và ghi chú gần nhất.</UiNotice>
       <UiPageState v-if="!items.length" heading-level="h3" title="Chưa có lịch sử được ghi nhận" description="Các lần cập nhật xử lý tiếp theo sẽ xuất hiện tại đây." />

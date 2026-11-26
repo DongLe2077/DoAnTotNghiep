@@ -10,19 +10,100 @@ use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use App\Models\PaymentCorrection;
 use App\Models\User;
+use App\Services\Tenancy\PropertyContext;
 use Brick\Math\BigDecimal;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 class AppNotifications
 {
+    public function welcome(User $user): void
+    {
+        $this->saveWelcome($user, 'welcome');
+    }
+
+    public function prepareWelcome(User $user, string $tenantName): void
+    {
+        $this->saveWelcome($user, 'welcome_pending', $tenantName);
+    }
+
+    private function saveWelcome(User $user, string $type, ?string $tenantName = null): void
+    {
+        $data = $this->welcomeData($user, $tenantName);
+        if ($tenantName !== null) {
+            $data['name'] = $tenantName;
+        }
+
+        DB::table('app_notifications')->insert([
+            'user_id' => $user->id,
+            'type' => $type,
+            'dedupe_key' => hash('sha256', 'welcome:'.$user->id),
+            'data' => json_encode($data, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+            'created_at' => now(),
+        ]);
+    }
+
+    public function publishPreparedWelcome(User $user): void
+    {
+        // Only accounts provisioned from a legacy tenant profile have a pending welcome.
+        if ($user->getRawOriginal('tenant_id') === null) {
+            return;
+        }
+
+        DB::table('app_notifications')
+            ->where('dedupe_key', hash('sha256', 'welcome:'.$user->id))
+            ->where('user_id', $user->id)->where('type', 'welcome_pending')
+            ->update(['type' => 'welcome', 'created_at' => now()]);
+    }
+
+    public function welcomeData(User $user, ?string $tenantName = null): array
+    {
+        $name = trim((string) ($user->full_name ?? $tenantName));
+        $greeting = $name === '' ? 'Chào bạn' : 'Chào '.$name;
+        $context = app(PropertyContext::class);
+        $hasProperty = ! $context->enabled() || $context->id() !== null
+            || DB::table('property_memberships')->where('user_id', $user->id)
+                ->where('status', 'approved')->whereNull('revoked_at')->exists();
+        $hint = match (true) {
+            $user->hasRole(User::ROLE_OWNER) && $hasProperty => 'Bạn có thể theo dõi tình hình khu trọ ở Tổng quan và xem những việc cần xử lý trong Công việc.',
+            $user->canCreateRentalProperty() && ! $hasProperty => 'Bạn có thể tạo khu trọ trong Khu trọ của bạn để thêm phòng và mời người thuê.',
+            $hasProperty => 'Bạn có thể xem thông tin ở Phòng của tôi và theo dõi các khoản cần thanh toán trong Hóa đơn.',
+            default => 'Nếu đã nhận mã mời từ chủ trọ, bạn có thể nhập mã trong Khu trọ của bạn.',
+        };
+
+        return ['title' => 'Chào mừng bạn đến với RentBase', 'body' => $greeting.'! '.$hint];
+    }
+
     public function visible(User $actor): Builder
     {
-        return AppNotification::query()->where('user_id', $actor->id)
-            ->where(function ($query) use ($actor) {
+        $context = app(\App\Services\Tenancy\PropertyContext::class);
+        $inbox = AppNotification::withoutGlobalScope('property')->where('user_id', $actor->id);
+        if ($context->enabled() && $context->id() === null) {
+            return $inbox->where('type', 'welcome');
+        }
+
+        return $inbox->where(function ($query) use ($actor, $context) {
+            $query->where('type', 'welcome')->orWhere(function ($business) use ($actor, $context) {
+                if ($context->enabled()) {
+                    $propertyId = $context->requireId();
+                    $scope = app(\App\Services\Tenancy\PropertyQueries::class);
+                    $business->where(function ($belongs) use ($propertyId, $scope) {
+                        foreach (['invoice_id' => 'invoices', 'maintenance_request_id' => 'maintenance_requests', 'announcement_id' => 'announcements'] as $key => $table) {
+                            $belongs->orWhereIn($key, $scope->scoped($propertyId, $table)->select($table.'.id'));
+                        }
+                    });
+                }
+                $this->restrictBusinessNotifications($business, $actor);
+            });
+        });
+    }
+
+    private function restrictBusinessNotifications(Builder $inbox, User $actor): void
+    {
+        $inbox            ->where(function ($query) use ($actor) {
                 $query->where(function ($query) use ($actor) {
                     $query->whereNotNull('invoice_id')->whereExists(fn ($access) => $access->selectRaw('1')
-                        ->from('active_invoice_access as access')->join('invoice_balances as balances', 'balances.invoice_id', '=', 'access.invoice_id')
+                        ->from(app(\App\Services\Tenancy\PropertyContext::class)->enabled() ? 'invoice_access_grants as access' : 'active_invoice_access as access')->when(app(\App\Services\Tenancy\PropertyContext::class)->enabled(), fn ($q) => $q->whereNull('access.revoked_at'))->join('invoice_balances as balances', 'balances.invoice_id', '=', 'access.invoice_id')
                         ->whereColumn('access.invoice_id', 'app_notifications.invoice_id')->where('access.user_id', $actor->id)
                         ->where(fn ($visibility) => $visibility->where('app_notifications.type', 'invoice_updated')
                             ->orWhere(fn ($unpaid) => $unpaid->whereIn('balances.payment_status', ['unpaid', 'partially_paid'])->where('balances.outstanding_amount', '>', 0))));
@@ -41,7 +122,7 @@ class AppNotifications
 
     public function maintenanceSubmitted(MaintenanceRequest $report): void
     {
-        foreach (User::query()->where('role', User::ROLE_OWNER)->where('is_active', true)->orderBy('id')->cursor() as $owner) {
+        foreach (User::query()->when(app(\App\Services\Tenancy\PropertyContext::class)->enabled(), fn ($q) => $q->whereIn('id', DB::table('rental_properties')->where('id', app(\App\Services\Tenancy\PropertyContext::class)->requireId())->select('owner_user_id')), fn ($q) => $q->where('role', User::ROLE_OWNER))->where('is_active', true)->orderBy('id')->cursor() as $owner) {
             $this->add($owner->id, 'maintenance_submitted', 'maintenance:'.$report->id.':submitted:'.$owner->id,
                 ['title' => 'Có yêu cầu báo hỏng mới', 'body' => $report->title], maintenanceId: $report->id);
         }
@@ -91,7 +172,7 @@ class AppNotifications
             if ($overdueOnly && ($locked->due_date === null || $locked->due_date->format('Y-m-d') >= now()->format('Y-m-d'))) {
                 return ['notification' => null, 'replayed' => false, 'skip_reason' => 'Hóa đơn chưa quá hạn.'];
             }
-            $balance = DB::table('invoice_balances')->where('invoice_id', $locked->id)->first();
+            $balance = \App\Services\Tenancy\PropertyDatabase::table('invoice_balances')->where('invoice_id', $locked->id)->first();
             if (! in_array($balance->payment_status, ['unpaid', 'partially_paid'], true) || ! BigDecimal::of($balance->outstanding_amount)->isPositive()) {
                 return ['notification' => null, 'replayed' => false, 'skip_reason' => 'Hóa đơn không có công nợ hợp lệ.'];
             }

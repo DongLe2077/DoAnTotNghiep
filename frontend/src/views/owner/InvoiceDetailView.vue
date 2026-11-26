@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ScheduledDeleteButton from '@/components/owner/ScheduledDeleteButton.vue'
 import PdfDownloadButton from '@/components/billing/PdfDownloadButton.vue'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
@@ -51,10 +52,14 @@ onBeforeUnmount(() => { alive = false; sequence++ })
   <section class="management-page">
     <RouterLink class="back-link" to="/owner/invoices">← Danh sách hóa đơn</RouterLink>
     <UiPageState v-if="loading" kind="loading" />
-    <UiPageState v-else-if="error" kind="error" :description="error"><UiButton @click="load">Thử lại</UiButton></UiPageState>
+    <UiPageState v-else-if="error" kind="error" :description="error"><UiButton @click="load">Tải lại</UiButton></UiPageState>
     <template v-else-if="invoice">
       <header class="management-header workflow-header">
-        <div><h1>Hóa đơn phòng {{ invoice.room.room_number }}</h1><p>Tháng {{ invoice.billing_month.slice(5) }}/{{ invoice.billing_month.slice(0, 4) }} · {{ invoice.invoice_number }}</p></div>
+        <div><h1>{{ invoice.invoice_kind === 'one_time' ? 'Khoản thu riêng phòng' : 'Hóa đơn phòng' }} {{ invoice.room.room_number }}</h1><p>Tháng {{ invoice.billing_month.slice(5) }}/{{ invoice.billing_month.slice(0, 4) }} · {{ invoice.invoice_number }}</p></div>
+        <div class="button-row">
+          <ScheduledDeleteButton kind="invoices" :id="invoice.id" :label="invoice.invoice_number" button-label="Xóa hóa đơn" />
+          <PdfDownloadButton :path="`/owner/invoices/${invoice.id}/pdf`" :filename="`hoa-don-${invoice.id}.pdf`" label="Tải PDF hóa đơn" />
+        </div>
       </header>
       <UiNotice v-if="success" tone="success">{{ success }}</UiNotice>
       <UiNotice v-if="invoice.payment_status === 'inconsistent'" tone="warning">Số dư cần kiểm tra. Hãy đối chiếu các dòng hóa đơn và lịch sử thu trước khi ghi nhận thêm.</UiNotice>
@@ -106,9 +111,11 @@ onBeforeUnmount(() => { alive = false; sequence++ })
           <summary>Chi tiết các khoản và PDF hóa đơn</summary>
           <div class="workflow-disclosure-body">
             <InvoiceLines :items="invoice.items ?? []" />
+            <dl v-if="invoice.rounding_amount && invoice.rounding_amount !== '0.00'" class="record-facts">
+              <div><dt>Chênh lệch làm tròn đến 1.000 đ</dt><dd>{{ formatMoney(invoice.rounding_amount) }}</dd></div>
+            </dl>
             <p class="help-text">Nhóm {{ invoice.group.group_code }} · Phát hành {{ formatDateTime(invoice.issued_at) }}</p>
             <p v-if="!canCollect && invoice.due_date" class="help-text">Hạn thanh toán {{ dueDateText(invoice.due_date) }}</p>
-            <PdfDownloadButton :path="`/owner/invoices/${invoice.id}/pdf`" :filename="`hoa-don-${invoice.id}.pdf`" label="Tải PDF hóa đơn" />
           </div>
         </details>
         <details class="workflow-disclosure wide" :open="changeDetailsOpen" @toggle="changeDetailsOpen = ($event.currentTarget as HTMLDetailsElement).open">

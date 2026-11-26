@@ -8,9 +8,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Invoice extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     public const CREATED_AT = 'issued_at';
 
     public const UPDATED_AT = null;
+
+    public const KIND_MONTHLY = 'monthly';
+
+    public const KIND_ONE_TIME = 'one_time';
 
     protected $table = 'invoices';
 
@@ -21,9 +27,15 @@ class Invoice extends Model
         'representative_assignment_id',
         'issued_by',
         'due_date',
+        'invoice_kind',
+        'rounding_amount',
+        'issue_key_hash',
+        'issue_fingerprint',
         'revision',
         'cancelled_at',
     ];
+
+    protected $hidden = ['issue_key_hash', 'issue_fingerprint'];
 
     protected function casts(): array
     {
@@ -35,6 +47,7 @@ class Invoice extends Model
             'issued_by' => 'integer',
             'issued_at' => 'datetime',
             'due_date' => 'date',
+            'rounding_amount' => 'decimal:2',
             'revision' => 'integer',
             'cancelled_at' => 'datetime',
         ];

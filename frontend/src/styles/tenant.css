@@ -15,7 +15,7 @@
 .tenant-form { max-width: 760px; }
 .tenant-form .form-grid > fieldset { display: grid; gap: 20px; }
 .tenant-primary-link { display: inline-flex; align-items: center; min-height: 44px; padding: 11px 18px; border-radius: 10px; color: var(--color-action-text, white); background: var(--color-action, var(--color-primary)); font-size: 14px; font-weight: 600; text-decoration: none; }
-.rentbase-graphite .tenant-primary-link:hover { background: var(--color-action-hover); }
+.tenant-primary-link:hover { background: var(--color-action-hover); }
 .tenant-workspace > .management-header { margin-bottom: 24px; }
 .tenant-workspace .management-header h1 {
   margin: 4px 0 8px;
@@ -37,7 +37,7 @@
   color: #f4f8fa;
   border-color: var(--refresh-dark);
 }
-.tenant-highlight .workflow-amount { color: var(--color-action); }
+.tenant-highlight .workflow-amount { color: var(--color-on-dark-accent, #b5c8ff); }
 .tenant-highlight h2.workflow-caption { color: #c5cfd6; }
 .tenant-highlight .workflow-deadline > span { color: #f4d798; }
 @media (max-width: 700px) { .tenant-room-hero { grid-template-columns: 1fr; gap: 20px; } .tenant-rent { border-top: 1px solid var(--color-border); padding-top: 20px; } .tenant-rent > strong { font-size: 27px; } .tenant-quick-links { flex-direction: column; } }

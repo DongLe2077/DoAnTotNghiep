@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Occupancy extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     protected $table = 'occupancies';
 
     protected $fillable = [

@@ -3,14 +3,14 @@ import { createServer, request as upstreamRequest } from 'node:http'
 import { isIP } from 'node:net'
 import { extname, isAbsolute, relative, resolve } from 'node:path'
 
-const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.png': 'image/png', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json' }
+const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.png': 'image/png', '.webp': 'image/webp', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json' }
 export function createMobileGateway({ directory, backendPort = 18003, getOrigin, isReady = () => true }) {
   const root = realpathSync(directory)
   const server = createServer((req, res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff')
     res.setHeader('Referrer-Policy', 'same-origin')
     res.setHeader('Cache-Control', 'no-store')
-    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'")
+    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' wss://*.pusher.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'")
     const reply = (status, message) => { if (res.headersSent) return; res.writeHead(status, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end(message) }
     const origin = getOrigin(), host = origin ? new URL(origin).host : null
     if (![host, '127.0.0.1:5176', 'localhost:5176'].filter(Boolean).includes(req.headers.host)) return reply(421, 'Địa chỉ thử không hợp lệ.')
@@ -46,7 +46,7 @@ export function createMobileGateway({ directory, backendPort = 18003, getOrigin,
     }
     if (!['GET', 'HEAD'].includes(req.method)) return reply(405, 'Không hỗ trợ yêu cầu này.')
     const asset = ['/favicon.svg', '/manifest.webmanifest', '/sw.js', '/index.html'].includes(path) || /^\/(?:assets|fonts|icons)\//.test(path)
-    if (!asset && !/^\/(?:$|login$|account$|notifications$|forbidden$|connection-error$|owner(?:\/|$)|tenant(?:\/|$))/.test(path)) return reply(404, 'Không tìm thấy trang.')
+    if (!asset && !/^\/(?:$|login$|register$|properties$|my-room-requests$|find-rooms(?:\/\d+)?$|account$|notifications$|forbidden$|connection-error$|owner(?:\/|$)|tenant(?:\/|$))/.test(path)) return reply(404, 'Không tìm thấy trang.')
     const file = resolve(root, asset ? `.${path}` : 'index.html'), rel = relative(root, file)
     if (!rel || rel === '..' || rel.startsWith('../') || rel.startsWith('..\\') || isAbsolute(rel) || !existsSync(file) || !statSync(file).isFile() || realpathSync(file) !== file) return reply(404, 'Không tìm thấy tệp.')
     const type = types[extname(file)]

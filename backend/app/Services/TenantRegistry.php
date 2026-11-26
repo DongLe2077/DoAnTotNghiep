@@ -57,6 +57,7 @@ class TenantRegistry
 
     public function saveAccount(Tenant $tenant, array $attributes): User
     {
+        abort_if(app(\App\Services\Tenancy\PropertyContext::class)->enabled(), 409, 'Tài khoản do người dùng tự quản lý. Hãy dùng chức năng liên kết thành viên của khu trọ.');
         try {
             return DB::transaction(function () use ($tenant, $attributes) {
                 $locked = Tenant::query()->lockForUpdate()->findOrFail($tenant->id);
@@ -81,6 +82,9 @@ class TenantRegistry
                     $user->password_hash = Hash::make($attributes['password']);
                 }
                 $user->save();
+                if ($user->wasRecentlyCreated) {
+                    app(AppNotifications::class)->prepareWelcome($user, $locked->full_name);
+                }
 
                 return $user;
             }, 3);

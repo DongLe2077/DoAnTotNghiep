@@ -99,7 +99,7 @@ if (mobileMode) scripts.push('prepare-mobile.php')
 for (const script of scripts) {
   const prepared = spawnSync(php, [resolve(supportPath, script)], {
     cwd: backendPath,
-    env,
+    env: mobileMode ? { ...env, PROPERTY_TENANCY_ENABLED: 'false' } : env,
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
     windowsHide: true,
@@ -122,6 +122,20 @@ const server = spawn(php, [
   stdio: 'inherit',
   windowsHide: true,
 })
+
+// Alwaysdata uses Laravel's scheduled task. The persistent local demo has its own runner.
+if (demoMode) {
+  let purge = null
+  const sweep = () => {
+    if (purge) return
+    purge = spawn(php, ['artisan', 'rental:purge-scheduled-deletions'], { cwd: backendPath, env, stdio: 'inherit', windowsHide: true })
+    purge.once('error', error => { console.error(error); purge = null })
+    purge.once('exit', () => { purge = null })
+  }
+  sweep()
+  const timer = setInterval(sweep, 60_000)
+  server.once('exit', () => { clearInterval(timer); purge?.kill() })
+}
 
 server.on('error', (error) => {
   console.error(error.message)

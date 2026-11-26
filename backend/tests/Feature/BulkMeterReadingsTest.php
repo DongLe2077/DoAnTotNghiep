@@ -171,6 +171,14 @@ class BulkMeterReadingsTest extends TestCase
         $this->submit($this->payload($this->period))->assertConflict();
     }
 
+    public function test_one_time_invoice_does_not_block_bulk_meter_submission(): void
+    {
+        $this->invoice()->update(['invoice_kind' => Invoice::KIND_ONE_TIME]);
+
+        $this->assertTrue($this->row($this->period)['can_record']);
+        $this->submit($this->payload($this->period))->assertCreated();
+    }
+
     public function test_unknown_baseline_is_never_assumed_and_zero_consumption_is_valid(): void
     {
         $this->assertNull($this->row($this->period)['previous_reading']);

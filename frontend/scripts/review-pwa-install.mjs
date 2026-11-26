@@ -51,7 +51,7 @@ try {
   check(await page.locator('meta[name="theme-color"]').getAttribute('content') === manifest.theme_color, 'Browser theme matches the manifest')
   check(await page.locator('meta[name="apple-mobile-web-app-title"]').getAttribute('content') === manifest.name, 'Apple app metadata matches the manifest')
   const appleIcon = await page.locator('link[rel="apple-touch-icon"]').getAttribute('href')
-  check(appleIcon === '/icons/apple-touch-icon.png?v=rentbase', 'Apple has a dedicated touch icon')
+  check(appleIcon === '/icons/apple-touch-icon.png?v=rentbase-blue', 'Apple has a dedicated touch icon')
   check(await page.locator('link[rel="icon"]').getAttribute('href') === '/icons/rentbase-mark.svg', 'Browser favicon uses the RentBase mark')
   const background = manifest.theme_color.slice(1).match(/../g).map(value => Number.parseInt(value, 16))
   for (const icon of [...manifest.icons, { src: appleIcon, sizes: '180x180', purpose: 'apple' }]) {

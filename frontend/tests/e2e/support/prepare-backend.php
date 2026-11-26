@@ -1,6 +1,6 @@
 <?php
 
-// Only a disposable SQLite fixture is created; application migrations are not run.
+// Only a disposable SQLite fixture is created.
 use App\Services\CashBook;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Schema\Blueprint;
@@ -77,16 +77,16 @@ foreach ([
 DB::unprepared(<<<'SQL'
 CREATE TABLE tenants (
     id INTEGER PRIMARY KEY AUTOINCREMENT, full_name VARCHAR(150) NOT NULL,
-    phone_number VARCHAR(20) NOT NULL, identity_number VARCHAR(30) UNIQUE,
+    phone_number VARCHAR(20) NOT NULL, identity_number VARCHAR(30),
     created_at DATETIME, updated_at DATETIME
 );
 CREATE TABLE rooms (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, room_number VARCHAR(30) NOT NULL UNIQUE,
+    id INTEGER PRIMARY KEY AUTOINCREMENT, room_number VARCHAR(30) NOT NULL,
     capacity INTEGER NOT NULL, default_monthly_rent DECIMAL(18,2) NOT NULL,
     operational_status VARCHAR(20) NOT NULL DEFAULT 'available', created_at DATETIME, updated_at DATETIME
 );
 CREATE TABLE rental_groups (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, group_code VARCHAR(40) NOT NULL UNIQUE, created_at DATETIME NOT NULL
+    id INTEGER PRIMARY KEY AUTOINCREMENT, group_code VARCHAR(40) NOT NULL, created_at DATETIME NOT NULL
 );
 CREATE TABLE occupancies (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -107,7 +107,7 @@ CREATE TABLE representative_assignments (
     started_at DATETIME NOT NULL, ended_at DATETIME, created_at DATETIME, UNIQUE(id, occupancy_id)
 );
 CREATE TABLE services (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, service_code VARCHAR(40) UNIQUE, name VARCHAR(100),
+    id INTEGER PRIMARY KEY AUTOINCREMENT, service_code VARCHAR(40), name VARCHAR(100),
     unit VARCHAR(30), billing_method VARCHAR(20), default_unit_price DECIMAL(18,4), is_active BOOLEAN,
     created_at DATETIME, updated_at DATETIME
 );
@@ -217,6 +217,10 @@ SELECT i.id AS invoice_id, i.invoice_number, i.occupancy_id, i.billing_month, i.
 FROM invoices i
 LEFT JOIN (SELECT invoice_id, COUNT(*) AS line_count, ROUND(SUM(line_total), 2) AS total_amount FROM invoice_items GROUP BY invoice_id) li ON li.invoice_id = i.id
 LEFT JOIN (SELECT invoice_id, ROUND(SUM(amount), 2) AS paid_amount FROM payments GROUP BY invoice_id) p ON p.invoice_id = i.id;
+CREATE UNIQUE INDEX tenants_identity_number_unique ON tenants (identity_number);
+CREATE UNIQUE INDEX rooms_room_number_unique ON rooms (room_number);
+CREATE UNIQUE INDEX rental_groups_group_code_unique ON rental_groups (group_code);
+CREATE UNIQUE INDEX services_service_code_unique ON services (service_code);
 SQL);
 
 $fixtureTime = now()->format('Y-m-d H:i:s');
@@ -342,8 +346,12 @@ if ($demoMode) {
 (require $backendPath.'/database/migrations/2026_10_23_000001_add_invoice_controls.php')->up();
 (require $backendPath.'/database/migrations/2026_10_24_000001_create_announcements.php')->up();
 (require $backendPath.'/database/migrations/2026_10_25_000001_create_maintenance_request_histories.php')->up();
+(require $backendPath.'/database/migrations/2026_11_13_000001_create_scheduled_deletions.php')->up();
+(require $backendPath.'/database/migrations/2026_11_23_000002_create_scheduled_deletion_receipts.php')->up();
+(require $backendPath.'/database/migrations/2026_11_23_000003_create_checkout_requests.php')->up();
 (require $backendPath.'/database/migrations/2026_10_27_000001_create_maintenance_expense_links.php')->up();
 (require $backendPath.'/database/migrations/2026_10_27_000002_create_payment_corrections.php')->up();
+(require $backendPath.'/database/migrations/2026_11_23_000001_add_one_time_and_rounded_invoices.php')->up();
 (require $backendPath.'/database/migrations/2026_10_28_000001_create_rental_properties.php')->up();
 (require $backendPath.'/database/migrations/2026_10_28_000002_create_meter_reading_requests.php')->up();
 if (! $demoMode) {

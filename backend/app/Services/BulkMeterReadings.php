@@ -48,7 +48,7 @@ class BulkMeterReadings
         $periods ??= $occupancy->occupancyServices()->where('service_id', $service->service_id)->orderBy('id')->get();
         $readings ??= MeterReading::query()->whereIn('occupancy_service_id', $periods->modelKeys())->orderBy('period_start')->orderBy('period_end')->orderBy('id')->get();
         $month = $this->month($monthName);
-        $invoice ??= Invoice::query()->where('occupancy_id', $occupancy->id)->whereDate('billing_month', $month->format('Y-m-d'))->first();
+        $invoice ??= Invoice::query()->where('occupancy_id', $occupancy->id)->where('invoice_kind', Invoice::KIND_MONTHLY)->whereDate('billing_month', $month->format('Y-m-d'))->first();
         $start = $month->max(CarbonImmutable::instance($occupancy->started_at))->max(CarbonImmutable::instance($service->effective_from));
         $end = $month->addMonth()->min(now()->toImmutable()->startOfSecond());
         foreach ([$occupancy->ended_at, $service->effective_until] as $limit) {
@@ -126,7 +126,7 @@ class BulkMeterReadings
             if ($prior !== null) {
                 return $this->replay($prior, $fingerprint);
             }
-            $invoice = Invoice::query()->where('occupancy_id', $locked->id)->whereDate('billing_month', $this->month($values['billing_month'])->format('Y-m-d'))->lockForUpdate()->first();
+            $invoice = Invoice::query()->where('occupancy_id', $locked->id)->where('invoice_kind', Invoice::KIND_MONTHLY)->whereDate('billing_month', $this->month($values['billing_month'])->format('Y-m-d'))->lockForUpdate()->first();
             $service->setRelation('occupancy', $locked);
             abort_unless(hash_equals($this->token($service, $values['billing_month'], $periods, $readings, $invoice), $values['context_token']), 409,
                 'Dữ liệu phòng, khoảng giá hoặc chỉ số đã thay đổi. Tải lại dòng trước khi ghi.');

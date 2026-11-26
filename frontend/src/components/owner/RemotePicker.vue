@@ -39,8 +39,8 @@ onBeforeUnmount(() => { mounted = false; sequence++ })
 <template>
   <fieldset class="remote-picker"><legend>{{ label }}</legend>
     <div v-if="selected.some(item => modelValue.includes(item.id))" class="picker-selected">Đã chọn: {{ selected.filter(item => modelValue.includes(item.id)).map(item => item.label).join(', ') }} <UiButton variant="ghost" @click="emit('update:modelValue', [])">Bỏ chọn</UiButton></div>
-    <div class="picker-search"><label class="sr-only" :for="id">Tìm {{ label.toLocaleLowerCase('vi-VN') }}</label><input :id="id" v-model="search" class="ui-input" placeholder="Nhập tên hoặc mã để tìm" @keydown.enter.prevent="load()" /><UiButton variant="secondary" :loading="loading" @click="load()">Tìm</UiButton></div>
-    <p v-if="error" role="alert">{{ error }} <UiButton variant="ghost" @click="load()">Thử lại</UiButton></p>
+    <div class="picker-search"><label class="sr-only" :for="id">Tìm {{ label.toLocaleLowerCase('vi-VN') }}</label><input :id="id" v-model="search" class="ui-input" placeholder="Nhập tên hoặc mã để tìm" @keydown.enter.prevent="load()" /><UiButton class="picker-search-button" variant="secondary" :loading="loading" @click="load()">Tìm</UiButton></div>
+    <p v-if="error" role="alert">{{ error }} <UiButton variant="ghost" @click="load()">Tải lại</UiButton></p>
     <p v-else-if="loading" role="status">Đang tải lựa chọn…</p>
     <p v-else-if="!visibleOptions.length">Không có lựa chọn phù hợp trong các kết quả đã tải{{ page < last ? '; hãy tải thêm hoặc tìm theo tên' : '' }}.</p>
     <div class="picker-options"><label v-for="item in visibleOptions" :key="Number(item.id)"><input :type="multiple ? 'checkbox' : 'radio'" :name="id" :checked="modelValue.includes(Number(item.id))" @change="choose(item)" /><span>{{ item[labelKey] }}<small v-if="item.phone_number"> · {{ item.phone_number }}</small></span></label></div>
@@ -48,3 +48,7 @@ onBeforeUnmount(() => { mounted = false; sequence++ })
     <p v-if="props.error" class="field-error" role="alert">{{ props.error }}</p>
   </fieldset>
 </template>
+
+<style scoped>
+.picker-search-button { min-width: max-content; white-space: nowrap; }
+</style>

@@ -16,6 +16,7 @@ use App\Models\Tenant;
 use App\Models\TenantStay;
 use App\Models\User;
 use App\Services\AppNotifications;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Tests\Concerns\CreatesBillingSchema;
 use Tests\TestCase;
@@ -46,6 +47,29 @@ class AppNotificationsTest extends TestCase
         $stay = TenantStay::create(['occupancy_id' => $this->occupancy->id, 'tenant_id' => $tenant->id, 'moved_in_at' => '2026-01-01']);
         $this->rep = RepresentativeAssignment::create(['occupancy_id' => $this->occupancy->id, 'tenant_stay_id' => $stay->id, 'started_at' => '2026-01-01']);
         $this->actingAs($this->owner, 'web');
+    }
+
+    public function test_provisioned_tenant_receives_one_welcome_only_after_successful_login(): void
+    {
+        $tenant = Tenant::create(['full_name' => 'Nguyễn Minh', 'phone_number' => '0901265900']);
+        $credentials = ['username' => 'minh_luu', 'password' => 'Rentbase@468'];
+        $account = $this->putJson("/api/owner/tenants/{$tenant->id}/account", $credentials + [
+            'password_confirmation' => $credentials['password'],
+        ])->assertOk()->json('data.id');
+        $this->assertDatabaseMissing('app_notifications', ['user_id' => $account, 'type' => 'welcome']);
+
+        Auth::guard('web')->logout();
+        $this->postJson('/api/auth/login', ['username' => $credentials['username'], 'password' => 'Incorrect@468'])->assertUnauthorized();
+        $this->assertDatabaseMissing('app_notifications', ['user_id' => $account, 'type' => 'welcome']);
+        $this->postJson('/api/auth/login', $credentials)->assertOk();
+        $welcome = $this->getJson('/api/notifications?type=welcome')->assertOk()->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.data.body', 'Chào Nguyễn Minh! Bạn có thể xem thông tin ở Phòng của tôi và theo dõi các khoản cần thanh toán trong Hóa đơn.')
+            ->json('data.0.id');
+        $this->patchJson("/api/notifications/{$welcome}/read")->assertOk();
+        $this->postJson('/api/auth/logout')->assertOk();
+        $this->postJson('/api/auth/login', $credentials)->assertOk();
+        $this->getJson('/api/notifications?type=welcome')->assertOk()->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $welcome)->assertJsonPath('data.0.is_read', true);
     }
 
     public function test_new_report_notifies_active_owners_once_and_processing_notifies_author(): void

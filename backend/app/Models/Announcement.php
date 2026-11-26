@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Announcement extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     public const UPDATED_AT = null;
 
     protected $fillable = ['title', 'body', 'audience', 'room_ids', 'room_snapshot', 'created_by', 'idempotency_key', 'request_fingerprint'];

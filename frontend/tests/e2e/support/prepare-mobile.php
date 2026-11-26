@@ -126,4 +126,35 @@ $result = ['created_at' => now()->format('Y-m-d H:i:s'), 'path' => $backup, 'int
     'all_rows_match' => true, 'invoice_balances_match' => true, 'photos' => $photos, 'synthetic_data_only' => true];
 file_put_contents($backup.'/verification.json', json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
 file_put_contents($root.'/backup-latest.json', json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+
+// Only this public-facing synthetic fixture moves to the multi-property routes.
+if (getenv('MOBILE_VERIFY_MULTIPROPERTY') === '1' && ! Schema::hasTable('live_revisions')) {
+    $migrations = $backend.'/database/migrations/';
+    $migrate = static fn (string $name) => (require $migrations.$name.'.php')->up();
+    $ownerId = DB::table('users')->where('username', 'admin')->where('role', 'owner')->value('id');
+    if (! $ownerId) {
+        throw new RuntimeException('The synthetic owner is missing.');
+    }
+    $kernel = $app->make(Kernel::class);
+    $kernel->call('down');
+    try {
+        $migrate('2026_11_15_000001_add_property_ownership_foundation');
+        $migrate('2026_11_15_000002_create_property_payment_settings');
+        $code = $kernel->call('rental:prepare-property-ownership', ['--owner' => $ownerId,
+            '--apply' => true, '--backup-reference' => $backup.'/verification.json']);
+        if ($code !== 0) {
+            throw new RuntimeException($kernel->output());
+        }
+        $migrate('2026_11_15_000003_scope_catalog_unique_keys');
+        $migrate('2026_11_16_000001_create_property_onboarding');
+        $migrate('2026_11_16_000002_create_room_marketplace');
+        $migrate('2026_11_18_000001_add_reporting_and_live_revisions');
+    } catch (Throwable $e) {
+        fwrite(STDERR, $e->getMessage().PHP_EOL);
+        exit(1);
+    } finally {
+        $kernel->call('up');
+    }
+}
+
 echo json_encode(['mobile_accounts_ready' => true, 'restored_backup_verified' => true, 'sample_photos' => count($photos)], JSON_THROW_ON_ERROR).PHP_EOL;

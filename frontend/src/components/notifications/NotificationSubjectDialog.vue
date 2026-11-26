@@ -81,7 +81,7 @@ onBeforeUnmount(() => { sequence++; controller?.abort(); window.removeEventListe
 <template>
   <UiDialog :open="open" :title="title" @update:open="emit('update:open', $event)">
     <UiPageState v-if="loading" kind="loading" title="Đang mở nội dung…" />
-    <UiPageState v-else-if="error" :kind="errorStatus === 403 ? 'forbidden' : errorStatus === 404 ? 'not-found' : 'error'" :title="errorStatus === 403 || errorStatus === 404 ? 'Nội dung không còn khả dụng' : 'Chưa tải được nội dung'" :description="error"><template #actions><UiButton variant="secondary" @click="load">Thử lại</UiButton></template></UiPageState>
+    <UiPageState v-else-if="error" :kind="errorStatus === 403 ? 'forbidden' : errorStatus === 404 ? 'not-found' : 'error'" :title="errorStatus === 403 || errorStatus === 404 ? 'Nội dung không còn khả dụng' : 'Chưa tải được nội dung'" :description="error"><template #actions><UiButton variant="secondary" @click="load">Tải lại</UiButton></template></UiPageState>
     <section v-else-if="announcement" aria-label="Thông báo chung"><h3 class="subject-heading">{{ text(announcement.title) }}</h3><p class="subject-description">{{ text(announcement.body) }}</p><p class="subject-note">Gửi {{ formatDateTime(text(announcement.created_at)) }}</p></section>
     <section v-else-if="invoice" aria-label="Thông tin hóa đơn">
       <p class="subject-heading">{{ text(invoice.invoice_number) }}</p>

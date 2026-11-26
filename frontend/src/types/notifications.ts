@@ -1,4 +1,4 @@
-export const notificationTypes = ['maintenance_submitted', 'maintenance_updated', 'invoice_reminder', 'invoice_updated', 'owner_announcement'] as const
+export const notificationTypes = ['maintenance_submitted', 'maintenance_updated', 'invoice_reminder', 'invoice_updated', 'owner_announcement', 'welcome'] as const
 export type NotificationType = typeof notificationTypes[number]
 
 export interface AppNotification {

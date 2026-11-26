@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TenantStay extends Model
 {
+    use \App\Models\Concerns\BelongsToProperty;
+
     protected $table = 'tenant_stays';
 
     protected $fillable = [

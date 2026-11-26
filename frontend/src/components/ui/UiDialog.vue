@@ -2,7 +2,7 @@
 import { nextTick, onMounted, ref, useId, watch } from 'vue'
 import { keepFocusInDialog } from '@/lib/dialog'
 
-const props = defineProps<{ open: boolean; title: string; description?: string; resetScroll?: boolean }>()
+const props = defineProps<{ open: boolean; title: string; description?: string; resetScroll?: boolean; closeLabel?: string }>()
 const emit = defineEmits<{ 'update:open': [value: boolean] }>()
 const dialog = ref<HTMLDialogElement | null>(null)
 const content = ref<HTMLElement | null>(null)
@@ -25,7 +25,7 @@ onMounted(syncOpen)
 
 <template>
   <dialog ref="dialog" class="ui-dialog" :aria-labelledby="titleId" :aria-describedby="description ? descriptionId : undefined" @keydown="keepFocusInDialog" @cancel.prevent="emit('update:open', false)" @close="emit('update:open', false)">
-    <header><h2 :id="titleId">{{ title }}</h2><button type="button" class="close" aria-label="Đóng hộp thoại" @click="emit('update:open', false)">×</button></header>
+    <header><h2 :id="titleId">{{ title }}</h2><button type="button" class="close" :aria-label="closeLabel ?? 'Đóng hộp thoại'" @click="emit('update:open', false)">×</button></header>
     <div ref="content" class="content">
       <p v-if="description" :id="descriptionId" class="description">{{ description }}</p>
       <slot />
